@@ -3,7 +3,7 @@
 ### Contributors:
 - Yoseph Tesfaye *(Full-Stack Developer)*
 - Eyoab Amare *(Full-Stack & Mobile Developer)*
-- 
+- Abdulfetah Yishak *(Full-Stack Developer)*
 
 ---
 
