@@ -1,4 +1,4 @@
-# 🌾 Ersha-Ecosystem
+# 🌾 Ersha-Ecosystem a System of Urban-Farmers 
 
 ### Contributors:
 - Yoseph Tesfaye *(Full-Stack Developer)*
