@@ -41,7 +41,7 @@ Agriconnect will integrate with Fayda’s **National Digital ID system** to:
 
 - **Backend:** Django (Python), Django REST Framework
 - **Database:** PostgreSQL
-- **Frontend:** React.js, Tailwind CSS *(if applicable)*
+- **Frontend:** React.js, Tailwind CSS
 - **Authentication:** Fayda ID integration (planned)
 - **Weather API:** a selected Weather API.
 - **Payments:** Chapa API / Telebirr (planned)
