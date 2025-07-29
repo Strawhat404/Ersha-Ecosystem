@@ -25,7 +25,7 @@ node --version
 
 # Clone and navigate to project
 cd AgroGebeya
-npm install
+pnpm install
 
 ```
 ### 2. Configure Enviornment 
@@ -42,7 +42,7 @@ VITE_API_BASE_URL=https://your-api-endpoint.com
 ### 3. Run the application
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 ## Project Structure
 
