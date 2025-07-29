@@ -58,6 +58,9 @@ urlpatterns = [
         # Orders
         path('orders/', include('orders.urls')),
         path('notifications/', include('orders.urls')),
+        
+        # Advisory
+        path('advisory/', include('advisory.urls')),
     ])),
 ]
 

@@ -1,13 +1,13 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 
 
 class Expert(models.Model):
     """Expert profiles for consultation services"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     specialization = models.CharField(max_length=255)
     experience_years = models.IntegerField()
@@ -68,7 +68,7 @@ class AdvisoryContent(models.Model):
         ('advanced', 'Advanced'),
     ], default='beginner')
     read_time = models.IntegerField(null=True, blank=True)  # in minutes
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     author_name = models.CharField(max_length=255, blank=True)
     author_role = models.CharField(max_length=255, blank=True)
     tags = models.JSONField(default=list, blank=True)
@@ -114,7 +114,7 @@ class Course(models.Model):
     duration = models.CharField(max_length=50)  # e.g., "45 mins", "2 hours"
     duration_minutes = models.IntegerField()  # for sorting/filtering
     modules = models.JSONField(default=list)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     author_name = models.CharField(max_length=255, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_free = models.BooleanField(default=True)
@@ -171,7 +171,7 @@ class Resource(models.Model):
 
 class UserBookmark(models.Model):
     """User bookmarks for advisory content"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     advisory_content = models.ForeignKey(AdvisoryContent, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -185,7 +185,7 @@ class UserBookmark(models.Model):
 
 class UserLike(models.Model):
     """User likes for advisory content"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     advisory_content = models.ForeignKey(AdvisoryContent, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -200,7 +200,7 @@ class UserLike(models.Model):
 class ConsultationRequest(models.Model):
     """Expert consultation requests"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     expert = models.ForeignKey(Expert, on_delete=models.CASCADE)
     subject = models.CharField(max_length=255)
     description = models.TextField()

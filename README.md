@@ -10,7 +10,7 @@
 ## 📌 Project Synopsis
 
 ### 🧠 Problem Statement:
-In Ethiopia and across Africa, millions of modern farmers lack direct access to markets, real-time weather data, agricultural guidance, and financial services. They often rely on middlemen, which leads to low profit margins and limited growth. There’s also a significant gap in logistics, sales tracking, and credit access for farmers.
+In Ethiopia and across Africa, millions of modern farmers lack direct access to markets, real-time weather data, agricultural guidance, and financial services. They often rely on middlemen, which leads to low profit margins and limited growth. There's also a significant gap in logistics, sales tracking, and credit access for farmers.
 
 ### 💡 Planned Solution:
 Ersha-Ecosystem is a full-featured digital ecosystem designed to **empower farmers and streamline agriculture-to-market connections** through a centralized platform. It includes:
@@ -30,8 +30,9 @@ Ersha-Ecosystem aims to:
 - Support national food security through smart logistics and informed planting decisions.
 - Government agencies and NGOs will have access to real-time agricultural data. which helps in planning resource allocation,monitor crop trends,implement region specific intervention
 - Reduce crop failures atleast by 20%
+
 ### 🧩 Fayda's Role:
-Ersha-Ecosystem will integrate with Fayda’s **National Digital ID system** to:
+Ersha-Ecosystem will integrate with Fayda's **National Digital ID system** to:
 - **Verify farmer identities eKyc** during registration, reducing fraud.
 - **Ensure secure transactions** between verified users.
 - **Loan profile and financial identity** and agricultural subsidies via verified credit history and crop sales.
@@ -39,17 +40,83 @@ Ersha-Ecosystem will integrate with Fayda’s **National Digital ID system** to:
 
 ---
 
+## 🏗️ Project Structure
+
+```
+Ersha-Ecosystem/
+├── Ersha_Ecosystem_Backend/     # Django REST API Backend
+│   ├── agriculture_marketplace/ # Main Django project
+│   ├── users/                   # User management & authentication
+│   ├── marketplace/             # Product & marketplace functionality
+│   ├── orders/                  # Order management & notifications
+│   ├── core/                    # Core functionality & Fayda integration
+│   ├── docker-compose.yml       # Docker services configuration
+│   └── README.md               # Backend documentation
+├── Ersha_Ecosystem_Frontend/    # React.js Frontend Application
+│   ├── src/                    # React source code
+│   ├── public/                 # Static assets
+│   └── package.json           # Frontend dependencies
+└── README.md                   # This file
+```
+
+## 🚀 Current Status
+
+### ✅ Completed Features
+- **Backend Migration**: Successfully moved all backend code from `server/` to `Ersha_Ecosystem_Backend/`
+- **Advisory System Integration**: Successfully integrated agricultural advisory system from backup backend
+- **Django REST API**: Complete backend with authentication, marketplace, order management, and advisory services
+- **Fayda OIDC Integration**: Ethiopian eID authentication system integrated
+- **Docker Configuration**: Full containerization setup with PostgreSQL and Redis
+- **API Documentation**: Swagger/OpenAPI documentation available
+- **Frontend Foundation**: React.js application with Tailwind CSS
+
+### 🔧 Backend Features
+- **Authentication**: JWT-based auth with Fayda OIDC integration
+- **User Management**: Custom user model with role-based permissions
+- **Marketplace**: Product management, categories, shopping cart
+- **Orders**: Order tracking, payment integration, notifications
+- **Advisory System**: Expert consultation, agricultural guides, training courses, downloadable resources
+- **API Documentation**: Auto-generated Swagger/ReDoc documentation
+
+### 🎨 Frontend Features
+- **Modern UI**: React.js with Tailwind CSS
+- **Responsive Design**: Mobile-first approach
+- **Component Architecture**: Reusable UI components
+
+---
+
 ## 🛠️ Tech Stack
 
-- **Backend:** Django (Python), Django REST Framework
-- **Database:** PostgreSQL
-- **Frontend:** React.js, Tailwind CSS
-- **Authentication:** Fayda ID integration (planned)
-- **Weather API:** a selected Weather API.
+- **Backend:** Django 5.0.2, Django REST Framework 3.14.0
+- **Database:** PostgreSQL with Redis for caching
+- **Frontend:** React.js, Tailwind CSS, Vite
+- **Authentication:** JWT + Fayda OIDC integration
+- **API Documentation:** DRF YASG (Swagger/OpenAPI)
+- **Containerization:** Docker + Docker Compose
+- **Weather API:** Integration planned
 - **Payments:** Chapa API / Telebirr (planned)
 - **Logistics Integration:** Custom API endpoints for logistics providers
 - **Deployment:** Docker + Railway / Render / DigitalOcean *(depending on final hosting)*
 
 ---
 
-🏁 *Ersha-Ecosystem is built for impact  to modernize African agriculture through data, direct access, and digital inclusion.*  
+## 🚀 Quick Start
+
+### Backend Setup
+```bash
+cd Ersha_Ecosystem_Backend
+docker-compose up --build
+```
+
+### Frontend Setup
+```bash
+cd Ersha_Ecosystem_Frontend
+npm install
+npm run dev
+```
+
+For detailed setup instructions, see the respective README files in each directory.
+
+---
+
+🏁 *Ersha-Ecosystem is built for impact to modernize African agriculture through data, direct access, and digital inclusion.*  
