@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { authAPI } from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -17,107 +17,116 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    // Check for existing token on app load
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        try {
+          const profileData = await authAPI.getProfile();
+          setUser(profileData);
+          setProfile(profileData);
+        } catch (error) {
+          console.error('Failed to get profile:', error);
+          // Token might be expired, clear it
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+        }
+      }
       setLoading(false);
     };
 
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        if (session?.user) {
-          // Fetch user profile
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          setProfile(profileData);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
   const signUp = async (email, password, userData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const response = await authAPI.register({
         email,
         password,
-        options: {
-          data: userData
-        }
+        ...userData
       });
-
-      if (error) throw error;
-      return { data, error: null };
+      
+      if (response.access) {
+        localStorage.setItem('access_token', response.access);
+        localStorage.setItem('refresh_token', response.refresh);
+        setUser(response.user);
+        setProfile(response.user);
+      }
+      
+      return { data: response, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
   };
 
   const signIn = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) throw error;
-      return { data, error: null };
+      const response = await authAPI.login(email, password);
+      
+      if (response.access) {
+        localStorage.setItem('access_token', response.access);
+        localStorage.setItem('refresh_token', response.refresh);
+        setUser(response.user);
+        setProfile(response.user);
+      }
+      
+      return { data: response, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
   };
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await authAPI.logout();
+      setUser(null);
+      setProfile(null);
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error.message };
     }
   };
 
   const resetPassword = async (email) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+      // This would need to be implemented in the Django backend
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/auth/reset-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
-
-      if (error) throw error;
+      
+      if (!response.ok) {
+        throw new Error('Password reset failed');
+      }
+      
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error.message };
     }
   };
 
   const updateProfile = async (updates) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-      return { data, error: null };
+      const updatedProfile = await authAPI.updateProfile(updates);
+      setProfile(updatedProfile);
+      setUser(updatedProfile);
+      return { data: updatedProfile, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error.message };
+    }
+  };
+
+  const refreshUserProfile = async () => {
+    try {
+      const profileData = await authAPI.getProfile();
+      setUser(profileData);
+      setProfile(profileData);
+      return { data: profileData, error: null };
+    } catch (error) {
+      return { data: null, error: error.message };
     }
   };
 
@@ -129,7 +138,8 @@ export const AuthProvider = ({ children }) => {
     signIn,
     signOut,
     resetPassword,
-    updateProfile
+    updateProfile,
+    refreshUserProfile,
   };
 
   return (
