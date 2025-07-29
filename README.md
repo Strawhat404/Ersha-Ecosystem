@@ -111,8 +111,8 @@ docker-compose up --build
 ### Frontend Setup
 ```bash
 cd Ersha_Ecosystem_Frontend
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 For detailed setup instructions, see the respective README files in each directory.
