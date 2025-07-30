@@ -254,7 +254,7 @@ const Herosection = () => {
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
                     <TrendingUp className="w-6 h-6 text-green-300 mr-2" />
-                    <span className="text-3xl font-bold text-white">₹2.5M</span>
+                    <span className="text-3xl font-bold text-white">2.5M</span>
                   </div>
                   <div className="text-white/70 text-sm">Monthly Trade</div>
                 </div>
