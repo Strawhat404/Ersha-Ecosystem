@@ -71,7 +71,6 @@ Ersha-Ecosystem/
 - **Advisory System Integration**: Successfully integrated agricultural advisory system from backup backend
 - **Payment System**: Ethiopian payment providers M-pesa,Telebirr Currently integrated (Chapa)
 - **Django REST API**: Complete backend with authentication, marketplace, order management, and advisory services
-- **Fayda OIDC Integration**: Ethiopian eID authentication system integrated
 - **Docker Configuration**: Full containerization setup with PostgreSQL and Redis
 - **API Documentation**: Swagger/OpenAPI documentation available
 - **Frontend Foundation**: React.js application with Tailwind CSS
