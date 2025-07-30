@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - media_files:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/agriculture_marketplace
+      - REDIS_URL=redis://localhost:6379/0
+    env_file:
+      - .env
+
+volumes:
+  media_files:
