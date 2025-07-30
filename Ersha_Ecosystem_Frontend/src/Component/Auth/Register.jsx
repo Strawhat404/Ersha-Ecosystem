@@ -55,7 +55,7 @@ const Register = () => {
       description: 'I buy agricultural products for resale'
     },
     { 
-      id: 'merchant', 
+      id: 'agricultural_business', 
       label: 'Agricultural Business', 
       icon: <Building className="w-5 h-5" />,
       description: 'I run an agricultural business'
@@ -98,7 +98,7 @@ const Register = () => {
         phone: formData.phone,
         region: formData.region,
         farm_size: formData.farmSize ? parseFloat(formData.farmSize) : null,
-        business_license: formData.businessLicense
+        business_license_number: formData.businessLicense
       };
 
       const { error } = await signUp(formData.email, formData.password, userData);
@@ -305,7 +305,7 @@ const Register = () => {
             )}
 
             {/* Business License (for merchants) */}
-            {formData.userType === 'merchant' && (
+            {formData.userType === 'agricultural_business' && (
               <div>
                 <label htmlFor="businessLicense" className="block text-sm font-medium text-gray-700 mb-2">
                   Business License Number
