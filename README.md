@@ -129,6 +129,13 @@ cd Ersha_Ecosystem_Frontend
 pnpm install
 pnpm run dev
 ```
+### Frontend Setup for linux users
+```bash
+cd Ersha_Ecosystem_Frontend
+sudo npm install -g pnpm
+pnpm install
+pnpm run dev
+```
 
 For detailed setup instructions, see the respective README files in each directory.
 
