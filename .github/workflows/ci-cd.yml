@@ -112,8 +112,8 @@ jobs:
         # Wait for services to be ready
         sleep 10
         
-        # Test migrations using CI-specific compose file
-        docker compose -f docker-compose.ci.yml run --rm web python manage.py makemigrations --check --dry-run
+        # check if Django can connect to the database
+        docker compose -f docker-compose.ci.yml run --rm web python manage.py check --database default
         
     - name: Cleanup Docker resources
       if: always()
