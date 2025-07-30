@@ -22,6 +22,21 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from drf_yasg.generators import OpenAPISchemaGenerator
+
+# Custom schema generator with security definitions
+class CustomSchemaGenerator(OpenAPISchemaGenerator):
+    def get_schema(self, request=None, public=False):
+        schema = super().get_schema(request, public)
+        schema.security_definitions = {
+            'Bearer': {
+                'type': 'apiKey',
+                'name': 'Authorization',
+                'in': 'header',
+                'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"'
+            }
+        }
+        return schema
 
 # Swagger schema view
 schema_view = get_schema_view(
@@ -35,6 +50,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
+    generator_class=CustomSchemaGenerator,
 )
 
 urlpatterns = [
