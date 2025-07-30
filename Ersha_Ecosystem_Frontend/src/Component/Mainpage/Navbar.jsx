@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   User,
-  LogOut
+  LogOut,
+  BarChart3
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -76,20 +77,39 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
     }
   ];
 
+  // Add dashboard item for authenticated users
+  const authenticatedNavItems = user ? [
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: <BarChart3 className="w-5 h-5" />,
+      gradient: 'from-indigo-500 to-purple-600'
+    },
+    ...navItems
+  ] : navItems;
+
   const handleNavClick = (itemId) => {
     setActiveTab(itemId);
     setIsOpen(false);
     
-    // --- CHANGE IS HERE ---
-    if (itemId === 'fayda') {
-      // If Fayda ID is clicked, navigate to its dedicated page
-      navigate('/fayda-id');
+    // If user is authenticated, navigate to dashboard with the specific view
+    if (user) {
+      if (itemId === 'fayda') {
+        navigate('/fayda-id');
+      } else if (itemId === 'dashboard') {
+        navigate('/dashboard');
+      } else {
+        navigate('/dashboard');
+        // The dashboard will handle the view switching internally
+      }
     } else {
-      // For all other links (Home, Marketplace, etc.), navigate to the main page
-      navigate('/');
-      // Then, tell the main page which view to display.
-      // This will now work because you are on the correct page (`/`).
-      setActiveView && setActiveView(itemId);
+      // For non-authenticated users, navigate to home page
+      if (itemId === 'fayda') {
+        navigate('/fayda-id');
+      } else {
+        navigate('/');
+        setActiveView && setActiveView(itemId);
+      }
     }
   };
 
@@ -141,45 +161,22 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
               </div>
             </motion.div>
 
-            {/* Desktop Navigation - Changed to custom 1000px breakpoint */}
-            <div className="hidden min-[1000px]:flex items-center space-x-1 relative">
-              {navItems.map((item) => (
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-1">
+              {authenticatedNavItems.map((item) => (
                 <motion.button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-300 group ${
-                    activeTab === item.id 
-                      ? 'text-white' 
+                  className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                    activeTab === item.id
+                      ? 'text-gray-900'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
                 >
-                  {/* Active background */}
-                  {activeTab === item.id && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className={`absolute inset-0 bg-gradient-to-r ${item.gradient} rounded-xl shadow-lg`}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  
-                  {/* Hover effect */}
-                  <motion.div
-                    className={`absolute inset-0 bg-gradient-to-r ${item.gradient} rounded-xl opacity-0 group-hover:opacity-20`}
-                    transition={{ duration: 0.2 }}
-                  />
-                  
-                  {/* Content */}
-                  <div className="relative flex items-center space-x-2">
-                    <motion.div
-                      animate={activeTab === item.id ? { scale: [1, 1.2, 1] } : {}}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {item.icon}
-                    </motion.div>
-                    <span>{item.label}</span>
-                  </div>
+                  {item.icon}
+                  <span>{item.label}</span>
                   
                   {/* Line hover effect */}
                   <motion.div
@@ -271,22 +268,19 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
               className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100"
             >
               <div className="px-4 py-4 space-y-2">
-                {navItems.map((item, index) => (
-                  <motion.button
+                {authenticatedNavItems.map((item) => (
+                  <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                       activeTab === item.id
-                        ? `bg-gradient-to-r ${item.gradient} text-white shadow-lg`
+                        ? 'bg-gradient-to-r text-white shadow-lg'
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                    } ${activeTab === item.id ? item.gradient : ''}`}
                   >
                     {item.icon}
-                    <span>{item.label}</span>
-                  </motion.button>
+                    <span className="font-medium">{item.label}</span>
+                  </button>
                 ))}
                 
                 {/* Mobile Auth Buttons */}

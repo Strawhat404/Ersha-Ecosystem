@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -9,12 +10,11 @@ import {
   ArrowRight, 
   AlertCircle,
   CheckCircle,
-  User,
-  Leaf,
-  ShoppingBag
+  Leaf
 } from 'lucide-react';
 
-const Login = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
+const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -38,10 +38,13 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
       if (error) {
         setError(error.message);
       } else {
-        setSuccess('Login successful! Redirecting...');
-        // The AuthContext will handle the redirect
+        setSuccess('Login successful! Redirecting to dashboard...');
+        // Redirect to dashboard after successful login
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -55,6 +58,14 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
     });
     // Clear errors when user starts typing
     if (error) setError('');
+  };
+
+  const handleSwitchToRegister = () => {
+    navigate('/register');
+  };
+
+  const handleSwitchToForgotPassword = () => {
+    navigate('/forgot-password');
   };
 
   return (
@@ -201,7 +212,7 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
           {/* Forgot Password Link */}
           <div className="mt-6 text-center">
             <button
-              onClick={onSwitchToForgotPassword}
+              onClick={handleSwitchToForgotPassword}
               className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors duration-200"
             >
               Forgot your password?
@@ -217,9 +228,9 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword }) => {
           className="text-center"
         >
           <p className="text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
-              onClick={onSwitchToRegister}
+              onClick={handleSwitchToRegister}
               className="font-medium text-green-600 hover:text-green-700 transition-colors duration-200"
             >
               Sign up here
