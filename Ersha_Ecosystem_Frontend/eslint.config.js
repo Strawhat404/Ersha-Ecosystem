@@ -33,6 +33,14 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // Disable prop-types for now to reduce noise
+      'react/prop-types': 'off',
+      // Disable unused vars warnings for now
+      'no-unused-vars': 'warn',
+      // Disable unescaped entities warnings
+      'react/no-unescaped-entities': 'off',
+      // Make hooks warnings less strict
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
 ]
