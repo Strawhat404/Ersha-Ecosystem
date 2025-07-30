@@ -92,7 +92,7 @@ jobs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
       
-    - name: Build and test backend with docker-compose
+    - name: Build and test backend with docker compose
       working-directory: ./Ersha_Ecosystem_Backend
       run: |
         # Create .env file from example if it doesn't exist
@@ -101,10 +101,10 @@ jobs:
         fi
         
         # Build the images
-        docker-compose build
+        docker compose build
         
         # Test that the build was successful by running a simple command
-        docker-compose run --rm web python manage.py check
+        docker compose run --rm web python manage.py check
         
     - name: Test database migrations
       working-directory: ./Ersha_Ecosystem_Backend
@@ -113,13 +113,13 @@ jobs:
         sleep 10
         
         # Test migrations
-        docker-compose run --rm web python manage.py makemigrations --check --dry-run
+        docker compose run --rm web python manage.py makemigrations --check --dry-run
         
     - name: Cleanup Docker resources
       if: always()
       working-directory: ./Ersha_Ecosystem_Backend
       run: |
-        docker-compose down --volumes --remove-orphans
+        docker compose down --volumes --remove-orphans
 
   integration-test:
     name: Integration Test
