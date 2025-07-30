@@ -15,5 +15,5 @@ router.register(r'likes', UserLikeViewSet, basename='like')
 router.register(r'consultations', ConsultationRequestViewSet, basename='consultation')
 
 urlpatterns = [
-    path('api/advisory/', include(router.urls)),
+    path('', include(router.urls)),
 ] 
