@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Sprout, 
@@ -44,6 +44,7 @@ import PaymentSystem from './Component/Dashboard/PaymentSystem'
 import LogisticsTracker from './Component/Dashboard/LogisticsTracker'
 import AnalyticsDashboard from './Component/Dashboard/AnalyticsDashboard'
 import EnhancedAdvisory from './Component/Advisory/EnhancedAdvisory'
+import UserDashboard from './Component/Dashboard/UserDashboard'
 
 // Authentication Components
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -55,9 +56,45 @@ import FaydaIntegration from './Component/Auth/FaydaIntegration'
 
 // Debug: Test Supabase Connection - REMOVED FOR PRODUCTION
 
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+// Public Route Component (redirects to dashboard if already authenticated)
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return user ? <Navigate to="/dashboard" replace /> : children;
+};
+
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = ['/login', '/register', '/forgot-password'].includes(location.pathname);
+  const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
   const [showUserProfile, setShowUserProfile] = useState(false);
   const { user, loading } = useAuth();
@@ -955,8 +992,21 @@ function AppContent() {
       {/* Main Content Sections */}
       <Routes>
         <Route path="/" element={renderDashboardView()} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/fayda-id" element={<FaydaIntegration />} />
       </Routes>
@@ -1061,7 +1111,8 @@ function AppContent() {
         )}
       </AnimatePresence>
     </div>
-)}
+  );
+}
 
 function App() {
   return (
