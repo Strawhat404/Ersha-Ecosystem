@@ -8,14 +8,17 @@ This is the backend service for the Ersha Ecosystem, providing a comprehensive a
 
 ✅ **Successfully integrated advisory system from backup backend**
 
+✅ **CI/CD Pipeline**: Automated testing and deployment pipeline configured
+
 All backend code, configurations, and dependencies have been moved and integrated, including:
 - Django project structure
 - All Django apps (users, marketplace, orders, core, advisory)
-- Docker configurations (docker-compose.yml, Dockerfile)
+- Docker configurations (docker-compose.yml, docker-compose.ci.yml, Dockerfile)
 - Environment configurations (.env, .env.example)
 - Requirements and dependencies
 - Media files and static assets
 - Agricultural advisory system with expert consultation, courses, and resources
+- GitHub Actions CI/CD pipeline for automated testing
 
 ## 📁 Project Structure
 
@@ -56,7 +59,8 @@ Ersha_Ecosystem_Backend/
 ├── media/                      # Media files storage
 ├── manage.py                   # Django management script
 ├── requirements.txt            # Python dependencies
-├── docker-compose.yml          # Docker services configuration
+├── docker-compose.yml          # Docker services configuration (local development)
+├── docker-compose.ci.yml       # Docker services configuration (CI/CD)
 ├── Dockerfile                  # Docker image configuration
 ├── .env                        # Environment variables (not in git)
 ├── .env.example               # Environment variables template
@@ -131,23 +135,25 @@ Ersha_Ecosystem_Backend/
 
 3. **Build and start services:**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
 4. **Run migrations (in a new terminal):**
    ```bash
-   docker-compose exec web python manage.py migrate
+   docker compose exec web python manage.py migrate
    ```
 
 5. **Create superuser (optional):**
    ```bash
-   docker-compose exec web python manage.py createsuperuser
+   docker compose exec web python manage.py createsuperuser
    ```
 
 6. **Populate advisory data (optional):**
    ```bash
-   docker-compose exec web python manage.py populate_advisory_data
+   docker compose exec web python manage.py populate_advisory_data
    ```
+
+**Note**: The project now uses modern Docker Compose V2 syntax (`docker compose` instead of `docker-compose`).
 
 ## 🌐 API Documentation
 
@@ -248,6 +254,37 @@ Key dependencies include:
 - Django Filter 25.1
 - Pillow (image processing)
 - DRF YASG (API documentation)
+
+## 🔄 CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline using GitHub Actions:
+
+### Automated Testing
+- **Frontend Build**: Linting, building, and artifact creation
+- **Backend Build**: Docker containerization and Django system checks
+- **Database Testing**: Migration validation and database connectivity
+- **Integration Testing**: End-to-end service verification
+
+### Pipeline Features
+- **Docker Compose V2**: Modern Docker Compose syntax for CI/CD
+- **External Services**: Uses GitHub Actions PostgreSQL and Redis services
+- **Automated Cleanup**: Proper resource cleanup after tests
+- **Artifact Management**: Frontend build artifacts for deployment
+
+### Local vs CI Configuration
+- **Local Development**: Uses `docker-compose.yml` with full services
+- **CI/CD Environment**: Uses `docker-compose.ci.yml` with external services
+- **No Port Conflicts**: Separate configurations prevent service conflicts
+
+### Running the Pipeline
+The pipeline automatically runs on:
+- Push to `main` and `develop` branches
+- Pull requests to `main` and `develop` branches
+
+To manually trigger:
+1. Push changes to trigger automatic pipeline
+2. Monitor GitHub Actions tab for build status
+3. Check logs for any issues or warnings
 
 ## 🔄 Migration Notes
 
