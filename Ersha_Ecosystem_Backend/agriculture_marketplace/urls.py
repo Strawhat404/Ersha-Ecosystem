@@ -77,6 +77,18 @@ urlpatterns = [
         
         # Advisory
         path('advisory/', include('advisory.urls')),
+        
+        # News
+        path('news/', include('news.urls')),
+        
+        # Weather
+        path('weather/', include('weather.urls')),
+        
+        # Logistics
+        path('logistics/', include('logistics.urls')),
+        
+        # Payments
+        path('payments/', include('payments.urls')),
     ])),
 ]
 

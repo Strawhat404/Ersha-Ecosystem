@@ -61,6 +61,12 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+media/
+staticfiles/
+static/
+
+# Django migrations (uncomment if you want to ignore migrations)
+# migrations/
 
 # Flask stuff:
 instance/
@@ -111,6 +117,11 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment variables
+.env.local
+.env.production
+.env.staging
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -128,18 +139,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Django specific
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
-static/
-
-# Django migrations (uncomment if you want to ignore migrations)
-# migrations/
 
 # IDE files
 .vscode/
@@ -242,4 +241,9 @@ public
 
 # Temporary folders
 tmp/
-temp/ 
+temp/
+
+# Payment provider keys and secrets
+payment_keys.txt
+api_keys.txt
+secrets.txt

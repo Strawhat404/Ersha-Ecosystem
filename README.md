@@ -50,6 +50,11 @@ Ersha-Ecosystem/
 │   ├── marketplace/             # Product & marketplace functionality
 │   ├── orders/                  # Order management & notifications
 │   ├── core/                    # Core functionality & Fayda integration
+│   ├── advisory/                # Agricultural advisory system
+│   ├── news/                    # News articles & content management
+│   ├── weather/                 # Weather data & forecasts
+│   ├── logistics/               # Delivery tracking & logistics
+│   ├── payments/                # Payment processing & gateways
 │   ├── docker-compose.yml       # Docker services configuration
 │   └── README.md               # Backend documentation
 ├── Ersha_Ecosystem_Frontend/    # React.js Frontend Application
@@ -64,6 +69,7 @@ Ersha-Ecosystem/
 ### ✅ Completed Features
 - **Backend Migration**: Successfully moved all backend code from `server/` to `Ersha_Ecosystem_Backend/`
 - **Advisory System Integration**: Successfully integrated agricultural advisory system from backup backend
+- **Payment System**: Ethiopian payment providers M-pesa,Telebirr Currently integrated (Chapa)
 - **Django REST API**: Complete backend with authentication, marketplace, order management, and advisory services
 - **Fayda OIDC Integration**: Ethiopian eID authentication system integrated
 - **Docker Configuration**: Full containerization setup with PostgreSQL and Redis
@@ -73,15 +79,24 @@ Ersha-Ecosystem/
 ### 🔧 Backend Features
 - **Authentication**: JWT-based auth with Fayda OIDC integration
 - **User Management**: Custom user model with role-based permissions
-- **Marketplace**: Product management, categories, shopping cart
-- **Orders**: Order tracking, payment integration, notifications
 - **Advisory System**: Expert consultation, agricultural guides, training courses, downloadable resources
+- **News System**: Articles with categories, tags, featured content
+- **Weather System**: Ethiopian weather data, forecasts, farming recommendations
+- **Logistics System**: Delivery tracking, service providers, cost estimation
+- **Payment System**: Ethiopian payment providers M-pesa,Telebirr Currently integrated (Chapa)
+- **Marketplace System**: Products, orders, e-commerce functionality
+- **Orders**: Order tracking, payment integration, notifications
+- **Fayda OIDC Integration**: Ethiopian eID authentication system
+- **API Documentation**: Swagger/OpenAPI documentation available
+- **Docker Configuration**: Full containerization setup 
 - **API Documentation**: Auto-generated Swagger/ReDoc documentation
+- **Complete Backend System**: Full Django REST API with 8 major systems
 
 ### 🎨 Frontend Features
 - **Modern UI**: React.js with Tailwind CSS
 - **Responsive Design**: Mobile-first approach
 - **Component Architecture**: Reusable UI components
+- **Authentication Integration**: Ready for backend auth
 
 ---
 
@@ -94,7 +109,7 @@ Ersha-Ecosystem/
 - **API Documentation:** DRF YASG (Swagger/OpenAPI)
 - **Containerization:** Docker + Docker Compose
 - **Weather API:** Integration planned
-- **Payments:** Chapa API / Telebirr (planned)
+- **Payments:** Chapa API(Already integrated) / Telebirr (planned)
 - **Logistics Integration:** Custom API endpoints for logistics providers
 - **Deployment:** Docker + Railway / Render / DigitalOcean *(depending on final hosting)*
 
@@ -111,6 +126,13 @@ docker-compose up --build
 ### Frontend Setup
 ```bash
 cd Ersha_Ecosystem_Frontend
+pnpm install
+pnpm run dev
+```
+### Frontend Setup for linux users
+```bash
+cd Ersha_Ecosystem_Frontend
+sudo npm install -g pnpm
 pnpm install
 pnpm run dev
 ```

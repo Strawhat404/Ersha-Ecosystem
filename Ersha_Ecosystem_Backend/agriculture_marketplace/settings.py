@@ -53,6 +53,10 @@ INSTALLED_APPS = [
     'marketplace',
     'orders',
     'advisory',
+    'news',
+    'weather',
+    'logistics',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -90,16 +94,25 @@ WSGI_APPLICATION = 'agriculture_marketplace.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='agriculture_marketplace'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='postgres'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+# Use PostgreSQL in production, SQLite in development
+if config('USE_POSTGRESQL', default=False, cast=bool):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='agriculture_marketplace'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='postgres'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -196,13 +209,13 @@ MAX_UPLOAD_SIZE = config('MAX_UPLOAD_SIZE', default=5242880, cast=int)  # 5MB
 
 # Fayda OIDC Configuration
 FAYDA_CONFIG = {
-    'CLIENT_ID': config('CLIENT_ID'),
-    'PRIVATE_KEY': config('PRIVATE_KEY'),
-    'REDIRECT_URI': config('REDIRECT_URI'),
-    'AUTHORIZATION_ENDPOINT': config('AUTHORIZATION_ENDPOINT'),
-    'TOKEN_ENDPOINT': config('TOKEN_ENDPOINT'),
-    'USERINFO_ENDPOINT': config('USERINFO_ENDPOINT'),
+    'CLIENT_ID': config('CLIENT_ID', default=''),
+    'PRIVATE_KEY': config('PRIVATE_KEY', default=''),
+    'REDIRECT_URI': config('REDIRECT_URI', default=''),
+    'AUTHORIZATION_ENDPOINT': config('AUTHORIZATION_ENDPOINT', default=''),
+    'TOKEN_ENDPOINT': config('TOKEN_ENDPOINT', default=''),
+    'USERINFO_ENDPOINT': config('USERINFO_ENDPOINT', default=''),
     'EXPIRATION_TIME': config('EXPIRATION_TIME', default=15, cast=int),
     'ALGORITHM': config('ALGORITHM', default='RS256'),
-    'CLIENT_ASSERTION_TYPE': config('CLIENT_ASSERTION_TYPE'),
+    'CLIENT_ASSERTION_TYPE': config('CLIENT_ASSERTION_TYPE', default=''),
 }
