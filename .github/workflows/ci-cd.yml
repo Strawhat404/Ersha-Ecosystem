@@ -100,11 +100,11 @@ jobs:
           cp .env.example .env
         fi
         
-        # Build the images
-        docker compose build
+        # Build the images using CI-specific compose file
+        docker compose -f docker-compose.ci.yml build
         
         # Test that the build was successful by running a simple command
-        docker compose run --rm web python manage.py check
+        docker compose -f docker-compose.ci.yml run --rm web python manage.py check
         
     - name: Test database migrations
       working-directory: ./Ersha_Ecosystem_Backend
@@ -112,14 +112,14 @@ jobs:
         # Wait for services to be ready
         sleep 10
         
-        # Test migrations
-        docker compose run --rm web python manage.py makemigrations --check --dry-run
+        # Test migrations using CI-specific compose file
+        docker compose -f docker-compose.ci.yml run --rm web python manage.py makemigrations --check --dry-run
         
     - name: Cleanup Docker resources
       if: always()
       working-directory: ./Ersha_Ecosystem_Backend
       run: |
-        docker compose down --volumes --remove-orphans
+        docker compose -f docker-compose.ci.yml down --volumes --remove-orphans
 
   integration-test:
     name: Integration Test
