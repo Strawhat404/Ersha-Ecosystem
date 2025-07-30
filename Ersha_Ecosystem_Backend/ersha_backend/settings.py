@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'advisory',
+    'news',
+    'weather',
+    'logistics',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +130,7 @@ CORS_ALLOWED_ORIGINS = [
 
 # REST Framework settings
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -146,3 +151,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Payment Provider Settings
+import os
+from decouple import config
+
+MPESA_API_KEY = config('MPESA_API_KEY', default='')
+MPESA_API_SECRET = config('MPESA_API_SECRET', default='')
+MPESA_BASE_URL = config('MPESA_BASE_URL', default='https://sandbox.safaricom.co.ke')
+
+CHAPA_API_KEY = config('CHAPA_API_KEY', default='')
+CHAPA_BASE_URL = config('CHAPA_BASE_URL', default='https://api.chapa.co/v1')
+
+# Payment Settings
+PAYMENT_CALLBACK_URL = config('PAYMENT_CALLBACK_URL', default='https://yourdomain.com/api/payments/webhooks/')
+PAYMENT_RETURN_URL = config('PAYMENT_RETURN_URL', default='https://yourdomain.com/payment/return/')
