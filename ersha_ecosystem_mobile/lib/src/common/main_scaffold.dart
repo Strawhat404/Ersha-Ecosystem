@@ -14,6 +14,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home, label: 'Home', route: '/marketplace'),
     _NavItem(icon: Icons.cloud, label: 'Weather', route: '/weather'),
+    _NavItem(icon: Icons.article, label: 'News', route: '/news'),
     _NavItem(icon: Icons.school, label: 'Advisory', route: '/advisory'),
     _NavItem(icon: Icons.person, label: 'Profile', route: '/profile'),
   ];
