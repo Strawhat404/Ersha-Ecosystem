@@ -209,7 +209,7 @@ class FaydaOIDC:
             raise Exception(f"Failed to verify Fayda ID: {str(e)}")
     
     def link_fayda_to_user(self, user, fayda_data):
-        """Link Fayda data to existing user"""
+        """Link Fayda data to existing user with verification checks"""
         try:
             fayda_id = fayda_data.get('fayda_id')
             
@@ -221,11 +221,22 @@ class FaydaOIDC:
             if existing_user and existing_user != user:
                 raise Exception("Fayda ID is already linked to another user")
             
+            # Perform verification checks
+            verification_result = self.verify_user_identity(user, fayda_data)
+            
+            if not verification_result['verified']:
+                # Mark verification as failed
+                user.verification_status = User.VerificationStatus.FAILED
+                user.fayda_verification_data = fayda_data
+                user.save()
+                raise Exception(f"Identity verification failed: {verification_result['reason']}")
+            
             # Update user with Fayda information
             user.fayda_id = fayda_id
             user.mark_as_verified(fayda_data)
             
-            # Update user profile if name is provided
+            # Update user profile with verified information from Fayda
+            # Only update if the field is empty or if we want to ensure consistency
             if fayda_data.get('given_name') and not user.first_name:
                 user.first_name = fayda_data['given_name']
             if fayda_data.get('family_name') and not user.last_name:
@@ -240,10 +251,136 @@ class FaydaOIDC:
             return {
                 'success': True,
                 'message': 'Fayda verification completed successfully',
-                'user_data': fayda_data
+                'user_data': fayda_data,
+                'verification_details': verification_result
             }
         except Exception as e:
             raise Exception(f"Failed to link Fayda data: {str(e)}")
+    
+    def verify_user_identity(self, user, fayda_data):
+        """
+        Verify that the Fayda data matches the user's registered information
+        Returns: {'verified': bool, 'reason': str, 'details': dict}
+        """
+        verification_details = {
+            'name_match': False,
+            'phone_match': False,
+            'email_match': False,
+            'region_match': False
+        }
+        
+        # Extract Fayda information
+        fayda_name = f"{fayda_data.get('given_name', '')} {fayda_data.get('family_name', '')}".strip()
+        fayda_phone = fayda_data.get('phone_number', '')
+        fayda_email = fayda_data.get('email', '')
+        fayda_region = fayda_data.get('region', '')
+        
+        # Get user's registered information
+        user_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+        user_phone = user.phone or ''
+        user_email = user.email or ''
+        user_region = user.region or ''
+        
+        # Check name match (case-insensitive, allow for minor variations)
+        if fayda_name and user_name:
+            # Normalize names for comparison
+            fayda_name_normalized = self.normalize_name(fayda_name)
+            user_name_normalized = self.normalize_name(user_name)
+            
+            verification_details['name_match'] = (
+                fayda_name_normalized == user_name_normalized or
+                self.calculate_name_similarity(fayda_name_normalized, user_name_normalized) >= 0.8
+            )
+        
+        # Check phone match (normalize phone numbers)
+        if fayda_phone and user_phone:
+            fayda_phone_normalized = self.normalize_phone(fayda_phone)
+            user_phone_normalized = self.normalize_phone(user_phone)
+            verification_details['phone_match'] = fayda_phone_normalized == user_phone_normalized
+        
+        # Check email match (case-insensitive)
+        if fayda_email and user_email:
+            verification_details['email_match'] = fayda_email.lower() == user_email.lower()
+        
+        # Check region match (case-insensitive, allow for variations)
+        if fayda_region and user_region:
+            fayda_region_normalized = self.normalize_region(fayda_region)
+            user_region_normalized = self.normalize_region(user_region)
+            verification_details['region_match'] = (
+                fayda_region_normalized == user_region_normalized or
+                self.calculate_region_similarity(fayda_region_normalized, user_region_normalized) >= 0.7
+            )
+        
+        # Determine verification result
+        # Require at least 2 out of 4 matches for verification
+        matches = sum(verification_details.values())
+        verified = matches >= 2
+        
+        if verified:
+            reason = f"Identity verified with {matches}/4 matching criteria"
+        else:
+            reason = f"Insufficient matches ({matches}/4). Required: name, phone, email, or region to match"
+        
+        return {
+            'verified': verified,
+            'reason': reason,
+            'details': verification_details,
+            'matches_count': matches
+        }
+    
+    def normalize_name(self, name):
+        """Normalize name for comparison"""
+        import re
+        # Remove extra spaces, convert to lowercase
+        normalized = re.sub(r'\s+', ' ', name.strip().lower())
+        # Remove common titles and suffixes
+        normalized = re.sub(r'\b(mr|mrs|ms|miss|dr|prof|sir|madam)\b', '', normalized)
+        return normalized.strip()
+    
+    def normalize_phone(self, phone):
+        """Normalize phone number for comparison"""
+        import re
+        # Remove all non-digit characters
+        digits_only = re.sub(r'\D', '', phone)
+        # Remove country code if it's Ethiopian (+251)
+        if digits_only.startswith('251') and len(digits_only) > 9:
+            digits_only = digits_only[3:]
+        return digits_only
+    
+    def normalize_region(self, region):
+        """Normalize region name for comparison"""
+        import re
+        # Remove extra spaces, convert to lowercase
+        normalized = re.sub(r'\s+', ' ', region.strip().lower())
+        # Common region variations
+        region_mappings = {
+            'addis ababa': 'addis ababa',
+            'adama': 'oromia',
+            'nazret': 'oromia',
+            'dire dawa': 'dire dawa',
+            'harar': 'harari',
+            'jijiga': 'somali',
+            'bahir dar': 'amhara',
+            'gondar': 'amhara',
+            'mekelle': 'tigray',
+            'hawassa': 'sidama',
+            'arba minch': 'snnpr',
+            'jimma': 'oromia',
+            'bishoftu': 'oromia',
+            'shashamane': 'oromia',
+            'adama': 'oromia'
+        }
+        return region_mappings.get(normalized, normalized)
+    
+    def calculate_name_similarity(self, name1, name2):
+        """Calculate similarity between two names using simple algorithm"""
+        from difflib import SequenceMatcher
+        return SequenceMatcher(None, name1, name2).ratio()
+    
+    def calculate_region_similarity(self, region1, region2):
+        """Calculate similarity between two region names"""
+        from difflib import SequenceMatcher
+        return SequenceMatcher(None, region1, region2).ratio()
 
 
 # Create a global instance

@@ -240,20 +240,35 @@ def enhanced_fayda_callback(request):
         # Complete the verification flow
         user_data = fayda_oidc.complete_verification_flow(authorization_code, state)
         
-        # Link Fayda data to user
+        # Link Fayda data to user with verification checks
         result = fayda_oidc.link_fayda_to_user(request.user, user_data)
         
         # Get updated user data
         user = User.objects.get(id=request.user.id)
         
-        return Response({
-            'message': 'Fayda verification completed successfully',
+        response_data = {
+            'message': result['message'],
             'user_data': user_data,
             'verification_status': user.verification_status,
             'is_verified': user.is_verified
-        })
+        }
+        
+        # Include verification details if available
+        if 'verification_details' in result:
+            response_data['verification_details'] = result['verification_details']
+        
+        return Response(response_data)
+        
     except Exception as e:
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_400_BAD_REQUEST
-        ) 
+        # Get updated user data to check if verification failed
+        try:
+            user = User.objects.get(id=request.user.id)
+            return Response({
+                'error': str(e),
+                'verification_status': user.verification_status,
+                'is_verified': user.is_verified
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST) 
