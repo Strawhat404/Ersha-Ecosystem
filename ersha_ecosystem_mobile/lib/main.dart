@@ -14,6 +14,7 @@ import 'package:ersha_ecosystem_mobile/src/features/news/presentation/news_scree
 import 'package:ersha_ecosystem_mobile/src/features/fayda_integration/presentation/fayda_integration_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/payment_integration/payment_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/logistics_tracking/logistics_tracking_screen.dart';
+import 'package:ersha_ecosystem_mobile/src/features/profile/presentation/profile_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/common/main_scaffold.dart';
 
 void main() {
@@ -48,7 +49,7 @@ class AgroGebeyaApp extends StatelessWidget {
         '/fayda_integration': (context) => const MainScaffold(child: FaydaIntegrationScreen()),
         '/payment_integration': (context) => const MainScaffold(child: PaymentScreen()),
         '/logistics_tracking': (context) => const MainScaffold(child: LogisticsTrackingScreen()),
-        // Example: '/profile': (context) => const MainScaffold(child: ProfileScreen()),
+        '/profile': (context) => const MainScaffold(child: ProfileScreen()),
         // Add other routes here, wrap them with MainScaffold except login/register
       },
     );
