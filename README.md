@@ -71,10 +71,10 @@ Ersha-Ecosystem/
 - **Advisory System Integration**: Successfully integrated agricultural advisory system from backup backend
 - **Payment System**: Ethiopian payment providers M-pesa,Telebirr Currently integrated (Chapa)
 - **Django REST API**: Complete backend with authentication, marketplace, order management, and advisory services
-- **Fayda OIDC Integration**: Ethiopian eID authentication system integrated
 - **Docker Configuration**: Full containerization setup with PostgreSQL and Redis
 - **API Documentation**: Swagger/OpenAPI documentation available
 - **Frontend Foundation**: React.js application with Tailwind CSS
+- **CI/CD Pipeline**: Automated testing and deployment pipeline with GitHub Actions ✅
 
 ### 🔧 Backend Features
 - **Authentication**: JWT-based auth with Fayda OIDC integration
@@ -89,7 +89,7 @@ Ersha-Ecosystem/
 - **Fayda OIDC Integration**: Ethiopian eID authentication system
 - **API Documentation**: Swagger/OpenAPI documentation available
 - **Docker Configuration**: Full containerization setup 
-- **API Documentation**: Auto-generated Swagger/ReDoc documentation
+- **CI/CD Pipeline**: Automated testing with GitHub Actions
 - **Complete Backend System**: Full Django REST API with 8 major systems
 
 ### 🎨 Frontend Features
@@ -102,12 +102,13 @@ Ersha-Ecosystem/
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Django 5.0.2, Django REST Framework 3.14.0
+- **Backend:** Django 5.2.4, Django REST Framework 3.16.0
 - **Database:** PostgreSQL with Redis for caching
 - **Frontend:** React.js, Tailwind CSS, Vite
 - **Authentication:** JWT + Fayda OIDC integration
 - **API Documentation:** DRF YASG (Swagger/OpenAPI)
-- **Containerization:** Docker + Docker Compose
+- **Containerization:** Docker + Docker Compose V2
+- **CI/CD:** GitHub Actions with automated testing
 - **Weather API:** Integration planned
 - **Payments:** Chapa API(Already integrated) / Telebirr (planned)
 - **Logistics Integration:** Custom API endpoints for logistics providers
@@ -120,7 +121,7 @@ Ersha-Ecosystem/
 ### Backend Setup
 ```bash
 cd Ersha_Ecosystem_Backend
-docker-compose up --build
+docker compose up --build
 ```
 
 ### Frontend Setup

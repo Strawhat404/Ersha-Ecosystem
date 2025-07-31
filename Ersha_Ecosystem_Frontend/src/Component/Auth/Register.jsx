@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -8,7 +9,6 @@ import {
   EyeOff, 
   User, 
   Phone, 
-  MapPin,
   ArrowRight, 
   AlertCircle,
   CheckCircle,
@@ -18,15 +18,17 @@ import {
   Building
 } from 'lucide-react';
 
-const Register = ({ onSwitchToLogin }) => {
+const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
     password: '',
-    confirmPassword: '',
-    fullName: '',
+    password_confirm: '',
+    first_name: '',
+    last_name: '',
     phone: '',
     userType: 'farmer',
-    location: '',
     region: '',
     farmSize: '',
     businessLicense: ''
@@ -72,24 +74,28 @@ const Register = ({ onSwitchToLogin }) => {
     setSuccess('');
 
     // Validation
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.password_confirm) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
       setLoading(false);
       return;
     }
 
     try {
       const userData = {
-        full_name: formData.fullName,
+        email: formData.email,
+        username: formData.username,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        password: formData.password,
+        password_confirm: formData.password_confirm,
         user_type: formData.userType,
         phone: formData.phone,
-        location: formData.location,
         region: formData.region,
         farm_size: formData.farmSize ? parseFloat(formData.farmSize) : null,
         business_license: formData.businessLicense
@@ -100,9 +106,13 @@ const Register = ({ onSwitchToLogin }) => {
       if (error) {
         setError(error.message);
       } else {
-        setSuccess('Registration successful! Please check your email to verify your account.');
+        setSuccess('Registration successful! Redirecting to dashboard...');
+        // Redirect to dashboard after successful registration
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -115,6 +125,10 @@ const Register = ({ onSwitchToLogin }) => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+  };
+
+  const handleSwitchToLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -189,26 +203,49 @@ const Register = ({ onSwitchToLogin }) => {
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
+                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="fullName"
-                    name="fullName"
+                    id="first_name"
+                    name="first_name"
                     type="text"
                     required
-                    value={formData.fullName}
+                    value={formData.first_name}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your full name"
+                    placeholder="Enter your first name"
                   />
                 </div>
               </div>
 
+              <div>
+                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="last_name"
+                    name="last_name"
+                    type="text"
+                    required
+                    value={formData.last_name}
+                    onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your last name"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
@@ -228,10 +265,7 @@ const Register = ({ onSwitchToLogin }) => {
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Location Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
                   Region
@@ -248,26 +282,6 @@ const Register = ({ onSwitchToLogin }) => {
                     <option key={region} value={region}>{region}</option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  City/Town
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="location"
-                    name="location"
-                    type="text"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your city or town"
-                  />
-                </div>
               </div>
             </div>
 
@@ -331,6 +345,29 @@ const Register = ({ onSwitchToLogin }) => {
               </div>
             </div>
 
+            {/* Username */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your username"
+                />
+              </div>
+            </div>
+
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -367,7 +404,7 @@ const Register = ({ onSwitchToLogin }) => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -375,12 +412,12 @@ const Register = ({ onSwitchToLogin }) => {
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
+                  id="password_confirm"
+                  name="password_confirm"
                   type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  value={formData.confirmPassword}
+                  value={formData.password_confirm}
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                   placeholder="Confirm your password"
@@ -460,7 +497,7 @@ const Register = ({ onSwitchToLogin }) => {
           <p className="text-gray-600">
             Already have an account?{' '}
             <button
-              onClick={onSwitchToLogin}
+              onClick={handleSwitchToLogin}
               className="font-medium text-green-600 hover:text-green-700 transition-colors duration-200"
             >
               Sign in here

@@ -21,7 +21,7 @@ class ExpertSerializer(serializers.ModelSerializer):
 
 class AdvisoryContentSerializer(serializers.ModelSerializer):
     """Serializer for AdvisoryContent model"""
-    author_name = serializers.CharField(source='author_name', read_only=True)
+    author_name = serializers.CharField(read_only=True)
     is_bookmarked = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     
@@ -52,7 +52,7 @@ class AdvisoryContentSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     """Serializer for Course model"""
-    author_name = serializers.CharField(source='author_name', read_only=True)
+    author_name = serializers.CharField(read_only=True)
     
     class Meta:
         model = Course
@@ -114,7 +114,7 @@ class ConsultationRequestSerializer(serializers.ModelSerializer):
 
 class AdvisoryContentListSerializer(serializers.ModelSerializer):
     """Simplified serializer for list views"""
-    author_name = serializers.CharField(source='author_name', read_only=True)
+    author_name = serializers.CharField(read_only=True)
     
     class Meta:
         model = AdvisoryContent
@@ -139,7 +139,7 @@ class ExpertListSerializer(serializers.ModelSerializer):
 
 class CourseListSerializer(serializers.ModelSerializer):
     """Simplified serializer for course list views"""
-    author_name = serializers.CharField(source='author_name', read_only=True)
+    author_name = serializers.CharField(read_only=True)
     
     class Meta:
         model = Course
