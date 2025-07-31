@@ -1,7 +1,8 @@
-import 'package:ersha_ecosystem_mobile/src/app/theme/app_theme.dart';
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/widgets/product_list.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:ersha_ecosystem_mobile/src/common/common_banner_appbar.dart';
+import 'package:ersha_ecosystem_mobile/src/common/common_drawer.dart';
 
 // Assuming this enum is defined in your project.
 enum UserRole { merchant, farmer }
@@ -78,7 +79,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: const Color(0xFF14532d), // Primary green
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -100,11 +101,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.mediumGray),
+        prefixIcon: Icon(icon, color: Colors.grey[600]),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryGreen),
+          borderSide: const BorderSide(color: Color(0xFF14532d)),
         ),
       ),
     );
@@ -113,16 +114,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Marketplace'),
-      ),
-      // 5. Conditionally add the FloatingActionButton based on the selected role.
+      appBar: const CommonBannerAppBar(),
+      drawer: const CommonDrawer(),
       floatingActionButton: _selectedRole == UserRole.farmer
           ? FloatingActionButton.extended(
               onPressed: _showAddProductDialog,
               label: const Text('Add Product'),
               icon: const Icon(Iconsax.add),
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: const Color(0xFF14532d),
               foregroundColor: Colors.white,
             )
           : null, // Don't show the button for merchants
@@ -218,7 +217,6 @@ class _HeroSectionState extends State<HeroSection> {
     return ElevatedButton.icon(
       onPressed: () {
         setState(() => _selectedRole = buttonRole);
-        // Call the parent widget's function to update the state there
         widget.onRoleChanged(buttonRole);
       },
       icon: Icon(icon, size: 20),
@@ -226,7 +224,7 @@ class _HeroSectionState extends State<HeroSection> {
       style: ElevatedButton.styleFrom(
         elevation: isActive ? 4 : 0,
         backgroundColor: isActive ? Colors.white : Colors.transparent,
-        foregroundColor: isActive ? AppTheme.darkGreen : Colors.white,
+        foregroundColor: isActive ? const Color(0xFF14532d) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),

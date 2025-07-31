@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ersha_ecosystem_mobile/src/common/common_banner_appbar.dart';
+import 'package:ersha_ecosystem_mobile/src/common/common_drawer.dart';
 import '../widgets/advisory_tabs.dart';
 import '../widgets/expert_card.dart';
 
@@ -15,37 +17,50 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFFa5d6a7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      appBar: const CommonBannerAppBar(),
+      drawer: const CommonDrawer(),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 60, 16, 50),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF052e16), Color(0xFF14532d)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    "Agricultural Advisory Hub",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Expert advice, training, and resources for Ethiopian farmers.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.9)),
+                  ),
+                  const SizedBox(height: 24),
+                  AdvisoryTabs(
+                    activeTab: activeTab,
+                    onTabChanged: (tab) => setState(() => activeTab = tab),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Agricultural Advisory Hub',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[900],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  AdvisoryTabs(
-                    activeTab: activeTab,
-                    onTabChanged: (tab) => setState(() => activeTab = tab),
-                  ),
-                  const SizedBox(height: 24),
                   if (activeTab == 'advice') ...[
-                    // Example expert cards
                     ExpertCard(
                       name: 'Dr. Alemayehu Bekele',
                       specialization: 'Crop Management',
@@ -67,17 +82,15 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
                     ),
                     // Add more ExpertCards as needed
                   ] else if (activeTab == 'courses') ...[
-                    // Placeholder for courses
                     Center(child: Text('Training Courses coming soon!', style: TextStyle(color: Colors.green[700]))),
                   ] else if (activeTab == 'resources') ...[
-                    // Placeholder for resources
                     Center(child: Text('Resources coming soon!', style: TextStyle(color: Colors.green[700]))),
                   ],
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
