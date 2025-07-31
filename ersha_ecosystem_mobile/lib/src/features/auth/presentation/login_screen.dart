@@ -1,3 +1,5 @@
+// Add this import for the new screen
+import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/marketplace_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -17,15 +19,15 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   String? _successMessage;
 
-  // Form fields
   String _email = '';
   String _password = '';
 
   @override
   Widget build(BuildContext context) {
+    // ... The rest of your build method remains the same ...
+    // I am only showing the changed method below to save space.
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -60,8 +62,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         borderRadius: BorderRadius.circular(40),
                       ),
-                      child: Icon(
-                        Iconsax.briefcase, // Changed from Iconsax.mail to Iconsax.envelope
+                      child: const Icon(
+                        Iconsax.briefcase,
                         size: 40,
                         color: Colors.white,
                       ),
@@ -301,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               shadowColor: Colors.transparent,
                             ),
                             child: _isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
@@ -379,17 +381,33 @@ class _LoginScreenState extends State<LoginScreen> {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
 
+      // --- MODIFICATION START ---
+      // On success, show a message and then navigate to the marketplace
       setState(() {
         _successMessage = 'Login successful! Redirecting...';
       });
+
+      // Wait a moment so the user can see the success message
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      if (mounted) {
+        // Use pushReplacementNamed to go to the marketplace and remove the login
+        // screen from the back stack, so the user can't press "back" to it.
+        Navigator.of(context).pushReplacementNamed('/marketplace');
+      }
+      // --- MODIFICATION END ---
     } catch (e) {
       setState(() {
         _errorMessage = 'An unexpected error occurred. Please try again.';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // Don't set isLoading to false if navigation was successful,
+      // as the widget will be disposed.
+      if (_successMessage == null && mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 }
