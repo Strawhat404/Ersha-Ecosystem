@@ -17,7 +17,13 @@ import {
   TrendingUp,
   DollarSign,
   Package,
-  Calendar
+  Calendar,
+  Shield,
+  ShieldCheck,
+  ShieldX,
+  Clock,
+  LogOut,
+  ExternalLink
 } from 'lucide-react';
 
 // Import dashboard components
@@ -30,11 +36,12 @@ import Advisory from '../Advisory/Advisory';
 import News from '../News/News';
 
 const UserDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Determine user type from profile
   const userType = profile?.user_type || user?.user_type || 'farmer';
@@ -52,6 +59,68 @@ const UserDashboard = () => {
       setActiveView(defaultView);
     }
   }, [location.search, userType]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProfileMenu && !event.target.closest('.profile-dropdown')) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const getVerificationIcon = (status) => {
+    switch (status) {
+      case 'verified':
+        return <ShieldCheck className="w-5 h-5 text-green-600" />;
+      case 'pending':
+        return <Clock className="w-5 h-5 text-yellow-600" />;
+      case 'failed':
+        return <ShieldX className="w-5 h-5 text-red-600" />;
+      default:
+        return <Shield className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const getVerificationLabel = (status) => {
+    switch (status) {
+      case 'verified':
+        return 'Verified';
+      case 'pending':
+        return 'Pending Verification';
+      case 'failed':
+        return 'Verification Failed';
+      default:
+        return 'Not Verified';
+    }
+  };
+
+  const getVerificationColor = (status) => {
+    switch (status) {
+      case 'verified':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'failed':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
   const dashboardItems = [
     { 
@@ -124,7 +193,7 @@ const UserDashboard = () => {
         return <Leaf className="w-6 h-6 text-green-600" />;
       case 'buyer':
         return <ShoppingBag className="w-6 h-6 text-blue-600" />;
-      case 'merchant':
+      case 'agricultural_business':
         return <Building className="w-6 h-6 text-purple-600" />;
       default:
         return <User className="w-6 h-6 text-gray-600" />;
@@ -137,7 +206,7 @@ const UserDashboard = () => {
         return 'Farmer';
       case 'buyer':
         return 'Buyer/Merchant';
-      case 'merchant':
+      case 'agricultural_business':
         return 'Agricultural Business';
       default:
         return 'User';
@@ -155,17 +224,40 @@ const UserDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
-                  {getUserTypeIcon(userType)}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
+                    {getUserTypeIcon(userType)}
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      Welcome back, {profile?.first_name || user?.first_name || 'User'}!
+                    </h1>
+                    <p className="text-gray-600">
+                      {getUserTypeLabel(userType)} Dashboard • {profile?.region || 'Ethiopia'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Welcome back, {profile?.first_name || user?.first_name || 'User'}!
-                  </h1>
-                  <p className="text-gray-600">
-                    {getUserTypeLabel(userType)} Dashboard • {profile?.region || 'Ethiopia'}
-                  </p>
+                
+                {/* Verification Status */}
+                <div className="flex items-center space-x-3">
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg border ${getVerificationColor(profile?.verification_status || 'not_verified')}`}>
+                    {getVerificationIcon(profile?.verification_status || 'not_verified')}
+                    <span className="text-sm font-medium">
+                      {getVerificationLabel(profile?.verification_status || 'not_verified')}
+                    </span>
+                  </div>
+                  
+                  {profile?.verification_status !== 'verified' && (
+                    <button
+                      onClick={() => navigate('/verification')}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span className="text-sm font-medium">Verify Now</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -242,16 +334,27 @@ const UserDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">This Month</p>
-                    <p className="text-2xl font-bold text-gray-900">₦31,200</p>
+                    <p className="text-sm font-medium text-gray-600">Verification Status</p>
+                    <p className="text-lg font-bold text-gray-900">
+                      {getVerificationLabel(profile?.verification_status || 'not_verified')}
+                    </p>
                   </div>
-                  <div className="p-3 bg-orange-100 rounded-xl">
-                    <Calendar className="w-6 h-6 text-orange-600" />
+                  <div className="p-3 bg-gray-100 rounded-xl">
+                    {getVerificationIcon(profile?.verification_status || 'not_verified')}
                   </div>
                 </div>
                 <div className="mt-4 flex items-center text-sm">
-                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                  <span className="text-green-600">+18.7%</span>
+                  {profile?.verification_status !== 'verified' ? (
+                    <button
+                      onClick={() => navigate('/verification')}
+                      className="text-blue-600 font-medium hover:text-blue-700 flex items-center space-x-1"
+                    >
+                      <span>Verify Now</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <span className="text-green-600 font-medium">✓ Verified</span>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -353,8 +456,69 @@ const UserDashboard = () => {
                 </p>
                 <p className="text-xs text-gray-500">{getUserTypeLabel(userType)}</p>
               </div>
-              <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full">
-                {getUserTypeIcon(userType)}
+              
+              {/* Profile Dropdown */}
+              <div className="relative profile-dropdown">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full hover:from-green-200 hover:to-emerald-200 transition-all duration-200"
+                >
+                  {getUserTypeIcon(userType)}
+                </button>
+                
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+                    >
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">
+                          {profile?.first_name} {profile?.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500">{profile?.email}</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate('/profile');
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile Settings</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate('/verification');
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                      >
+                        <Shield className="w-4 h-4" />
+                        <span>Verification</span>
+                      </button>
+                      
+                      <div className="border-t border-gray-100 my-1"></div>
+                      
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          handleLogout();
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>

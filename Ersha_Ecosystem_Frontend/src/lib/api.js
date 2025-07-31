@@ -60,6 +60,10 @@ export const authAPI = {
       method: 'PUT',
       body: JSON.stringify(updates),
     }),
+  
+  getVerificationStatus: () => apiCall('/auth/verification-status/'),
+  
+  getFaydaAuthUrl: () => apiCall('/auth/fayda/enhanced/auth-url/'),
 };
 
 // Products/Marketplace API

@@ -1,13 +1,20 @@
+import logging
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User, Profile
+
+logger = logging.getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'phone', 'region', 'fayda_id', 'user_type']
-        read_only_fields = ['id', 'fayda_id']
+        fields = [
+            'id', 'email', 'username', 'first_name', 'last_name', 'phone', 
+            'region', 'fayda_id', 'user_type', 'verification_status', 
+            'verified_at', 'is_verified'
+        ]
+        read_only_fields = ['id', 'fayda_id', 'verification_status', 'verified_at', 'is_verified']
         extra_kwargs = {
             'email': {'help_text': 'User email address (must be unique)'},
             'username': {'help_text': 'Username for the account'},
@@ -15,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name': {'help_text': 'User last name'},
             'phone': {'help_text': 'Phone number (optional)'},
             'region': {'help_text': 'User region/location'},
-            'user_type': {'help_text': 'Type of user: farmer, merchant, or admin'},
+            'user_type': {'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'},
         }
 
 
@@ -27,16 +34,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = [
             'id', 'user', 'farm_size', 'farm_size_unit', 'woreda', 'kebele',
-            'business_license', 'bio', 'profile_picture', 'full_location',
-            'created_at', 'updated_at'
+            'business_license_number', 'business_license', 'bio', 'profile_picture', 
+            'full_location', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
-            'farm_size': {'help_text': 'Size of the farm in decimal format'},
+            'farm_size': {'help_text': 'Size of the farm in decimal format (required for farmers)'},
             'farm_size_unit': {'help_text': 'Unit of farm size (e.g., hectares, acres)'},
+            'business_license_number': {'help_text': 'Business license number (required for agricultural businesses)'},
             'woreda': {'help_text': 'Woreda (district) name'},
             'kebele': {'help_text': 'Kebele (sub-district) name'},
-            'business_license': {'help_text': 'Business license number (for merchants)'},
+            'business_license': {'help_text': 'Business license number (for merchants) - deprecated'},
             'bio': {'help_text': 'User biography or description'},
             'profile_picture': {'help_text': 'Profile picture image file'},
         }
@@ -49,9 +57,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name', 'phone', 
-            'region', 'fayda_id', 'user_type', 'profile'
+            'region', 'fayda_id', 'user_type', 'verification_status', 
+            'verified_at', 'is_verified', 'profile'
         ]
-        read_only_fields = ['id', 'fayda_id']
+        read_only_fields = ['id', 'fayda_id', 'verification_status', 'verified_at', 'is_verified']
         extra_kwargs = {
             'email': {'help_text': 'User email address'},
             'username': {'help_text': 'Username for the account'},
@@ -59,7 +68,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name': {'help_text': 'User last name'},
             'phone': {'help_text': 'Phone number'},
             'region': {'help_text': 'User region/location'},
-            'user_type': {'help_text': 'Type of user: farmer, merchant, or admin'},
+            'user_type': {'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'},
         }
 
 
@@ -74,11 +83,35 @@ class RegisterSerializer(serializers.ModelSerializer):
         help_text="Confirm password (must match password field)"
     )
     
+    # Profile fields for different user types
+    farm_size = serializers.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        required=False, 
+        allow_null=True,
+        help_text="Size of the farm in decimal format (required for farmers)"
+    )
+    farm_size_unit = serializers.CharField(
+        max_length=20, 
+        required=False, 
+        allow_null=True,
+        allow_blank=True,
+        help_text="Unit of farm size (e.g., hectares, acres)"
+    )
+    business_license_number = serializers.CharField(
+        max_length=100, 
+        required=False, 
+        allow_null=True,
+        allow_blank=True,
+        help_text="Business license number (required for agricultural businesses)"
+    )
+    
     class Meta:
         model = User
         fields = [
             'email', 'username', 'first_name', 'last_name', 'password', 
-            'password_confirm', 'phone', 'region', 'user_type'
+            'password_confirm', 'phone', 'region', 'user_type', 'farm_size',
+            'farm_size_unit', 'business_license_number'
         ]
         extra_kwargs = {
             'email': {
@@ -100,20 +133,86 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'help_text': 'User region/location'
             },
             'user_type': {
-                'help_text': 'Type of user: farmer, merchant, or admin'
+                'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'
             },
         }
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Passwords don't match")
+        
+        user_type = attrs.get('user_type')
+        
+        # Validate required fields based on user type
+        if user_type == User.UserType.FARMER:
+            farm_size = attrs.get('farm_size')
+            if farm_size is None or farm_size == '':
+                raise serializers.ValidationError({
+                    'farm_size': 'Farm size is required for farmers'
+                })
+        
+        elif user_type == User.UserType.AGRICULTURAL_BUSINESS:
+            business_license_number = attrs.get('business_license_number')
+            if business_license_number is None or business_license_number == '':
+                raise serializers.ValidationError({
+                    'business_license_number': 'Business license number is required for agricultural businesses'
+                })
+        
         return attrs
     
     def create(self, validated_data):
+        # Extract profile-specific data
+        farm_size = validated_data.pop('farm_size', None)
+        farm_size_unit = validated_data.pop('farm_size_unit', None)
+        business_license_number = validated_data.pop('business_license_number', None)
+        
+        # Remove password confirmation
         validated_data.pop('password_confirm')
-        user = User.objects.create_user(**validated_data)
-    
-        return user
+        
+        logger.info(f"Creating user with data: {validated_data}")
+        logger.info(f"Profile data - farm_size: {farm_size}, farm_size_unit: {farm_size_unit}, business_license_number: {business_license_number}")
+        
+        try:
+            # Create user
+            user = User.objects.create_user(**validated_data)
+            logger.info(f"User created successfully with ID: {user.id}, user_type: {user.user_type}")
+            
+            # Create profile directly with all the data
+            profile_data = {
+                'user': user,
+            }
+            
+            # Only add fields that have actual values (not None or empty strings)
+            if farm_size is not None and farm_size != '':
+                profile_data['farm_size'] = farm_size
+            if farm_size_unit is not None and farm_size_unit != '':
+                profile_data['farm_size_unit'] = farm_size_unit
+            if business_license_number is not None and business_license_number != '':
+                profile_data['business_license_number'] = business_license_number
+            
+            logger.info(f"Creating profile with data: {profile_data}")
+            
+            # Create profile without triggering validation
+            profile = Profile(**profile_data)
+            profile.save(skip_validation=True)
+            logger.info(f"Profile created successfully with ID: {profile.id}")
+            
+            # Now validate the profile to ensure all required fields are set
+            logger.info("About to validate profile")
+            try:
+                profile.clean()
+                logger.info("Profile validation passed")
+            except Exception as e:
+                logger.error(f"Profile validation failed: {e}")
+                # Delete the user if profile validation fails
+                user.delete()
+                raise serializers.ValidationError(str(e))
+            
+            return user
+            
+        except Exception as e:
+            logger.error(f"Error in create method: {e}")
+            raise
 
 
 class LoginSerializer(serializers.Serializer):
@@ -165,4 +264,26 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
         if not user.check_password(value):
             raise serializers.ValidationError('Old password is incorrect')
-        return value 
+        return value
+
+
+class FaydaVerificationSerializer(serializers.Serializer):
+    """Serializer for Fayda verification response"""
+    fayda_id = serializers.CharField(help_text="Fayda national ID number")
+    name = serializers.CharField(help_text="Full name from Fayda")
+    given_name = serializers.CharField(help_text="First name from Fayda")
+    family_name = serializers.CharField(help_text="Last name from Fayda")
+    email = serializers.EmailField(help_text="Email from Fayda")
+    phone_number = serializers.CharField(help_text="Phone number from Fayda")
+    birthdate = serializers.CharField(help_text="Date of birth from Fayda")
+    gender = serializers.CharField(help_text="Gender from Fayda")
+    region = serializers.CharField(help_text="Region from Fayda")
+    verified_at = serializers.DateTimeField(help_text="Verification timestamp")
+
+
+class VerificationStatusSerializer(serializers.Serializer):
+    """Serializer for verification status"""
+    verification_status = serializers.CharField(help_text="Current verification status")
+    is_verified = serializers.BooleanField(help_text="Whether user is verified")
+    verified_at = serializers.DateTimeField(help_text="When user was verified", allow_null=True)
+    fayda_id = serializers.CharField(help_text="Linked Fayda ID", allow_null=True) 

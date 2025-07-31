@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, enhanced_views
 
 urlpatterns = [
     # Authentication
@@ -7,13 +7,23 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     
+    # Enhanced Authentication (with role-based validation)
+    path('register/enhanced/', enhanced_views.EnhancedRegisterView.as_view(), name='enhanced_register'),
+    
     # Profile
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
     
-    # Fayda OIDC
+    # Verification Status
+    path('verification-status/', enhanced_views.VerificationStatusView.as_view(), name='verification_status'),
+    
+    # Fayda OIDC (Legacy)
     path('fayda/verify/', views.verify_fayda, name='verify_fayda'),
     path('fayda/link/', views.link_fayda, name='link_fayda'),
     path('fayda/auth-url/', views.fayda_authorization_url, name='fayda_auth_url'),
     path('fayda/callback/', views.fayda_callback, name='fayda_callback'),
+    
+    # Enhanced Fayda OIDC (with PKCE)
+    path('fayda/enhanced/auth-url/', enhanced_views.enhanced_fayda_authorization_url, name='enhanced_fayda_auth_url'),
+    path('fayda/enhanced/callback/', enhanced_views.enhanced_fayda_callback, name='enhanced_fayda_callback'),
 ] 
