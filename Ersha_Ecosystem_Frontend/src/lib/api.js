@@ -14,14 +14,22 @@ const apiCall = async (endpoint, options = {}) => {
     ...options,
   };
 
+  console.log('API Call:', `${API_BASE_URL}${endpoint}`);
+  console.log('API Config:', config);
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    console.log('API Response status:', response.status);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log('API Error response:', errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('API Success response:', data);
+    return data;
   } catch (error) {
     console.error('API call failed:', error);
     throw error;
@@ -186,10 +194,47 @@ export const notificationsAPI = {
     }),
 };
 
-// Weather API (placeholder for future integration)
+// Weather API
 export const weatherAPI = {
+  getAll: () => apiCall('/weather/'),
+  
   getByLocation: (location) => 
-    apiCall(`/weather/?location=${encodeURIComponent(location)}`),
+    apiCall(`/weather/?region=${encodeURIComponent(location)}`),
+  
+  getById: (id) => apiCall(`/weather/${id}/`),
+  
+  getCurrentConditions: () => apiCall('/weather/current_conditions/'),
+  
+  getAlerts: () => apiCall('/weather/alerts/'),
+  
+  getRecommendations: () => apiCall('/weather/recommendations/'),
+  
+  create: (weatherData) => 
+    apiCall('/weather/', {
+      method: 'POST',
+      body: JSON.stringify(weatherData),
+    }),
+  
+  update: (id, updates) => 
+    apiCall(`/weather/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    }),
+  
+  delete: (id) => 
+    apiCall(`/weather/${id}/`, {
+      method: 'DELETE',
+    }),
+  
+  getRegions: () => apiCall('/weather/regions/'),
+  
+  getWoredas: () => apiCall('/weather/woredas/'),
+  
+  searchLocation: (location) => 
+    apiCall(`/weather/current_conditions/?region=${encodeURIComponent(location)}`),
+  
+  getForecast: (location) => 
+    apiCall(`/weather/?region=${encodeURIComponent(location)}`),
 };
 
 // File upload helper
