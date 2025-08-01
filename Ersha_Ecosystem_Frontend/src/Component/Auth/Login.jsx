@@ -32,19 +32,25 @@ const Login = () => {
     setError('');
     setSuccess('');
 
+    console.log('Login attempt with:', formData.email);
+
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      const result = await signIn(formData.email, formData.password);
+      console.log('SignIn result:', result);
       
-      if (error) {
-        setError(error.message);
+      if (result.error) {
+        console.log('Login error:', result.error);
+        setError(result.error);
       } else {
+        console.log('Login successful, redirecting...');
         setSuccess('Login successful! Redirecting to dashboard...');
         // Redirect to dashboard after successful login
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
       }
-    } catch {
+    } catch (err) {
+      console.log('Login exception:', err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

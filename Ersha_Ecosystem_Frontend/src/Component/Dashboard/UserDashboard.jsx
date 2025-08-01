@@ -31,7 +31,7 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import PaymentSystem from './PaymentSystem';
 import LogisticsTracker from './LogisticsTracker';
 import Marketplace from '../Marketplace/Marketplace';
-import Weather from '../Weather/Weather';
+import Weather from '../Weather/EnhancedWeather';
 import Advisory from '../Advisory/Advisory';
 import News from '../News/News';
 

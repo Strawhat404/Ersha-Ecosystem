@@ -36,7 +36,7 @@ import Features from './Component/Mainpage/Features'
 // import Filters from './Component/Marketplace/Filters'
 // import Products from './Component/Marketplace/Products'
 import Marketplace from './Component/Marketplace/Marketplace'
-import Weather from './Component/Weather/Weather'
+import Weather from './Component/Weather/EnhancedWeather'
 import Advisory from './Component/Advisory/Advisory'
 
 // New Dashboard Components
@@ -992,11 +992,206 @@ function AppContent() {
       )}
       {/* Main Content Sections */}
       <Routes>
-        <Route path="/" element={renderDashboardView()} />
+        <Route path="/" element={
+          <div className="min-h-screen bg-gray-50">
+            {!hideNavbar && (<Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />)}
+            {renderDashboardView()}
+            {/* Footer content moved here */}
+            <footer className="bg-gray-900 text-white py-16">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                  <div className="col-span-1 md:col-span-2">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
+                        <Sprout className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Ersha-Ecosystem</h3>
+                        <p className="text-gray-400">Connect. Trade. Grow.</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 mb-6 max-w-md">
+                      Complete agricultural ecosystem with marketplace, payments, logistics, analytics, and expert advisory services for Ethiopian farmers and merchants.
+                    </p>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-800 mb-4">Contact Info</h4>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <Mail className="w-5 h-5 text-gray-500" />
+                        <span>support@ershaecosystem.com</span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <Phone className="w-5 h-5 text-gray-500" />
+                        <span>+251-911-123-456</span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <MapPin className="w-5 h-5 text-gray-500" />
+                        <span>Addis Ababa, Ethiopia</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-center space-x-6">
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                      >
+                        <Facebook className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center text-white hover:bg-blue-500 transition-colors"
+                      >
+                        <Twitter className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition-colors"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white hover:bg-pink-600 transition-colors"
+                      >
+                        <Instagram className="w-5 h-5" />
+                      </motion.a>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4">Platform Features</h4>
+                    <ul className="space-y-2 text-gray-400">
+                      <li><button onClick={() => setActiveView('marketplace')} className="hover:text-white transition-colors">Marketplace</button></li>
+                      <li><button onClick={() => setActiveView('weather')} className="hover:text-white transition-colors">Weather System</button></li>
+                      <li><button onClick={() => setActiveView('advisory')} className="hover:text-white transition-colors">Expert Advisory</button></li>
+                      <li><button onClick={() => setActiveView('payments')} className="hover:text-white transition-colors">Payment Gateway</button></li>
+                      <li><button onClick={() => setActiveView('logistics')} className="hover:text-white transition-colors">Logistics Tracking</button></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4">Support</h4>
+                    <ul className="space-y-2 text-gray-400">
+                      <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Farmer Training</a></li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                  <p>&copy; 2025 Ersha-Ecosystem. All rights reserved. Comprehensive Agricultural Ecosystem for Ethiopia.</p>
+                </div>
+              </div>
+            </footer>
+          </div>
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <UserDashboard />
           </ProtectedRoute>
+        } />
+        <Route path="/news" element={
+          <div className="min-h-screen bg-gray-50">
+            {!hideNavbar && (<Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />)}
+            <News />
+            {/* Footer content moved here */}
+            <footer className="bg-gray-900 text-white py-16">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                  <div className="col-span-1 md:col-span-2">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
+                        <Sprout className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Ersha-Ecosystem</h3>
+                        <p className="text-gray-400">Connect. Trade. Grow.</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 mb-6 max-w-md">
+                      Complete agricultural ecosystem with marketplace, payments, logistics, analytics, and expert advisory services for Ethiopian farmers and merchants.
+                    </p>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-800 mb-4">Contact Info</h4>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <Mail className="w-5 h-5 text-gray-500" />
+                        <span>support@ershaecosystem.com</span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <Phone className="w-5 h-5 text-gray-500" />
+                        <span>+251-911-123-456</span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-gray-400">
+                        <MapPin className="w-5 h-5 text-gray-500" />
+                        <span>Addis Ababa, Ethiopia</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-center space-x-6">
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                      >
+                        <Facebook className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center text-white hover:bg-blue-500 transition-colors"
+                      >
+                        <Twitter className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition-colors"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </motion.a>
+                      <motion.a
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        href="#"
+                        className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white hover:bg-pink-600 transition-colors"
+                      >
+                        <Instagram className="w-5 h-5" />
+                      </motion.a>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4">Platform Features</h4>
+                    <ul className="space-y-2 text-gray-400">
+                      <li><button onClick={() => setActiveView('marketplace')} className="hover:text-white transition-colors">Marketplace</button></li>
+                      <li><button onClick={() => setActiveView('weather')} className="hover:text-white transition-colors">Weather System</button></li>
+                      <li><button onClick={() => setActiveView('advisory')} className="hover:text-white transition-colors">Expert Advisory</button></li>
+                      <li><button onClick={() => setActiveView('payments')} className="hover:text-white transition-colors">Payment Gateway</button></li>
+                      <li><button onClick={() => setActiveView('logistics')} className="hover:text-white transition-colors">Logistics Tracking</button></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4">Support</h4>
+                    <ul className="space-y-2 text-gray-400">
+                      <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                      <li><a href="#" className="hover:text-white transition-colors">Farmer Training</a></li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                  <p>&copy; 2025 Ersha-Ecosystem. All rights reserved. Comprehensive Agricultural Ecosystem for Ethiopia.</p>
+                </div>
+              </div>
+            </footer>
+          </div>
         } />
         <Route path="/login" element={
           <PublicRoute>
