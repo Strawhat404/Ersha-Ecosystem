@@ -53,6 +53,7 @@ import Register from './Component/Auth/Register'
 import ForgotPassword from './Component/Auth/ForgotPassword'
 import UserProfile from './Component/Auth/UserProfile'
 import FaydaIntegration from './Component/Auth/FaydaIntegration'
+import Verification from './Component/Auth/Verification'
 
 // Debug: Test Supabase Connection - REMOVED FOR PRODUCTION
 
@@ -94,7 +95,7 @@ const PublicRoute = ({ children }) => {
 
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard'].includes(location.pathname);
+  const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/verification'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
   const [showUserProfile, setShowUserProfile] = useState(false);
   const { user, loading } = useAuth();
@@ -1009,6 +1010,11 @@ function AppContent() {
         } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/fayda-id" element={<FaydaIntegration />} />
+        <Route path="/verification" element={
+          <ProtectedRoute>
+            <Verification />
+          </ProtectedRoute>
+        } />
       </Routes>
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">

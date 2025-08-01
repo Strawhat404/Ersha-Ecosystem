@@ -1,3 +1,4 @@
+import logging
 from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -7,21 +8,25 @@ from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import secrets
 
 from .models import User, Profile
 from .serializers import (
     UserSerializer, ProfileSerializer, UserProfileSerializer,
-    RegisterSerializer, LoginSerializer, ChangePasswordSerializer
+    RegisterSerializer, LoginSerializer, ChangePasswordSerializer,
+    FaydaVerificationSerializer, VerificationStatusSerializer
 )
 from core.permissions import IsOwnerOrReadOnly
 from core.fayda import fayda_oidc
+
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
     
     @swagger_auto_schema(
-        operation_description="Register a new user account",
+        operation_description="Register a new user account with role-based validation",
         request_body=RegisterSerializer,
         responses={
             201: openapi.Response(
@@ -40,7 +45,8 @@ class RegisterView(APIView):
                                 'phone': openapi.Schema(type=openapi.TYPE_STRING),
                                 'region': openapi.Schema(type=openapi.TYPE_STRING),
                                 'user_type': openapi.Schema(type=openapi.TYPE_STRING),
-                                'fayda_id': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'verification_status': openapi.Schema(type=openapi.TYPE_STRING),
+                                'is_verified': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                             }
                         ),
                         'refresh': openapi.Schema(type=openapi.TYPE_STRING),
@@ -57,6 +63,8 @@ class RegisterView(APIView):
                         'username': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                         'password': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                         'password_confirm': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
+                        'farm_size': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
+                        'business_license_number': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                         'non_field_errors': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                     }
                 )
@@ -65,16 +73,25 @@ class RegisterView(APIView):
         tags=['Authentication']
     )
     def post(self, request):
+        logger.info(f"Registration request received with data: {request.data}")
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            logger.info("Registration data is valid, creating user...")
+            try:
+                user = serializer.save()
+                logger.info(f"User created successfully with ID: {user.id}")
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'user': UserSerializer(user).data,
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error(f"Error creating user: {e}")
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.error(f"Registration validation failed: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
@@ -100,7 +117,8 @@ class LoginView(APIView):
                                 'phone': openapi.Schema(type=openapi.TYPE_STRING),
                                 'region': openapi.Schema(type=openapi.TYPE_STRING),
                                 'user_type': openapi.Schema(type=openapi.TYPE_STRING),
-                                'fayda_id': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'verification_status': openapi.Schema(type=openapi.TYPE_STRING),
+                                'is_verified': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                             }
                         ),
                         'refresh': openapi.Schema(type=openapi.TYPE_STRING),
@@ -140,7 +158,7 @@ class LogoutView(APIView):
     
     @swagger_auto_schema(
         operation_description="Logout user by blacklisting the refresh token",
-        security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
+        security=[{'Bearer': []}],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['refresh'],
@@ -185,7 +203,7 @@ class UserProfileView(APIView):
     
     @swagger_auto_schema(
         operation_description="Get current user's profile information",
-        security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
+        security=[{'Bearer': []}],
         responses={
             200: openapi.Response(
                 description="User profile retrieved successfully",
@@ -200,16 +218,17 @@ class UserProfileView(APIView):
                         'phone': openapi.Schema(type=openapi.TYPE_STRING),
                         'region': openapi.Schema(type=openapi.TYPE_STRING),
                         'user_type': openapi.Schema(type=openapi.TYPE_STRING),
-                        'fayda_id': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'verification_status': openapi.Schema(type=openapi.TYPE_STRING),
+                        'is_verified': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                         'profile': openapi.Schema(
                             type=openapi.TYPE_OBJECT,
                             properties={
                                 'id': openapi.Schema(type=openapi.TYPE_INTEGER),
                                 'farm_size': openapi.Schema(type=openapi.TYPE_NUMBER),
                                 'farm_size_unit': openapi.Schema(type=openapi.TYPE_STRING),
+                                'business_license_number': openapi.Schema(type=openapi.TYPE_STRING),
                                 'woreda': openapi.Schema(type=openapi.TYPE_STRING),
                                 'kebele': openapi.Schema(type=openapi.TYPE_STRING),
-                                'business_license': openapi.Schema(type=openapi.TYPE_STRING),
                                 'bio': openapi.Schema(type=openapi.TYPE_STRING),
                                 'profile_picture': openapi.Schema(type=openapi.TYPE_STRING),
                                 'full_location': openapi.Schema(type=openapi.TYPE_STRING),
@@ -230,7 +249,7 @@ class UserProfileView(APIView):
     
     @swagger_auto_schema(
         operation_description="Update current user's profile information",
-        security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
+        security=[{'Bearer': []}],
         request_body=UserProfileSerializer,
         responses={
             200: openapi.Response(
@@ -280,7 +299,7 @@ class ChangePasswordView(APIView):
     
     @swagger_auto_schema(
         operation_description="Change user's password",
-        security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
+        security=[{'Bearer': []}],
         request_body=ChangePasswordSerializer,
         responses={
             200: openapi.Response(
@@ -322,129 +341,37 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-@swagger_auto_schema(
-    operation_description="Verify Fayda ID and return user information",
-    security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['fayda_id'],
-        properties={
-            'fayda_id': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Fayda ID to verify"
-            )
-        }
-    ),
-    responses={
-        200: openapi.Response(
-            description="Fayda ID verified successfully",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'fayda_id': openapi.Schema(type=openapi.TYPE_STRING),
-                    'name': openapi.Schema(type=openapi.TYPE_STRING),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING),
-                    'phone': openapi.Schema(type=openapi.TYPE_STRING),
-                    'region': openapi.Schema(type=openapi.TYPE_STRING),
-                }
-            )
-        ),
-        400: openapi.Response(
-            description="Bad request - invalid Fayda ID or verification failed",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'error': openapi.Schema(type=openapi.TYPE_STRING)
-                }
-            )
-        ),
-        401: openapi.Response(description="Unauthorized - authentication required")
-    },
-    tags=['Fayda OIDC']
-)
-def verify_fayda(request):
-    """Verify Fayda ID and return user information"""
-    fayda_id = request.data.get('fayda_id')
-    if not fayda_id:
-        return Response(
-            {'error': 'Fayda ID is required'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+class VerificationStatusView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     
-    try:
-        fayda_info = fayda_oidc.verify_fayda_id(fayda_id)
-        return Response(fayda_info)
-    except Exception as e:
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-@swagger_auto_schema(
-    operation_description="Link Fayda ID to authenticated user",
-    security=[{'Bearer': []}],  # Add this line to require Bearer token authentication
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['fayda_id'],
-        properties={
-            'fayda_id': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Fayda ID to link to user account"
-            )
-        }
-    ),
-    responses={
-        200: openapi.Response(
-            description="Fayda ID linked successfully",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'message': openapi.Schema(type=openapi.TYPE_STRING),
-                    'fayda_id': openapi.Schema(type=openapi.TYPE_STRING),
-                }
-            )
-        ),
-        400: openapi.Response(
-            description="Bad request - invalid Fayda ID or linking failed",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'error': openapi.Schema(type=openapi.TYPE_STRING)
-                }
-            )
-        ),
-        401: openapi.Response(description="Unauthorized - authentication required")
-    },
-    tags=['Fayda OIDC']
-)
-def link_fayda(request):
-    """Link Fayda ID to authenticated user"""
-    fayda_id = request.data.get('fayda_id')
-    if not fayda_id:
-        return Response(
-            {'error': 'Fayda ID is required'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        result = fayda_oidc.link_fayda_to_user(request.user, fayda_id)
-        return Response(result)
-    except Exception as e:
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    @swagger_auto_schema(
+        operation_description="Get current user's verification status",
+        security=[{'Bearer': []}],
+        responses={
+            200: openapi.Response(
+                description="Verification status retrieved successfully",
+                schema=VerificationStatusSerializer
+            ),
+            401: openapi.Response(description="Unauthorized - authentication required")
+        },
+        tags=['Fayda OIDC']
+    )
+    def get(self, request):
+        user = request.user
+        serializer = VerificationStatusSerializer({
+            'verification_status': user.verification_status,
+            'is_verified': user.is_verified,
+            'verified_at': user.verified_at,
+            'fayda_id': user.fayda_id
+        })
+        return Response(serializer.data)
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 @swagger_auto_schema(
-    operation_description="Get Fayda authorization URL for OAuth flow",
+    operation_description="Get Fayda authorization URL for OIDC PKCE flow",
+    security=[{'Bearer': []}],
     responses={
         200: openapi.Response(
             description="Authorization URL generated successfully",
@@ -453,7 +380,11 @@ def link_fayda(request):
                 properties={
                     'authorization_url': openapi.Schema(
                         type=openapi.TYPE_STRING,
-                        description="URL to redirect user for Fayda OAuth authorization"
+                        description="URL to redirect user for Fayda OIDC authorization"
+                    ),
+                    'state': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="State parameter for CSRF protection"
                     )
                 }
             )
@@ -472,11 +403,18 @@ def link_fayda(request):
     tags=['Fayda OIDC']
 )
 def fayda_authorization_url(request):
-    """Get Fayda authorization URL"""
+    """Get Fayda authorization URL with PKCE"""
     try:
-        # Generate authorization URL
-        auth_url = f"{fayda_oidc.authorization_endpoint}?response_type=code&client_id={fayda_oidc.client_id}&redirect_uri={fayda_oidc.redirect_uri}&scope=openid profile email"
-        return Response({'authorization_url': auth_url})
+        # Generate state for CSRF protection
+        state = secrets.token_urlsafe(32)
+        
+        # Generate authorization URL with PKCE
+        auth_url, _ = fayda_oidc.generate_authorization_url(state=state)
+        
+        return Response({
+            'authorization_url': auth_url,
+            'state': state
+        })
     except Exception as e:
         return Response(
             {'error': str(e)}, 
@@ -487,39 +425,50 @@ def fayda_authorization_url(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 @swagger_auto_schema(
-    operation_description="Handle Fayda OAuth callback and exchange authorization code for user info",
+    operation_description="Handle Fayda OIDC callback and complete verification flow",
+    security=[{'Bearer': []}],
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
-        required=['code'],
+        required=['code', 'state'],
         properties={
             'code': openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description="Authorization code received from Fayda OAuth callback"
+                description="Authorization code received from Fayda OIDC callback"
+            ),
+            'state': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="State parameter for CSRF protection"
             )
         }
     ),
     responses={
         200: openapi.Response(
-            description="Fayda authentication successful",
+            description="Fayda verification completed successfully",
             schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'message': openapi.Schema(type=openapi.TYPE_STRING),
-                    'user_info': openapi.Schema(
+                    'user_data': openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         properties={
                             'fayda_id': openapi.Schema(type=openapi.TYPE_STRING),
                             'name': openapi.Schema(type=openapi.TYPE_STRING),
+                            'given_name': openapi.Schema(type=openapi.TYPE_STRING),
+                            'family_name': openapi.Schema(type=openapi.TYPE_STRING),
                             'email': openapi.Schema(type=openapi.TYPE_STRING),
-                            'phone': openapi.Schema(type=openapi.TYPE_STRING),
+                            'phone_number': openapi.Schema(type=openapi.TYPE_STRING),
+                            'birthdate': openapi.Schema(type=openapi.TYPE_STRING),
+                            'gender': openapi.Schema(type=openapi.TYPE_STRING),
                             'region': openapi.Schema(type=openapi.TYPE_STRING),
                         }
-                    )
+                    ),
+                    'verification_status': openapi.Schema(type=openapi.TYPE_STRING),
+                    'is_verified': openapi.Schema(type=openapi.TYPE_BOOLEAN)
                 }
             )
         ),
         400: openapi.Response(
-            description="Bad request - invalid authorization code or token exchange failed",
+            description="Bad request - invalid authorization code or verification failed",
             schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
@@ -532,37 +481,163 @@ def fayda_authorization_url(request):
     tags=['Fayda OIDC']
 )
 def fayda_callback(request):
-    """Handle Fayda OAuth callback"""
+    """Handle Fayda OIDC callback with PKCE"""
     authorization_code = request.data.get('code')
+    state = request.data.get('state')
+    
     if not authorization_code:
         return Response(
             {'error': 'Authorization code is required'}, 
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    if not state:
+        return Response(
+            {'error': 'State parameter is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     try:
-        # Exchange authorization code for access token
-        token_response = fayda_oidc.get_access_token(authorization_code)
-        access_token = token_response.get('access_token')
+        # Complete the verification flow
+        user_data = fayda_oidc.complete_verification_flow(authorization_code, state)
         
-        if not access_token:
-            return Response(
-                {'error': 'Failed to get access token'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Link Fayda data to user
+        result = fayda_oidc.link_fayda_to_user(request.user, user_data)
         
-        # Get user information
-        user_info = fayda_oidc.get_user_info(access_token)
-        
-        # Update user with Fayda information
-        user = request.user
-        if not user.fayda_id and user_info.get('fayda_id'):
-            user.fayda_id = user_info['fayda_id']
-            user.save()
+        # Get updated user data
+        user = User.objects.get(id=request.user.id)
         
         return Response({
-            'message': 'Fayda authentication successful',
-            'user_info': user_info
+            'message': 'Fayda verification completed successfully',
+            'user_data': user_data,
+            'verification_status': user.verification_status,
+            'is_verified': user.is_verified
+        })
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+@swagger_auto_schema(
+    operation_description="Verify Fayda ID and return user information (for testing)",
+    security=[{'Bearer': []}],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['fayda_id'],
+        properties={
+            'fayda_id': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Fayda ID to verify"
+            )
+        }
+    ),
+    responses={
+        200: openapi.Response(
+            description="Fayda ID verified successfully",
+            schema=FaydaVerificationSerializer
+        ),
+        400: openapi.Response(
+            description="Bad request - invalid Fayda ID or verification failed",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        401: openapi.Response(description="Unauthorized - authentication required")
+    },
+    tags=['Fayda OIDC']
+)
+def verify_fayda(request):
+    """Verify Fayda ID and return user information (for testing)"""
+    fayda_id = request.data.get('fayda_id')
+    if not fayda_id:
+        return Response(
+            {'error': 'Fayda ID is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        fayda_info = fayda_oidc.verify_fayda_id(fayda_id)
+        serializer = FaydaVerificationSerializer(fayda_info)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+@swagger_auto_schema(
+    operation_description="Link Fayda ID to authenticated user (for testing)",
+    security=[{'Bearer': []}],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['fayda_id'],
+        properties={
+            'fayda_id': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Fayda ID to link to user account"
+            )
+        }
+    ),
+    responses={
+        200: openapi.Response(
+            description="Fayda ID linked successfully",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    'fayda_id': openapi.Schema(type=openapi.TYPE_STRING),
+                    'verification_status': openapi.Schema(type=openapi.TYPE_STRING),
+                    'is_verified': openapi.Schema(type=openapi.TYPE_BOOLEAN)
+                }
+            )
+        ),
+        400: openapi.Response(
+            description="Bad request - invalid Fayda ID or linking failed",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        401: openapi.Response(description="Unauthorized - authentication required")
+    },
+    tags=['Fayda OIDC']
+)
+def link_fayda(request):
+    """Link Fayda ID to authenticated user (for testing)"""
+    fayda_id = request.data.get('fayda_id')
+    if not fayda_id:
+        return Response(
+            {'error': 'Fayda ID is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Get Fayda data
+        fayda_data = fayda_oidc.verify_fayda_id(fayda_id)
+        
+        # Link to user
+        result = fayda_oidc.link_fayda_to_user(request.user, fayda_data)
+        
+        # Get updated user data
+        user = User.objects.get(id=request.user.id)
+        
+        return Response({
+            'message': 'Fayda ID linked successfully',
+            'fayda_id': user.fayda_id,
+            'verification_status': user.verification_status,
+            'is_verified': user.is_verified
         })
     except Exception as e:
         return Response(

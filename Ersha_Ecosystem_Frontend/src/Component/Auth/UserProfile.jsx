@@ -46,7 +46,7 @@ const UserProfile = ({ onClose }) => {
         return <Leaf className="w-5 h-5 text-green-600" />;
       case 'buyer':
         return <ShoppingBag className="w-5 h-5 text-blue-600" />;
-      case 'merchant':
+      case 'agricultural_business':
         return <Building className="w-5 h-5 text-purple-600" />;
       default:
         return <User className="w-5 h-5 text-gray-600" />;
@@ -59,7 +59,7 @@ const UserProfile = ({ onClose }) => {
         return 'Farmer';
       case 'buyer':
         return 'Buyer/Merchant';
-      case 'merchant':
+      case 'agricultural_business':
         return 'Agricultural Business';
       default:
         return 'User';
@@ -303,7 +303,7 @@ const UserProfile = ({ onClose }) => {
             )}
 
             {/* Business License (for merchants) */}
-            {profile?.user_type === 'merchant' && (
+            {profile?.user_type === 'agricultural_business' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Business License Number

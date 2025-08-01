@@ -1,13 +1,24 @@
+import logging
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import FileExtensionValidator
+from django.core.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 class User(AbstractUser):
     class UserType(models.TextChoices):
         FARMER = 'farmer', 'Farmer'
-        MERCHANT = 'merchant', 'Merchant'
+        BUYER = 'buyer', 'Buyer/Merchant'
+        AGRICULTURAL_BUSINESS = 'agricultural_business', 'Agricultural Business'
         ADMIN = 'admin', 'Admin'
+    
+    class VerificationStatus(models.TextChoices):
+        NOT_VERIFIED = 'not_verified', 'Not Verified'
+        VERIFIED = 'verified', 'Verified'
+        PENDING = 'pending', 'Pending Verification'
+        FAILED = 'failed', 'Verification Failed'
     
     # Override email to make it unique
     email = models.EmailField(
@@ -34,10 +45,26 @@ class User(AbstractUser):
         help_text="Fayda national ID number"
     )
     user_type = models.CharField(
-        max_length=20,
+        max_length=25,
         choices=UserType.choices,
         default=UserType.FARMER,
         help_text="Type of user account"
+    )
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VerificationStatus.choices,
+        default=VerificationStatus.NOT_VERIFIED,
+        help_text="User verification status with Fayda"
+    )
+    verified_at = models.DateTimeField(
+        blank=True, 
+        null=True,
+        help_text="Timestamp when user was verified"
+    )
+    fayda_verification_data = models.JSONField(
+        blank=True, 
+        null=True,
+        help_text="Stored Fayda verification data (name, DOB, etc.)"
     )
     
     # Override username field to use email
@@ -52,12 +79,33 @@ class User(AbstractUser):
         return self.user_type == self.UserType.FARMER
     
     @property
+    def is_buyer(self):
+        return self.user_type == self.UserType.BUYER
+    
+    @property
+    def is_agricultural_business(self):
+        return self.user_type == self.UserType.AGRICULTURAL_BUSINESS
+    
+    @property
     def is_merchant(self):
-        return self.user_type == self.UserType.MERCHANT
+        return self.user_type in [self.UserType.BUYER, self.UserType.AGRICULTURAL_BUSINESS]
     
     @property
     def is_admin(self):
         return self.user_type == self.UserType.ADMIN
+    
+    @property
+    def is_verified(self):
+        return self.verification_status == self.VerificationStatus.VERIFIED
+    
+    def mark_as_verified(self, fayda_data=None):
+        """Mark user as verified and store Fayda data"""
+        from django.utils import timezone
+        self.verification_status = self.VerificationStatus.VERIFIED
+        self.verified_at = timezone.now()
+        if fayda_data:
+            self.fayda_verification_data = fayda_data
+        self.save()
 
 
 class Profile(models.Model):
@@ -72,13 +120,19 @@ class Profile(models.Model):
         decimal_places=2, 
         blank=True, 
         null=True,
-        help_text="Size of the farm in decimal format"
+        help_text="Size of the farm in decimal format (required for farmers)"
     )
     farm_size_unit = models.CharField(
         max_length=20, 
         blank=True, 
         null=True,
         help_text="Unit of farm size (e.g., hectares, acres)"
+    )
+    business_license_number = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        help_text="Business license number (required for agricultural businesses)"
     )
     woreda = models.CharField(
         max_length=100, 
@@ -96,7 +150,7 @@ class Profile(models.Model):
         max_length=100, 
         blank=True, 
         null=True,
-        help_text="Business license number (for merchants)"
+        help_text="Business license number (for merchants) - deprecated, use business_license_number"
     )
     bio = models.TextField(
         blank=True, 
@@ -126,3 +180,29 @@ class Profile(models.Model):
         if self.kebele:
             location_parts.append(self.kebele)
         return ', '.join(location_parts) if location_parts else 'Location not specified'
+    
+    def clean(self):
+        """Validate profile data based on user type"""
+        from django.core.exceptions import ValidationError
+        
+        logger.info(f"Profile clean() called for user {self.user.id}, user_type: {self.user.user_type}")
+        logger.info(f"Farm size: {self.farm_size}, Business license: {self.business_license_number}")
+        
+        if self.user.user_type == User.UserType.FARMER and not self.farm_size:
+            logger.error("Validation failed: Farm size is required for farmers")
+            raise ValidationError("Farm size is required for farmers")
+        
+        if self.user.user_type == User.UserType.AGRICULTURAL_BUSINESS and not self.business_license_number:
+            logger.error("Validation failed: Business license number is required for agricultural businesses")
+            raise ValidationError("Business license number is required for agricultural businesses")
+    
+    def save(self, *args, **kwargs):
+        # Skip validation if this is an update operation with specific fields or skip_validation is True
+        skip_validation = kwargs.pop('skip_validation', False)
+        
+        if skip_validation or kwargs.get('update_fields'):
+            logger.info(f"Skipping validation - skip_validation: {skip_validation}, update_fields: {kwargs.get('update_fields')}")
+            super().save(*args, **kwargs)
+        else:
+            self.clean()
+            super().save(*args, **kwargs)
