@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
+import { authAPI } from '../lib/api';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // UI only: accept any non-empty email/password as 'success'
-    if (!email || !password) {
-      setError('Please enter both email and password.');
-      return;
-    }
+    setLoading(true);
     setError('');
-    onLogin();
+
+    try {
+      if (!email || !password) {
+        setError('Please enter both email and password.');
+        return;
+      }
+
+      // Use real API login
+      const response = await authAPI.login(email, password);
+      console.log('Login successful:', response);
+      
+      // Call the onLogin callback
+      onLogin();
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,6 +48,7 @@ const Login = ({ onLogin }) => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="username"
+            disabled={loading}
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -43,14 +60,18 @@ const Login = ({ onLogin }) => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             autoComplete="current-password"
+            disabled={loading}
           />
         </div>
         {error && <div className="text-red-600 text-sm text-center">{error}</div>}
         <button
           type="submit"
-          className="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 rounded transition"
+          className={`bg-green-700 hover:bg-green-800 text-white font-semibold py-2 rounded transition ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={loading}
         >
-          Login
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>

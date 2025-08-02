@@ -35,6 +35,69 @@ class ExpertViewSet(viewsets.ModelViewSet):
             return ExpertListSerializer
         return ExpertSerializer
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def verify_expert(self, request, pk=None):
+        """Admin action to verify an expert"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        expert = self.get_object()
+        expert.verified = True
+        expert.save()
+        
+        return Response({
+            'message': f'Expert "{expert.name}" has been verified',
+            'verified': expert.verified
+        })
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def feature_expert(self, request, pk=None):
+        """Admin action to feature/unfeature an expert"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        expert = self.get_object()
+        expert.featured = not expert.featured
+        expert.save()
+        
+        status_text = 'featured' if expert.featured else 'unfeatured'
+        return Response({
+            'message': f'Expert "{expert.name}" has been {status_text}',
+            'featured': expert.featured
+        })
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def admin_stats(self, request):
+        """Get expert statistics for admin dashboard"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        total_experts = Expert.objects.count()
+        verified_experts = Expert.objects.filter(verified=True).count()
+        featured_experts = Expert.objects.filter(featured=True).count()
+        available_experts = Expert.objects.filter(availability='available').count()
+        
+        # Expert performance stats
+        top_experts = Expert.objects.filter(verified=True).order_by('-rating')[:5]
+        expert_stats = []
+        for expert in top_experts:
+            expert_stats.append({
+                'name': expert.name,
+                'specialization': expert.specialization,
+                'rating': float(expert.rating),
+                'total_consultations': expert.total_consultations,
+                'verified': expert.verified,
+                'featured': expert.featured
+            })
+        
+        return Response({
+            'total_experts': total_experts,
+            'verified_experts': verified_experts,
+            'featured_experts': featured_experts,
+            'available_experts': available_experts,
+            'top_experts': expert_stats
+        })
+
     @action(detail=False, methods=['get'])
     def available(self, request):
         """Get only available experts"""

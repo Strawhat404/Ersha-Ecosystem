@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -28,6 +28,68 @@ class ServiceProviderViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description', 'specialties', 'coverage_areas']
     ordering_fields = ['rating', 'total_deliveries', 'price_per_km', 'created_at']
     ordering = ['-rating', '-total_deliveries']
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def verify_provider(self, request, pk=None):
+        """Admin action to verify a service provider"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        provider = self.get_object()
+        provider.verified = True
+        provider.save()
+        
+        return Response({
+            'message': f'Service provider "{provider.name}" has been verified',
+            'verified': provider.verified
+        })
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def deactivate_provider(self, request, pk=None):
+        """Admin action to deactivate a service provider"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        provider = self.get_object()
+        provider.is_active = False
+        provider.save()
+        
+        return Response({
+            'message': f'Service provider "{provider.name}" has been deactivated',
+            'is_active': provider.is_active
+        })
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def admin_stats(self, request):
+        """Get logistics statistics for admin dashboard"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        total_providers = ServiceProvider.objects.count()
+        verified_providers = ServiceProvider.objects.filter(verified=True).count()
+        active_providers = ServiceProvider.objects.filter(is_active=True).count()
+        total_deliveries = Delivery.objects.count()
+        completed_deliveries = Delivery.objects.filter(status='delivered').count()
+        
+        # Provider performance stats
+        top_providers = ServiceProvider.objects.filter(is_active=True).order_by('-rating')[:5]
+        provider_stats = []
+        for provider in top_providers:
+            provider_stats.append({
+                'name': provider.name,
+                'rating': float(provider.rating),
+                'total_deliveries': provider.total_deliveries,
+                'verified': provider.verified
+            })
+        
+        return Response({
+            'total_providers': total_providers,
+            'verified_providers': verified_providers,
+            'active_providers': active_providers,
+            'total_deliveries': total_deliveries,
+            'completed_deliveries': completed_deliveries,
+            'top_providers': provider_stats
+        })
     
     @action(detail=False, methods=['get'])
     def verified_providers(self, request):

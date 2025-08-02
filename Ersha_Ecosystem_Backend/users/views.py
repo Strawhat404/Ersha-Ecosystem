@@ -1,11 +1,14 @@
 import logging
-from rest_framework import status, generics, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status, generics, permissions, viewsets, filters
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import get_object_or_404
+from django.db.models import Q, Count, Sum
+from django.utils import timezone
+from datetime import timedelta
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import secrets
@@ -644,3 +647,309 @@ def link_fayda(request):
             {'error': str(e)}, 
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+# Admin-specific views and endpoints
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """Admin ViewSet for managing all users"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['email', 'username', 'first_name', 'last_name', 'phone', 'region']
+    ordering_fields = ['date_joined', 'last_login', 'user_type', 'verification_status']
+    ordering = ['-date_joined']
+    
+    def get_queryset(self):
+        """Filter users based on admin permissions"""
+        if not self.request.user.is_admin:
+            return User.objects.none()
+        return super().get_queryset()
+    
+    @action(detail=True, methods=['post'])
+    def verify_user(self, request, pk=None):
+        """Admin action to verify a user"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        user = self.get_object()
+        user.verification_status = User.VerificationStatus.VERIFIED
+        user.verified_at = timezone.now()
+        user.save()
+        
+        return Response({
+            'message': f'User {user.email} has been verified',
+            'verification_status': user.verification_status
+        })
+    
+    @action(detail=True, methods=['post'])
+    def flag_user(self, request, pk=None):
+        """Admin action to flag a user"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        user = self.get_object()
+        user.verification_status = User.VerificationStatus.FAILED
+        user.save()
+        
+        return Response({
+            'message': f'User {user.email} has been flagged',
+            'verification_status': user.verification_status
+        })
+    
+    @action(detail=True, methods=['post'])
+    def ban_user(self, request, pk=None):
+        """Admin action to ban a user"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        user = self.get_object()
+        user.is_active = False
+        user.save()
+        
+        return Response({
+            'message': f'User {user.email} has been banned',
+            'is_active': user.is_active
+        })
+    
+    @action(detail=False, methods=['get'])
+    def user_stats(self, request):
+        """Get user statistics for admin dashboard"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        total_users = User.objects.count()
+        farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
+        merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+        verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
+        pending_users = User.objects.filter(verification_status=User.VerificationStatus.PENDING).count()
+        
+        # Recent registrations (last 30 days)
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_registrations = User.objects.filter(date_joined__gte=thirty_days_ago).count()
+        
+        return Response({
+            'total_users': total_users,
+            'farmers': farmers,
+            'merchants': merchants,
+            'verified_users': verified_users,
+            'pending_users': pending_users,
+            'recent_registrations': recent_registrations
+        })
+
+
+class AdminDashboardView(APIView):
+    """Admin dashboard statistics and analytics"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Get admin dashboard statistics"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        # User statistics
+        total_users = User.objects.count()
+        farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
+        merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+        verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
+        
+        # Recent activity (last 7 days)
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        recent_users = User.objects.filter(date_joined__gte=seven_days_ago).count()
+        
+        # User type distribution
+        user_types = User.objects.values('user_type').annotate(count=Count('id'))
+        
+        # Verification status distribution
+        verification_statuses = User.objects.values('verification_status').annotate(count=Count('id'))
+        
+        return Response({
+            'user_stats': {
+                'total_users': total_users,
+                'farmers': farmers,
+                'merchants': merchants,
+                'verified_users': verified_users,
+                'recent_users': recent_users
+            },
+            'user_types': user_types,
+            'verification_statuses': verification_statuses
+        })
+
+
+class ComprehensiveAdminDashboardView(APIView):
+    """Comprehensive admin dashboard with statistics from all apps"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Get comprehensive admin dashboard statistics"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        try:
+            # Import models from other apps
+            from news.models import NewsArticle
+            from logistics.models import ServiceProvider, Delivery
+            from advisory.models import Expert
+            from marketplace.models import Product
+            
+            # User statistics
+            total_users = User.objects.count()
+            farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
+            merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+            verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
+            pending_users = User.objects.filter(verification_status=User.VerificationStatus.PENDING).count()
+            
+            # News statistics
+            total_articles = NewsArticle.objects.count()
+            featured_articles = NewsArticle.objects.filter(featured=True).count()
+            total_news_views = NewsArticle.objects.aggregate(total_views=Sum('views'))['total_views'] or 0
+            
+            # Logistics statistics
+            total_providers = ServiceProvider.objects.count()
+            verified_providers = ServiceProvider.objects.filter(verified=True).count()
+            total_deliveries = Delivery.objects.count()
+            completed_deliveries = Delivery.objects.filter(status='delivered').count()
+            
+            # Expert statistics
+            total_experts = Expert.objects.count()
+            verified_experts = Expert.objects.filter(verified=True).count()
+            featured_experts = Expert.objects.filter(featured=True).count()
+            
+            # Marketplace statistics
+            total_products = Product.objects.count()
+            active_products = Product.objects.filter(is_active=True).count()
+            organic_products = Product.objects.filter(organic=True).count()
+            
+            # Recent activity (last 7 days)
+            seven_days_ago = timezone.now() - timedelta(days=7)
+            recent_users = User.objects.filter(date_joined__gte=seven_days_ago).count()
+            recent_articles = NewsArticle.objects.filter(created_at__gte=seven_days_ago).count()
+            recent_products = Product.objects.filter(created_at__gte=seven_days_ago).count()
+            
+            # Platform overview
+            platform_stats = {
+                'users': {
+                    'total': total_users,
+                    'farmers': farmers,
+                    'merchants': merchants,
+                    'verified': verified_users,
+                    'pending': pending_users,
+                    'recent': recent_users
+                },
+                'content': {
+                    'news_articles': total_articles,
+                    'featured_articles': featured_articles,
+                    'news_views': total_news_views,
+                    'recent_articles': recent_articles
+                },
+                'logistics': {
+                    'providers': total_providers,
+                    'verified_providers': verified_providers,
+                    'deliveries': total_deliveries,
+                    'completed_deliveries': completed_deliveries
+                },
+                'experts': {
+                    'total': total_experts,
+                    'verified': verified_experts,
+                    'featured': featured_experts
+                },
+                'marketplace': {
+                    'products': total_products,
+                    'active_products': active_products,
+                    'organic_products': organic_products,
+                    'recent_products': recent_products
+                }
+            }
+            
+            # Quick actions summary
+            quick_actions = {
+                'pending_verifications': pending_users,
+                'unverified_providers': total_providers - verified_providers,
+                'inactive_products': total_products - active_products
+            }
+            
+            return Response({
+                'platform_stats': platform_stats,
+                'quick_actions': quick_actions,
+                'last_updated': timezone.now().isoformat()
+            })
+            
+        except Exception as e:
+            logger.error(f"Error generating admin dashboard stats: {e}")
+            return Response(
+                {'error': 'Failed to generate dashboard statistics'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AdminLoginView(APIView):
+    """Admin-specific login endpoint"""
+    permission_classes = [permissions.AllowAny]
+    
+    @swagger_auto_schema(
+        operation_description="Admin login with role validation",
+        request_body=LoginSerializer,
+        responses={
+            200: openapi.Response(
+                description="Admin login successful",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'user': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                                'first_name': openapi.Schema(type=openapi.TYPE_STRING),
+                                'last_name': openapi.Schema(type=openapi.TYPE_STRING),
+                                'user_type': openapi.Schema(type=openapi.TYPE_STRING),
+                                'is_admin': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                            }
+                        ),
+                        'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+                        'access': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description="Bad request - invalid credentials or not admin",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            )
+        },
+        tags=['Admin Authentication']
+    )
+    def post(self, request):
+        """Admin login with role validation"""
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            
+            # Check if user is admin
+            if not user.is_admin:
+                return Response(
+                    {'error': 'Access denied. Admin privileges required.'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'user_type': user.user_type,
+                    'is_admin': user.is_admin,
+                },
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
