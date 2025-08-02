@@ -45,6 +45,8 @@ import LogisticsTracker from './Component/Dashboard/LogisticsTracker'
 import AnalyticsDashboard from './Component/Dashboard/AnalyticsDashboard'
 import EnhancedAdvisory from './Component/Advisory/EnhancedAdvisory'
 import UserDashboard from './Component/Dashboard/UserDashboard'
+import ExpertDashboard from './Component/Dashboard/ExpertDashboard'
+import LogisticsDashboard from './Component/Dashboard/LogisticsDashboard'
 
 // Authentication Components
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -96,7 +98,7 @@ const PublicRoute = ({ children }) => {
 
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/verification'].includes(location.pathname);
+  const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/expert-dashboard', '/logistics-dashboard', '/verification'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
   const [showUserProfile, setShowUserProfile] = useState(false);
   const { user, loading } = useAuth();
@@ -1094,6 +1096,16 @@ function AppContent() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <UserDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/expert-dashboard" element={
+          <ProtectedRoute>
+            <ExpertDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/logistics-dashboard" element={
+          <ProtectedRoute>
+            <LogisticsDashboard />
           </ProtectedRoute>
         } />
         <Route path="/news" element={
