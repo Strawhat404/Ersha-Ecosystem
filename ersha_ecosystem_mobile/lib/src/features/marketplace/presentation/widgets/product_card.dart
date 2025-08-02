@@ -9,6 +9,7 @@ class ProductCard extends StatelessWidget {
   final double rating;
   final String location;
   final String imageUrl;
+  final bool canEdit;
 
   const ProductCard({
     super.key,
@@ -18,6 +19,7 @@ class ProductCard extends StatelessWidget {
     required this.rating,
     required this.location,
     required this.imageUrl,
+    this.canEdit = false,
   });
 
   @override
@@ -132,20 +134,49 @@ class ProductCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Iconsax.shopping_cart, size: 16),
-                          label: const Text('Add to Cart'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            backgroundColor: AppTheme.lightGreen,
-                            foregroundColor: AppTheme.darkGreen,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                        child: canEdit
+                            ? Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {},
+                                      icon: const Icon(Iconsax.edit, size: 16),
+                                      label: const Text('Edit'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        side: const BorderSide(color: AppTheme.mediumGray),
+                                        foregroundColor: AppTheme.darkGray,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {},
+                                      icon: const Icon(Iconsax.trash, size: 16, color: Colors.red),
+                                      label: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        side: const BorderSide(color: Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: () {},
+                                icon: const Icon(Iconsax.shopping_cart, size: 16),
+                                label: const Text('Add to Cart'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  backgroundColor: AppTheme.lightGreen,
+                                  foregroundColor: AppTheme.darkGreen,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
                       )
                     ],
                   )

@@ -35,6 +35,23 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8
+  
+  # HTTP and API dependencies
+  http: ^1.1.0
+  dio: ^5.3.2
+  
+  # Offline storage and state management
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  
+  # JSON serialization
+  json_annotation: ^4.8.1
+  
+  # Connectivity checking
+  connectivity_plus: ^5.0.1
+  
+  # State management
+  provider: ^6.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +62,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  
+  # JSON serialization build runner
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
