@@ -1,7 +1,8 @@
-// lib/src/features/auth/presentation/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../provider/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   final VoidCallback onSwitchToLogin;
@@ -14,857 +15,689 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _farmSizeController = TextEditingController();
+  
   bool _showPassword = false;
   bool _showConfirmPassword = false;
   bool _isLoading = false;
   String? _errorMessage;
-  String? _successMessage;
-
-  // Form fields
-  String _email = '';
-  String _password = '';
-  String _confirmPassword = '';
-  String _fullName = '';
-  String _phone = '';
   String _userType = 'farmer';
-  String _location = '';
-  String _region = '';
-  String _farmSize = '';
-  String _businessLicense = '';
-
-  final List<Map<String, dynamic>> _userTypes = [
-    {
-      'id': 'farmer',
-      'label': 'Farmer',
-      'icon': Iconsax.tree,
-      'description': ''
-    },
-    {
-      'id': 'buyer',
-      'label': 'Buyer',
-      'icon': Iconsax.shop,
-      'description': ''
-    },
-    {
-      'id': 'merchant',
-      'label': 'Merchant',
-      'icon': Iconsax.building,
-      'description': ''
-    }
-  ];
-
+  String _selectedRegion = 'Amhara';
+  
   final List<String> _regions = [
     'Addis Ababa', 'Oromia', 'Amhara', 'SNNPR', 'Tigray', 
     'Afar', 'Somali', 'Benishangul-Gumuz', 'Gambella', 'Harari'
   ];
 
-@override
-Widget build(BuildContext context) {
-  final theme = Theme.of(context);
-  final colorScheme = theme.colorScheme;
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _farmSizeController.dispose();
+    super.dispose();
+  }
 
-  return Scaffold(
-    body: Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.green.shade50,
-            Colors.teal.shade50,
-            Colors.cyan.shade50,
-          ],
-        ),
-      ),
-      child: Center(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE8F5E8),
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header
-                Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.green.shade500,
-                            Colors.teal.shade600,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      child: Icon(
-                        Iconsax.people,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Join Ersha-Ecosystem',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade900,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Create your account and start your agricultural journey',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 20),
+                _buildHeader(),
                 const SizedBox(height: 32),
-
-                // Form
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                    border: Border.all(color: Colors.grey.shade100),
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min, // Minimize height
-                      crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to container width
-                      children: [
-                        // User Type Selection
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'I am a:',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 160, // Increased height to accommodate all items comfortably
-                              child: GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 0.9,
-                                ),
-                                itemCount: _userTypes.length,
-                                itemBuilder: (context, index) {
-                                  final type = _userTypes[index];
-                                  final isSelected = _userType == type['id'];
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _userType = type['id'] as String;
-                                      });
-                                    },
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.green.shade500
-                                              : Colors.grey.shade200,
-                                          width: 2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: isSelected
-                                            ? Colors.green.shade50
-                                            : Colors.transparent,
-                                      ),
-                                      child: SizedBox(
-                                        height: 130, // Ensure consistent height
-                                        child: Center(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: isSelected
-                                                      ? Colors.green.shade100
-                                                      : Colors.grey.shade100,
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Icon(
-                                                  index == 0 ? Icons.agriculture :
-                                                  index == 1 ? Icons.shopping_cart :
-                                                  Icons.business,
-                                                  size: 28,
-                                                  color: isSelected
-                                                      ? Colors.green.shade700
-                                                      : Colors.grey.shade600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                type['label'] as String,
-                                                style: theme.textTheme.bodyMedium?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                  color: isSelected
-                                                      ? Colors.green.shade700
-                                                      : Colors.grey.shade700,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                type['description'] as String,
-                                                style: theme.textTheme.labelSmall?.copyWith(
-                                                  color: Colors.grey.shade500,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Personal Information
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start, // Align items at the top
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Full Name',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.person),
-                                      hintText: 'Enter your full name',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your full name';
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _fullName = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Phone Number',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.phone),
-                                      hintText: '+251-9XX-XXX-XXX',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.phone,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _phone = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Location Information
-                        Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Region',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.grey.shade300,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.grey.shade300,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-            hint: Text('Select your region'),
-            isExpanded: true, // Ensure the dropdown expands to fill the available width
-            items: _regions.map((region) {
-              return DropdownMenuItem(
-                value: region,
-                child: Text(region, overflow: TextOverflow.ellipsis), // Prevent text overflow
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _region = value ?? '';
-              });
-            },
-          ),
-        ],
-      ),
-    ),
-    const SizedBox(width: 16),
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'City/Town',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.location_city),
-              hintText: 'Enter your city or town',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.grey.shade300,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.grey.shade300,
-                ),
-              ),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _location = value;
-              });
-            },
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-                        const SizedBox(height: 16),
-
-                        // Farm Size (for farmers)
-                        if (_userType == 'farmer')
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Farm Size (hectares)',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                decoration: InputDecoration(
-                                  hintText: 'e.g., 2.5',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                ),
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d{0,2}'),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _farmSize = value;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-
-                        // Business License (for merchants)
-                        if (_userType == 'merchant')
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Business License Number',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                decoration: InputDecoration(
-                                  hintText: 'Enter your business license number',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _businessLicense = value;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-
-                        // Email
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Email Address',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.email),
-                                hintText: 'Enter your email',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your email';
-                                }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                    .hasMatch(value)) {
-                                  return 'Please enter a valid email';
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                setState(() {
-                                  _email = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Password
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Password',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              obscureText: !_showPassword,
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.lock),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _showPassword
-                                        ? Iconsax.eye_slash
-                                        : Iconsax.eye,
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _showPassword = !_showPassword;
-                                    });
-                                  },
-                                ),
-                                hintText: 'Create a password',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a password';
-                                }
-                                if (value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                setState(() {
-                                  _password = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Confirm Password
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Confirm Password',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              obscureText: !_showConfirmPassword,
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.lock),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _showConfirmPassword
-                                        ? Iconsax.eye_slash
-                                        : Iconsax.eye,
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _showConfirmPassword = !_showConfirmPassword;
-                                    });
-                                  },
-                                ),
-                                hintText: 'Confirm your password',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please confirm your password';
-                                }
-                                if (value != _password) {
-                                  return 'Passwords do not match';
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                setState(() {
-                                  _confirmPassword = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Error/Success Messages
-                        if (_errorMessage != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.red.shade200,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Iconsax.warning_2,
-                                  color: Colors.red.shade500,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _errorMessage!,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: Colors.red.shade700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (_successMessage != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.green.shade200,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Iconsax.tick_circle,
-                                  color: Colors.green.shade500,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _successMessage!,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: Colors.green.shade700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (_errorMessage != null || _successMessage != null)
-                          const SizedBox(height: 16),
-
-                        // Submit Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoading
-                                ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _submitForm();
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              backgroundColor: Colors.green.shade500,
-                              disabledBackgroundColor: Colors.green.shade500.withOpacity(0.5),
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                            ),
-                            child: _isLoading
-                                ? SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Create Account',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Icon(
-                                        Iconsax.arrow_right_2,
-                                        size: 20,
-                                        color: Colors.white,
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Login Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Already have an account? ',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: widget.onSwitchToLogin,
-                      child: Text(
-                        'Sign in here',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.green.shade600,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildRegistrationForm(),
               ],
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-  void _submitForm() async {
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4CAF50),
+            borderRadius: BorderRadius.circular(40),
+          ),
+          child: const Icon(
+            Icons.eco,
+            size: 40,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Join Ersha-Ecosystem',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2E2E2E),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Create your account and start your agricultural journey',
+          style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF666666),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegistrationForm() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildUserTypeSelection(),
+            const SizedBox(height: 24),
+            _buildNameFields(),
+            const SizedBox(height: 16),
+            _buildPhoneField(),
+            const SizedBox(height: 16),
+            _buildRegionDropdown(),
+            const SizedBox(height: 16),
+            if (_userType == 'farmer') _buildFarmSizeField(),
+            if (_userType == 'farmer') const SizedBox(height: 16),
+            _buildEmailField(),
+            const SizedBox(height: 16),
+            _buildUsernameField(),
+            const SizedBox(height: 16),
+            _buildPasswordField(),
+            const SizedBox(height: 16),
+            _buildConfirmPasswordField(),
+            const SizedBox(height: 24),
+            if (_errorMessage != null) _buildErrorMessage(),
+            _buildCreateAccountButton(),
+            const SizedBox(height: 16),
+            _buildLoginLink(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserTypeSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'I am a:',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF666666),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildUserTypeCard(
+                'farmer',
+                'Farmer',
+                'Grow and sell your\nagricultural products',
+                Icons.agriculture,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildUserTypeCard(
+                'buyer',
+                'Buyer',
+                'Purchase agricultural\nproducts and supplies',
+                Icons.shopping_cart,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserTypeCard(String type, String title, String description, IconData icon) {
+    final isSelected = _userType == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _userType = type;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F5E8) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey.shade600,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNameFields() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildTextField(
+            controller: _firstNameController,
+            label: 'First Name',
+            hintText: 'chala',
+            prefixIcon: Icons.person,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'First name is required';
+              }
+              return null;
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildTextField(
+            controller: _lastNameController,
+            label: 'Last Name',
+            hintText: 'chube',
+            prefixIcon: Icons.person_outline,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Last name is required';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return _buildTextField(
+      controller: _phoneController,
+      label: 'Phone Number',
+      hintText: '+251 909990909',
+      prefixIcon: Icons.phone,
+      keyboardType: TextInputType.phone,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Phone number is required';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildRegionDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Region',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF666666),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedRegion,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down),
+              items: _regions.map((String region) {
+                return DropdownMenuItem<String>(
+                  value: region,
+                  child: Text(region),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedRegion = newValue!;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFarmSizeField() {
+    return _buildTextField(
+      controller: _farmSizeController,
+      label: 'Farm Size (hectares)',
+      hintText: '2.6',
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (_userType == 'farmer' && (value == null || value.isEmpty)) {
+          return 'Farm size is required for farmers';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildEmailField() {
+    return _buildTextField(
+      controller: _emailController,
+      label: 'Email Address',
+      hintText: 'chala@test.com',
+      prefixIcon: Icons.email,
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Email is required';
+        }
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+          return 'Please enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return _buildTextField(
+      controller: _usernameController,
+      label: 'Username',
+      hintText: 'chala',
+      prefixIcon: Icons.person,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Username is required';
+        }
+        if (value.length < 3) {
+          return 'Username must be at least 3 characters';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return _buildTextField(
+      controller: _passwordController,
+      label: 'Password',
+      hintText: 'Test1234!',
+      prefixIcon: Icons.lock,
+      obscureText: !_showPassword,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _showPassword ? Icons.visibility : Icons.visibility_off,
+          color: Colors.grey.shade600,
+        ),
+        onPressed: () {
+          setState(() {
+            _showPassword = !_showPassword;
+          });
+        },
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Password is required';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return _buildTextField(
+      controller: _confirmPasswordController,
+      label: 'Confirm Password',
+      hintText: 'Test1234!',
+      prefixIcon: Icons.lock,
+      obscureText: !_showConfirmPassword,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _showConfirmPassword ? Icons.visibility : Icons.visibility_off,
+          color: Colors.grey.shade600,
+        ),
+        onPressed: () {
+          setState(() {
+            _showConfirmPassword = !_showConfirmPassword;
+          });
+        },
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please confirm your password';
+        }
+        if (value != _passwordController.text) {
+          return 'Passwords do not match';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hintText,
+    IconData? prefixIcon,
+    Widget? suffixIcon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF666666),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 14,
+            ),
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey.shade600) : null,
+            suffixIcon: suffixIcon,
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorMessage() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: Colors.red.shade600,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreateAccountButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleRegister,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Create Account',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, size: 20),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildLoginLink() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Already have an account? ',
+          style: TextStyle(
+            color: Color(0xFF666666),
+            fontSize: 14,
+          ),
+        ),
+        GestureDetector(
+          onTap: widget.onSwitchToLogin,
+          child: const Text(
+            'Sign in here',
+            style: TextStyle(
+              color: Color(0xFF4CAF50),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) {
+      print('DEBUG: Form validation failed');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _successMessage = null;
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      print('DEBUG: Starting registration process');
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Debug: Print all the data being sent
+      final registrationData = {
+        'email': _emailController.text.trim(),
+        'password': _passwordController.text,
+        'passwordConfirm': _confirmPasswordController.text,
+        'username': _usernameController.text.trim(),
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'region': _selectedRegion,
+        'userType': _userType,
+        'location': _selectedRegion,
+        'farmSize': _userType == 'farmer' ? _farmSizeController.text.trim() : null,
+        'businessLicenseNumber': _userType == 'buyer' ? null : null,
+      };
+      
+      print('DEBUG: Registration data: $registrationData');
+      
+      final success = await authProvider.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        passwordConfirm: _confirmPasswordController.text,
+        username: _usernameController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        region: _selectedRegion,
+        userType: _userType,
+        location: _selectedRegion, // Using region as location for now
+        farmSize: _userType == 'farmer' ? _farmSizeController.text.trim() : null,
+        businessLicenseNumber: _userType == 'buyer' ? null : null, // Can be added later if needed
+      );
 
+      print('DEBUG: Registration success: $success');
+      
+      if (success) {
+        print('DEBUG: Registration successful!');
+        // Registration successful, navigate to marketplace
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully!'),
+              backgroundColor: Color(0xFF4CAF50),
+            ),
+          );
+          // Navigate to marketplace after successful registration
+          Navigator.of(context).pushReplacementNamed('/marketplace');
+        }
+      } else {
+        print('DEBUG: Registration failed. AuthProvider error: ${authProvider.errorMessage}');
+        setState(() {
+          _errorMessage = authProvider.errorMessage ?? 'An unexpected error occurred. Please try again.';
+        });
+      }
+    } catch (e, stackTrace) {
+      print('DEBUG: Exception caught in _handleRegister: $e');
+      print('DEBUG: Stack trace: $stackTrace');
       setState(() {
-        _successMessage = 'Registration successful! Please check your email to verify your account.';
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'An unexpected error occurred. Please try again.';
+        _errorMessage = 'Debug: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 }

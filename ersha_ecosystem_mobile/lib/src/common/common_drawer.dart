@@ -1,5 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+
+// Top-level function to handle backend logout
 
 class CommonDrawer extends StatelessWidget {
   const CommonDrawer({super.key});
@@ -73,9 +76,40 @@ class CommonDrawer extends StatelessWidget {
               ),
             ),
           ),
+          // Logout button at the bottom
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24.0, left: 8.0, right: 8.0),
+            child: _drawerItem(
+              icon: Iconsax.logout,
+              label: 'Logout',
+              color: Colors.redAccent,
+              onTap: () async {
+                // Call backend logout API
+                try {
+                  // Replace with your actual logout endpoint
+                  final response = await fetchLogout();
+                  if (response) {
+                    // Clear user state (e.g., tokens)
+                    // You may need to use Provider, Riverpod, etc. to clear auth state
+                    // For now, just navigate to login
+                    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Logout failed. Please try again.')),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
+  }
   }
   // Drawer item helper for consistent style
   Widget _drawerItem({
@@ -100,4 +134,14 @@ class CommonDrawer extends StatelessWidget {
       splashColor: Colors.black.withOpacity(0.08),
     );
   }
+
+
+// Top-level function to handle backend logout
+Future<bool> fetchLogout() async {
+  // Replace with your actual API call logic
+  // Example using http package:
+  // final response = await http.post(Uri.parse('https://your-backend/api/logout/'), headers: {...});
+  // return response.statusCode == 200;
+  await Future.delayed(const Duration(milliseconds: 500));
+  return true; // Simulate success
 }

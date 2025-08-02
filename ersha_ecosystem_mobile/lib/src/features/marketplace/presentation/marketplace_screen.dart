@@ -1,11 +1,11 @@
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/widgets/product_list.dart';
+import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/models/marketplace_enums.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ersha_ecosystem_mobile/src/common/common_banner_appbar.dart';
 import 'package:ersha_ecosystem_mobile/src/common/common_drawer.dart';
-
-// Assuming this enum is defined in your project.
-enum UserRole { merchant, farmer }
+import 'package:ersha_ecosystem_mobile/src/features/auth/provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 // 1. Converted the screen to a StatefulWidget to manage state.
 class MarketplaceScreen extends StatefulWidget {
@@ -16,13 +16,48 @@ class MarketplaceScreen extends StatefulWidget {
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
-  // 2. Added state to track the selected user role.
-  UserRole _selectedRole = UserRole.merchant;
+  UserRole _currentUserRole = UserRole.merchant;
 
-  // 3. Created a callback function to update the state from the HeroSection child.
-  void _handleRoleChange(UserRole role) {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with merchant as default, will be updated in build method
+  }
+
+  // Get user role from AuthProvider
+  UserRole _getUserRole(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    return _getUserRoleFromProvider(authProvider);
+  }
+  
+  // Extract user role from AuthProvider instance
+  UserRole _getUserRoleFromProvider(AuthProvider authProvider) {
+    final user = authProvider.user;
+    
+    if (user != null) {
+      print('DEBUG: User type from AuthProvider: ${user.userType}'); // Debug print
+      // Map backend user types to UI roles
+      switch (user.userType.toLowerCase()) {
+        case 'farmer':
+          print('DEBUG: Mapped to farmer role'); // Debug print
+          return UserRole.farmer;
+        case 'buyer':
+        case 'merchant':
+        case 'agricultural_business':
+          print('DEBUG: Mapped to merchant role'); // Debug print
+          return UserRole.merchant;
+        default:
+          print('DEBUG: Unknown user type, defaulting to merchant'); // Debug print
+          return UserRole.merchant; // Default fallback
+      }
+    }
+    print('DEBUG: No user found, defaulting to merchant'); // Debug print
+    return UserRole.merchant; // Default for unauthenticated users
+  }
+
+  void _handleRoleChange(UserRole newRole) {
     setState(() {
-      _selectedRole = role;
+      _currentUserRole = newRole;
     });
   }
 
@@ -113,28 +148,48 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CommonBannerAppBar(),
-      drawer: const CommonDrawer(),
-      floatingActionButton: _selectedRole == UserRole.farmer
-          ? FloatingActionButton.extended(
-              onPressed: _showAddProductDialog,
-              label: const Text('Add Product'),
-              icon: const Icon(Iconsax.add),
-              backgroundColor: const Color(0xFF14532d),
-              foregroundColor: Colors.white,
-            )
-          : null, // Don't show the button for merchants
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: HeroSection(
-              onRoleChanged: _handleRoleChange, // Pass the callback to the child
-            ),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Get the current user role from AuthProvider
+        final userRole = _getUserRoleFromProvider(authProvider);
+        
+        // Update current user role if it has changed
+        if (_currentUserRole != userRole) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              _currentUserRole = userRole;
+            });
+          });
+        }
+        
+        return Scaffold(
+          appBar: const CommonBannerAppBar(),
+          drawer: const CommonDrawer(),
+          floatingActionButton: userRole == UserRole.farmer
+              ? FloatingActionButton.extended(
+                  onPressed: _showAddProductDialog,
+                  label: const Text('Add Product'),
+                  icon: const Icon(Iconsax.add),
+                  backgroundColor: const Color(0xFF14532d),
+                  foregroundColor: Colors.white,
+                )
+              : null, // Don't show the button for merchants
+          body: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: HeroSection(
+                  onRoleChanged: _handleRoleChange,
+                  userRole: userRole,
+                ),
+              ),
+              ProductList(
+                userRole: userRole,
+                currentUserId: authProvider.user?.id.toString(), // Convert ID to String
+              ),
+            ],
           ),
-          const ProductList(),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -143,8 +198,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
 class HeroSection extends StatefulWidget {
   final Function(UserRole) onRoleChanged;
+  final UserRole? userRole; // Add actual user role parameter
 
-  const HeroSection({super.key, required this.onRoleChanged});
+  const HeroSection({super.key, required this.onRoleChanged, this.userRole});
 
   @override
   State<HeroSection> createState() => _HeroSectionState();
@@ -152,6 +208,15 @@ class HeroSection extends StatefulWidget {
 
 class _HeroSectionState extends State<HeroSection> {
   UserRole _selectedRole = UserRole.merchant;
+
+  @override
+  void initState() {
+    super.initState();
+    // If user role is provided, use it and disable toggle
+    if (widget.userRole != null) {
+      _selectedRole = widget.userRole!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +243,9 @@ class _HeroSectionState extends State<HeroSection> {
             style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.9)),
           ),
           const SizedBox(height: 24),
-          _buildRoleToggle(),
+          // Only show toggle if no specific user role is set (unauthenticated users)
+          if (widget.userRole == null) _buildRoleToggle(),
+          if (widget.userRole != null) _buildCurrentRoleDisplay(),
           const SizedBox(height: 32),
           _buildStats(),
         ],
@@ -208,6 +275,40 @@ class _HeroSectionState extends State<HeroSection> {
             UserRole.farmer,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentRoleDisplay() {
+    String roleText = _selectedRole == UserRole.farmer ? 'Farmer View' : 'Merchant View';
+    IconData roleIcon = _selectedRole == UserRole.farmer ? Iconsax.tree : Iconsax.shopping_cart;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(roleIcon, size: 20, color: const Color(0xFF14532d)),
+            const SizedBox(width: 8),
+            Text(
+              roleText,
+              style: const TextStyle(
+                color: Color(0xFF14532d),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
