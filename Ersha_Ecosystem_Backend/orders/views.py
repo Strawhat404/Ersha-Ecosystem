@@ -1,10 +1,12 @@
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.db import transaction
 from django_filters import rest_framework as filters
 import uuid
 from decimal import Decimal
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from .models import Order, OrderItem, Notification
 from .serializers import (
@@ -406,3 +408,67 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         """Get count of unread notifications"""
         count = self.get_queryset().filter(is_read=False).count()
         return Response({'unread_count': count})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def share_farmer_info(request):
+    """
+    API endpoint for farmers to share their location and contact information
+    after receiving cart notifications
+    """
+    try:
+        notification_id = request.data.get('notification_id')
+        location_data = request.data.get('location_data', {})
+        
+        # Validate notification exists and belongs to the farmer
+        notification = get_object_or_404(
+            Notification, 
+            id=notification_id, 
+            user=request.user,
+            notification_type=Notification.NotificationType.CART_ADDED
+        )
+        
+        # Extract buyer information from notification message
+        # This is a simplified approach - in production, you might want to store buyer_id in notification
+        message = notification.message
+        
+        # Create a farmer info sharing record (you might want to create a model for this)
+        farmer_info = {
+            'farmer_id': request.user.id,
+            'farmer_name': f"{request.user.first_name} {request.user.last_name}",
+            'farmer_email': request.user.email,
+            'address': location_data.get('address', ''),
+            'phone': location_data.get('phone', ''),
+            'notes': location_data.get('notes', ''),
+            'available_time': location_data.get('availableTime', ''),
+            'coordinates': location_data.get('coordinates'),
+            'shared_at': timezone.now().isoformat()
+        }
+        
+        # In a real implementation, you might:
+        # 1. Save this info to a FarmerContactInfo model
+        # 2. Send notification to the buyer
+        # 3. Create a communication channel between farmer and buyer
+        
+        # For now, we'll just mark the notification as handled and return success
+        notification.is_read = True
+        notification.save()
+        
+        # TODO: Implement buyer notification about farmer's shared info
+        # This could involve creating a new notification for the buyer
+        # or sending an email/SMS with the farmer's contact details
+        
+        return Response({
+            'message': 'Farmer information shared successfully',
+            'farmer_info': farmer_info
+        }, status=status.HTTP_200_OK)
+        
+    except Notification.DoesNotExist:
+        return Response({
+            'error': 'Notification not found or does not belong to you'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to share farmer information: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

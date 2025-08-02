@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 // THEME AND AUTH IMPORTS
 import 'package:ersha_ecosystem_mobile/src/app/theme/app_theme.dart';
 import 'package:ersha_ecosystem_mobile/src/features/auth/presentation/login_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/auth/presentation/register_screen.dart';
+import 'package:ersha_ecosystem_mobile/src/features/auth/provider/auth_provider.dart';
 
 // --- THIS IS THE CRUCIAL IMPORT THAT WAS MISSING ---
 // It tells this file where to find the 'MarketplaceScreen' class.
@@ -26,32 +28,35 @@ class AgroGebeyaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AgroGebeya',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => LoginScreen(
-              onSwitchToRegister: () {
-                Navigator.pushReplacementNamed(context, '/register');
-              },
-            ),
-        '/register': (context) => RegisterScreen(
-              onSwitchToLogin: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-            ),
-        '/marketplace': (context) => const MainScaffold(child: MarketplaceScreen()),
-        '/weather': (context) => const MainScaffold(child: WeatherScreen()),
-        '/news': (context) => const MainScaffold(child: NewsScreen()),
-        '/advisory': (context) => const MainScaffold(child: AdvisoryScreen()),
-        '/fayda_integration': (context) => const MainScaffold(child: FaydaIntegrationScreen()),
-        '/payment_integration': (context) => const MainScaffold(child: PaymentScreen()),
-        '/logistics_tracking': (context) => const MainScaffold(child: LogisticsTrackingScreen()),
-        '/profile': (context) => const MainScaffold(child: ProfileScreen()),
-        // Add other routes here, wrap them with MainScaffold except login/register
-      },
+    return ChangeNotifierProvider(
+      create: (context) => AuthProvider(),
+      child: MaterialApp(
+        title: 'AgroGebeya',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        initialRoute: '/login',
+        routes: {
+          '/login': (context) => LoginScreen(
+                onSwitchToRegister: () {
+                  Navigator.pushReplacementNamed(context, '/register');
+                },
+              ),
+          '/register': (context) => RegisterScreen(
+                onSwitchToLogin: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+              ),
+          '/marketplace': (context) => const MainScaffold(child: MarketplaceScreen()),
+          '/weather': (context) => const MainScaffold(child: WeatherScreen()),
+          '/news': (context) => const MainScaffold(child: NewsScreen()),
+          '/advisory': (context) => const MainScaffold(child: AdvisoryScreen()),
+          '/fayda_integration': (context) => const MainScaffold(child: FaydaIntegrationScreen()),
+          '/payment_integration': (context) => const MainScaffold(child: PaymentScreen()),
+          '/logistics_tracking': (context) => const MainScaffold(child: LogisticsTrackingScreen()),
+          '/profile': (context) => const MainScaffold(child: ProfileScreen()),
+          // Add other routes here, wrap them with MainScaffold except login/register
+        },
+      ),
     );
   }
 }
