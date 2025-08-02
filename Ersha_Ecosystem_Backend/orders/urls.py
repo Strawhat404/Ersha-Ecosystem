@@ -8,4 +8,5 @@ router.register(r'notifications', views.NotificationViewSet, basename='notificat
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('share-farmer-info/', views.share_farmer_info, name='share-farmer-info'),
 ] 

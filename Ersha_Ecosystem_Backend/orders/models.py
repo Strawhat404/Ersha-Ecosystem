@@ -77,6 +77,7 @@ class Notification(models.Model):
     class NotificationType(models.TextChoices):
         ORDER_STATUS = 'order_status', 'Order Status Update'
         PRODUCT_UPDATE = 'product_update', 'Product Update'
+        CART_ADDED = 'cart_added', 'Product Added to Cart'
         SYSTEM = 'system', 'System Notification'
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

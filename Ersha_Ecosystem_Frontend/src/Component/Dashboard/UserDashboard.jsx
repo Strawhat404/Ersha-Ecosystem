@@ -35,6 +35,7 @@ import Marketplace from '../Marketplace/Marketplace';
 import Weather from '../Weather/EnhancedWeather';
 import Advisory from '../Advisory/Advisory';
 import News from '../News/News';
+import FarmerNotifications from './FarmerNotifications';
 
 const UserDashboard = () => {
   const { user, profile, signOut } = useAuth();
@@ -43,6 +44,9 @@ const UserDashboard = () => {
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [activeOrders, setActiveOrders] = useState({ total: 0, pending: 0 });
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Determine user type from profile
   const userType = profile?.user_type || user?.user_type || 'farmer';
@@ -74,6 +78,74 @@ const UserDashboard = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showProfileMenu]);
+
+  // Fetch data on component mount and set up polling
+  useEffect(() => {
+    fetchActiveOrders();
+    fetchNotifications();
+    
+    // Set up polling for real-time updates
+    const interval = setInterval(() => {
+      fetchActiveOrders();
+      fetchNotifications();
+    }, 30000); // Poll every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [userType]);
+
+  // Fetch active orders for farmers
+  const fetchActiveOrders = async () => {
+    if (userType !== 'farmer') return;
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await fetch('/api/orders/orders/farmer_orders/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const orders = data.results || [];
+        const total = orders.length;
+        const pending = orders.filter(order => 
+          ['pending', 'processing', 'shipped'].includes(order.status)
+        ).length;
+        
+        setActiveOrders({ total, pending });
+      }
+    } catch (error) {
+      console.error('Error fetching active orders:', error);
+    }
+  };
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await fetch('/api/orders/notifications/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const notifications = data.results || [];
+        setNotifications(notifications);
+        setUnreadCount(notifications.filter(n => !n.is_read).length);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -300,14 +372,22 @@ const UserDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Active Orders</p>
-                    <p className="text-2xl font-bold text-gray-900">12</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {userType === 'farmer' ? activeOrders.total : '0'}
+                    </p>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-xl">
                     <Package className="w-6 h-6 text-blue-600" />
                   </div>
                 </div>
                 <div className="mt-4 flex items-center text-sm">
-                  <span className="text-blue-600 font-medium">3 pending</span>
+                  {userType === 'farmer' ? (
+                    <span className="text-blue-600 font-medium">
+                      {activeOrders.pending} pending
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 font-medium">No orders</span>
+                  )}
                 </div>
               </motion.div>
 
@@ -461,6 +541,14 @@ const UserDashboard = () => {
                 </p>
                 <p className="text-xs text-gray-500">{getUserTypeLabel(userType)}</p>
               </div>
+              
+              {/* Farmer Notifications - Only show for farmers */}
+              {userType === 'farmer' && (
+                <FarmerNotifications 
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                />
+              )}
               
               {/* Profile Dropdown */}
               <div className="relative profile-dropdown">
