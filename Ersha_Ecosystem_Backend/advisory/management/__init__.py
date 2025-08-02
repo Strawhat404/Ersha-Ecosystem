@@ -1,1 +1,1 @@
-# Management package 
+# Management commands for advisory app 

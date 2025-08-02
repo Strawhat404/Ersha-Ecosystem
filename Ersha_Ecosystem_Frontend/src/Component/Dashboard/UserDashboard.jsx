@@ -220,7 +220,7 @@ const UserDashboard = () => {
 
   const renderDashboardView = () => {
     switch(activeView) {
-      case 'overview':
+      case 'overview': {
         return (
           <div className="space-y-6">
             {/* Welcome Section */}
@@ -396,6 +396,7 @@ const UserDashboard = () => {
             </motion.div>
           </div>
         );
+      }
 
       case 'marketplace':
         return <Marketplace />;

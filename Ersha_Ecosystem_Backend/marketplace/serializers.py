@@ -11,7 +11,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'farmer', 'name', 'description', 'price', 'quantity', 
-            'unit', 'harvest_date', 'organic', 'image', 'is_active',
+            'unit', 'category', 'harvest_date', 'organic', 'image', 'is_active',
             'available_quantity', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'farmer', 'created_at', 'updated_at']
@@ -21,13 +21,71 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'name', 'description', 'price', 'quantity', 'unit', 
+            'name', 'description', 'price', 'quantity', 'unit', 'category',
             'harvest_date', 'organic', 'image'
         ]
+    
+    def validate(self, attrs):
+        """
+        Custom validation for product creation.
+        """
+        # Ensure price is positive
+        if attrs.get('price', 0) <= 0:
+            raise serializers.ValidationError("Price must be greater than zero.")
+        
+        # Ensure quantity is positive
+        if attrs.get('quantity', 0) <= 0:
+            raise serializers.ValidationError("Quantity must be greater than zero.")
+        
+        # Ensure harvest date is not in the future
+        from django.utils import timezone
+        if attrs.get('harvest_date') and attrs['harvest_date'] > timezone.now().date():
+            raise serializers.ValidationError("Harvest date cannot be in the future.")
+        
+        return attrs
     
     def create(self, validated_data):
         validated_data['farmer'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'name', 'description', 'price', 'quantity', 'unit', 'category',
+            'harvest_date', 'organic', 'image'
+        ]
+    
+    def validate(self, attrs):
+        """
+        Custom validation for product updates.
+        """
+        # Ensure price is positive
+        if attrs.get('price', 0) <= 0:
+            raise serializers.ValidationError("Price must be greater than zero.")
+        
+        # Ensure quantity is positive
+        if attrs.get('quantity', 0) <= 0:
+            raise serializers.ValidationError("Quantity must be greater than zero.")
+        
+        # Ensure harvest date is not in the future
+        from django.utils import timezone
+        if attrs.get('harvest_date') and attrs['harvest_date'] > timezone.now().date():
+            raise serializers.ValidationError("Harvest date cannot be in the future.")
+        
+        return attrs
+    
+    def update(self, instance, validated_data):
+        """
+        Update the product instance with validated data.
+        """
+        # Update each field
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 
 class CartSerializer(serializers.ModelSerializer):

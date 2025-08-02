@@ -67,9 +67,8 @@ urlpatterns = [
         path('auth/', include('users.urls')),
         path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
         
-        # Marketplace
-        path('products/', include('marketplace.urls')),
-        path('cart/', include('marketplace.urls')),
+        # Marketplace (includes both products and cart)
+        path('', include('marketplace.urls')),
         
         # Orders
         path('orders/', include('orders.urls')),

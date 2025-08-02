@@ -10,10 +10,11 @@ class ExpertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expert
         fields = [
-            'id', 'name', 'specialization', 'experience_years', 'rating',
+            'id', 'user', 'name', 'specialization', 'experience_years', 'rating',
             'bio', 'availability', 'consultation_price', 'languages',
             'certifications', 'profile_image', 'contact_email', 'contact_phone',
             'region', 'verified', 'featured', 'total_consultations',
+            'calendly_link', 'calendly_connected', 'calendly_event_type_id',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'rating', 'total_consultations', 'created_at', 'updated_at']
@@ -101,15 +102,25 @@ class ConsultationRequestSerializer(serializers.ModelSerializer):
     """Serializer for ConsultationRequest model"""
     expert = ExpertSerializer(read_only=True)
     expert_id = serializers.UUIDField(write_only=True)
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.SerializerMethodField()
     
     class Meta:
         model = ConsultationRequest
         fields = [
-            'id', 'expert', 'expert_id', 'subject', 'description',
+            'id', 'expert', 'expert_id', 'user_name', 'user_email', 'subject', 'description',
             'preferred_date', 'preferred_time', 'duration_hours',
             'total_cost', 'status', 'expert_notes', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'status', 'expert_notes', 'created_at', 'updated_at']
+
+    def get_user_name(self, obj):
+        if obj.user:
+            return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
+        return "Unknown User"
+
+    def get_user_email(self, obj):
+        return obj.user.email if obj.user else None
 
 
 class AdvisoryContentListSerializer(serializers.ModelSerializer):
@@ -133,7 +144,7 @@ class ExpertListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'specialization', 'experience_years', 'rating',
             'availability', 'consultation_price', 'languages', 'profile_image',
-            'region', 'verified', 'featured'
+            'region', 'verified', 'featured', 'calendly_link', 'calendly_connected'
         ]
 
 
