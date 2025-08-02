@@ -12,6 +12,108 @@ class AdvisoryScreen extends StatefulWidget {
 }
 
 class _AdvisoryScreenState extends State<AdvisoryScreen> {
+  // Track booking state and message for each expert by name
+  final Map<String, bool> _booked = {};
+  final Map<String, String> _messages = {};
+
+  void _showExpertDialog({
+    required String name,
+    required String specialization,
+    required String experience,
+    required double rating,
+    required String bio,
+    required String availability,
+    required String imageUrl,
+  }) {
+    bool isBooked = _booked[name] ?? false;
+    String message = _messages[name] ?? '';
+    TextEditingController controller = TextEditingController(text: message);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(name),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 24),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(specialization)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Experience: $experience'),
+                  Text('Rating: $rating'),
+                  Text('Bio: $bio'),
+                  Text('Availability: $availability'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isBooked ? Colors.red : Colors.green,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isBooked = !isBooked;
+                      });
+                      this.setState(() {
+                        _booked[name] = isBooked;
+                      });
+                    },
+                    child: Text(isBooked ? 'Unbook Expert' : 'Book Expert'),
+                  ),
+                  if (isBooked) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: controller,
+                      decoration: const InputDecoration(
+                        labelText: 'Message to Expert',
+                        border: OutlineInputBorder(),
+                      ),
+                      minLines: 1,
+                      maxLines: 3,
+                      onChanged: (val) {
+                        message = val;
+                        this.setState(() {
+                          _messages[name] = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Message sent to $name!')),
+                          );
+                        },
+                        child: const Text('Send'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
   String activeTab = 'advice';
 
   @override
@@ -69,6 +171,15 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
                       bio: 'Expert in sustainable farming practices and crop rotation techniques.',
                       availability: 'Available',
                       imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop',
+                      onTap: () => _showExpertDialog(
+                        name: 'Dr. Alemayehu Bekele',
+                        specialization: 'Crop Management',
+                        experience: '15 years',
+                        rating: 4.9,
+                        bio: 'Expert in sustainable farming practices and crop rotation techniques.',
+                        availability: 'Available',
+                        imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ExpertCard(
@@ -79,6 +190,15 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
                       bio: 'Specializes in dairy farming and animal nutrition programs.',
                       availability: 'Busy',
                       imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop',
+                      onTap: () => _showExpertDialog(
+                        name: 'Sara Mekonnen',
+                        specialization: 'Livestock Management',
+                        experience: '12 years',
+                        rating: 4.8,
+                        bio: 'Specializes in dairy farming and animal nutrition programs.',
+                        availability: 'Busy',
+                        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop',
+                      ),
                     ),
                     // Add more ExpertCards as needed
                   ] else if (activeTab == 'courses') ...[
