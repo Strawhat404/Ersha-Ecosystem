@@ -12,12 +12,24 @@ class Product(models.Model):
         PIECE = 'piece', 'Piece'
         BUNDLE = 'bundle', 'Bundle'
     
+    class CategoryChoices(models.TextChoices):
+        VEGETABLES = 'vegetables', 'Vegetables'
+        FRUITS = 'fruits', 'Fruits'
+        GRAINS = 'grains', 'Grains & Cereals'
+        DAIRY = 'dairy', 'Dairy Products'
+        COFFEE = 'coffee', 'Coffee & Tea'
+        SPICES = 'spices', 'Spices & Herbs'
+        LEGUMES = 'legumes', 'Legumes'
+        TUBERS = 'tubers', 'Tubers & Roots'
+        OTHER = 'other', 'Other'
+    
     farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     quantity = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     unit = models.CharField(max_length=20, choices=UnitChoices.choices, default=UnitChoices.KG)
+    category = models.CharField(max_length=20, choices=CategoryChoices.choices, default=CategoryChoices.OTHER)
     harvest_date = models.DateField()
     organic = models.BooleanField(default=False)
     image = models.ImageField(

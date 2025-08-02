@@ -28,6 +28,10 @@ class Expert(models.Model):
     verified = models.BooleanField(default=False)
     featured = models.BooleanField(default=False)
     total_consultations = models.IntegerField(default=0)
+    # Calendly integration fields
+    calendly_link = models.URLField(blank=True, help_text="Calendly booking link for consultations")
+    calendly_connected = models.BooleanField(default=False, help_text="Whether expert has connected their Calendly account")
+    calendly_event_type_id = models.CharField(max_length=100, blank=True, help_text="Calendly event type ID for consultations")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -112,6 +112,146 @@ class ExpertViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(experts, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def book_consultation(self, request, pk=None):
+        """Book a consultation with an expert through Calendly"""
+        expert = self.get_object()
+        
+        if not expert.calendly_connected or not expert.calendly_link:
+            return Response({
+                'error': 'This expert has not connected their Calendly account yet.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Return the Calendly link for the user to book directly
+        return Response({
+            'expert_name': expert.name,
+            'expert_specialization': expert.specialization,
+            'consultation_price': str(expert.consultation_price),
+            'calendly_link': expert.calendly_link,
+            'message': f'Redirecting to {expert.name}\'s Calendly booking page...'
+        })
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_profile(self, request):
+        """Get the current user's expert profile"""
+        try:
+            expert = Expert.objects.get(user=request.user)
+            serializer = self.get_serializer(expert)
+            return Response(serializer.data)
+        except Expert.DoesNotExist:
+            return Response({
+                'error': 'Expert profile not found. Please complete your expert registration.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def create_profile(self, request):
+        """Create expert profile for the current user"""
+        try:
+            # Check if expert profile already exists
+            Expert.objects.get(user=request.user)
+            return Response({
+                'error': 'Expert profile already exists for this user.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Expert.DoesNotExist:
+            pass
+
+        # Add user to the data
+        data = request.data.copy()
+        data['user'] = request.user.id
+        
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            expert = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
+    def update_profile(self, request):
+        """Update the current user's expert profile"""
+        try:
+            expert = Expert.objects.get(user=request.user)
+            serializer = self.get_serializer(expert, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Expert.DoesNotExist:
+            return Response({
+                'error': 'Expert profile not found. Please complete your expert registration.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def connect_calendly(self, request, pk=None):
+        """Connect expert's Calendly account"""
+        expert = self.get_object()
+        
+        # Check if the current user is the expert
+        if expert.user != request.user:
+            return Response({
+                'error': 'Only the expert can connect their Calendly account.'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        calendly_link = request.data.get('calendly_link')
+        event_type_id = request.data.get('event_type_id')
+        
+        if not calendly_link:
+            return Response({
+                'error': 'Calendly link is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        expert.calendly_link = calendly_link
+        expert.calendly_event_type_id = event_type_id or ''
+        expert.calendly_connected = True
+        expert.save()
+        
+        return Response({
+            'message': 'Calendly account connected successfully!',
+            'calendly_connected': expert.calendly_connected,
+            'calendly_link': expert.calendly_link
+        })
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_consultations(self, request):
+        """Get consultation requests for the current expert"""
+        try:
+            expert = Expert.objects.get(user=request.user)
+            consultations = ConsultationRequest.objects.filter(expert=expert)
+            serializer = ConsultationRequestSerializer(consultations, many=True)
+            return Response(serializer.data)
+        except Expert.DoesNotExist:
+            return Response({
+                'error': 'Expert profile not found. Please complete your expert registration.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def update_consultation_status(self, request, pk=None):
+        """Update consultation status (confirm, complete, cancel)"""
+        consultation = self.get_object()
+        
+        # Check if the current user is the expert for this consultation
+        if consultation.expert.user != request.user:
+            return Response({
+                'error': 'You can only update consultations assigned to you.'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        new_status = request.data.get('status')
+        expert_notes = request.data.get('expert_notes', '')
+        
+        if new_status not in ['confirmed', 'completed', 'cancelled']:
+            return Response({
+                'error': 'Invalid status. Must be confirmed, completed, or cancelled.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        consultation.status = new_status
+        if expert_notes:
+            consultation.expert_notes = expert_notes
+        consultation.save()
+        
+        return Response({
+            'message': f'Consultation status updated to {new_status}',
+            'status': consultation.status
+        })
+
 
 class AdvisoryContentViewSet(viewsets.ModelViewSet):
     """ViewSet for AdvisoryContent model"""
