@@ -61,7 +61,10 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'difficulty',
             'duration', 'duration_minutes', 'modules', 'author',
             'author_name', 'price', 'is_free', 'image', 'views',
-            'rating', 'featured', 'published_at', 'created_at', 'updated_at'
+            'rating', 'featured', 'is_ai_generated', 'ai_generation_data',
+            'ai_model_used', 'generated_for_user', 'generation_timestamp',
+            'download_url', 'file_size', 'file_size_bytes',
+            'published_at', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'views', 'rating', 'created_at', 'updated_at']
 
@@ -73,7 +76,9 @@ class ResourceSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'resource_type', 'category',
             'file_url', 'file_size', 'file_size_bytes', 'downloads',
-            'image', 'featured', 'created_at', 'updated_at'
+            'image', 'featured', 'is_ai_generated', 'ai_generation_data',
+            'ai_model_used', 'generated_for_user', 'generation_timestamp',
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'downloads', 'created_at', 'updated_at']
 
@@ -157,7 +162,9 @@ class CourseListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'difficulty',
             'duration', 'modules', 'author_name', 'price', 'is_free',
-            'image', 'views', 'rating', 'featured', 'published_at'
+            'image', 'views', 'rating', 'featured', 'is_ai_generated',
+            'ai_model_used', 'generation_timestamp', 'download_url',
+            'file_size', 'published_at'
         ]
 
 
@@ -167,5 +174,6 @@ class ResourceListSerializer(serializers.ModelSerializer):
         model = Resource
         fields = [
             'id', 'title', 'description', 'resource_type', 'category',
-            'file_size', 'downloads', 'image', 'featured', 'created_at'
+            'file_size', 'downloads', 'image', 'featured', 'is_ai_generated',
+            'ai_model_used', 'generation_timestamp', 'created_at'
         ] 
