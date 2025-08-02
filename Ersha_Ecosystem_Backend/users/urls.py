@@ -16,7 +16,7 @@ urlpatterns = [
     path('register/enhanced/', enhanced_views.EnhancedRegisterView.as_view(), name='enhanced_register'),
     
     # Profile
-    path('profile/', views.UserProfileView.as_view(), name='profile'),
+    path('profile/', views.UserProfileView.as_view(), name='user_profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
     
     # Verification Status
@@ -37,4 +37,4 @@ urlpatterns = [
     path('admin/dashboard/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
     path('admin/comprehensive-dashboard/', views.ComprehensiveAdminDashboardView.as_view(), name='comprehensive_admin_dashboard'),
     path('admin/', include(admin_router.urls)),
-] 
+]
