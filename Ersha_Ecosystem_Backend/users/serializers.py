@@ -228,12 +228,18 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get('password')
         
         if email and password:
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
-            if not user:
+            # Try to get user by email first
+            try:
+                user = User.objects.get(email=email)
+                # Check password manually since Django's authenticate expects username
+                if user.check_password(password):
+                    if not user.is_active:
+                        raise serializers.ValidationError('User account is disabled')
+                    attrs['user'] = user
+                else:
+                    raise serializers.ValidationError('Invalid email or password')
+            except User.DoesNotExist:
                 raise serializers.ValidationError('Invalid email or password')
-            if not user.is_active:
-                raise serializers.ValidationError('User account is disabled')
-            attrs['user'] = user
         else:
             raise serializers.ValidationError('Must include email and password')
         

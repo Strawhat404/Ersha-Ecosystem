@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views, enhanced_views
+
+# Admin router
+admin_router = DefaultRouter()
+admin_router.register(r'users', views.AdminUserViewSet, basename='admin-user')
 
 urlpatterns = [
     # Authentication
@@ -26,4 +31,10 @@ urlpatterns = [
     # Enhanced Fayda OIDC (with PKCE)
     path('fayda/enhanced/auth-url/', enhanced_views.enhanced_fayda_authorization_url, name='enhanced_fayda_auth_url'),
     path('fayda/enhanced/callback/', enhanced_views.enhanced_fayda_callback, name='enhanced_fayda_callback'),
+    
+    # Admin endpoints
+    path('admin/login/', views.AdminLoginView.as_view(), name='admin_login'),
+    path('admin/dashboard/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('admin/comprehensive-dashboard/', views.ComprehensiveAdminDashboardView.as_view(), name='comprehensive_admin_dashboard'),
+    path('admin/', include(admin_router.urls)),
 ] 
