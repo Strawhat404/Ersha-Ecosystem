@@ -229,3 +229,6 @@ FAYDA_CONFIG = {
     'ALGORITHM': config('ALGORITHM', default='RS256'),
     'CLIENT_ASSERTION_TYPE': config('CLIENT_ASSERTION_TYPE', default=''),
 }
+
+# AI Content Generation Configuration
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
