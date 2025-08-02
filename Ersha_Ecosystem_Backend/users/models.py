@@ -206,3 +206,46 @@ class Profile(models.Model):
         else:
             self.clean()
             super().save(*args, **kwargs)
+
+
+class PKCESession(models.Model):
+    """Model to store PKCE session data for Fayda OIDC flow"""
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='pkce_sessions',
+        help_text="User associated with this PKCE session"
+    )
+    state = models.CharField(
+        max_length=128,
+        unique=True,
+        help_text="State parameter for CSRF protection"
+    )
+    code_verifier = models.CharField(
+        max_length=128,
+        help_text="PKCE code verifier"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="When this session expires")
+    
+    class Meta:
+        db_table = 'users_pkce_session'
+        indexes = [
+            models.Index(fields=['state']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"PKCE Session for {self.user.email} - {self.state[:10]}..."
+    
+    @property
+    def is_expired(self):
+        """Check if the session has expired"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    @classmethod
+    def cleanup_expired(cls):
+        """Remove expired PKCE sessions"""
+        from django.utils import timezone
+        cls.objects.filter(expires_at__lt=timezone.now()).delete()

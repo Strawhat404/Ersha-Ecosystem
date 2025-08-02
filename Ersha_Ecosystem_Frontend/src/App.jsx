@@ -54,6 +54,7 @@ import ForgotPassword from './Component/Auth/ForgotPassword'
 import UserProfile from './Component/Auth/UserProfile'
 import FaydaIntegration from './Component/Auth/FaydaIntegration'
 import Verification from './Component/Auth/Verification'
+import Callback from './Component/Auth/Callback'
 
 // Debug: Test Supabase Connection - REMOVED FOR PRODUCTION
 
@@ -1208,6 +1209,11 @@ function AppContent() {
         <Route path="/verification" element={
           <ProtectedRoute>
             <Verification />
+          </ProtectedRoute>
+        } />
+        <Route path="/callback" element={
+          <ProtectedRoute>
+            <Callback />
           </ProtectedRoute>
         } />
       </Routes>
