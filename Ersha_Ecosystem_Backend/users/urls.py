@@ -13,10 +13,6 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     
 
-    # Enhanced Authentication (with role-based validation)
-    path('register/enhanced/', enhanced_views.EnhancedRegisterView.as_view(), name='enhanced_register'),
-    
-
     # User profile endpoints
     path('profile/', views.UserProfileView.as_view(), name='user_profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
