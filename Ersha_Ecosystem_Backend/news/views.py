@@ -19,6 +19,8 @@ class NewsArticleViewSet(viewsets.ModelViewSet):
     ordering_fields = ['published_at', 'views', 'created_at']
     ordering = ['-published_at']
     
+
+    
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def approve(self, request, pk=None):
         """Admin action to approve a news article"""

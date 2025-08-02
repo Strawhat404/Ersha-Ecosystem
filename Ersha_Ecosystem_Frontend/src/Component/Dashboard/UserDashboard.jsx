@@ -138,13 +138,13 @@ const UserDashboard = () => {
       gradient: 'from-emerald-500 to-teal-600',
       description: 'Buy and sell products'
     },
-    { 
+    ...(userType === 'farmer' ? [{
       id: 'analytics', 
       label: 'Analytics', 
       icon: <BarChart3 className="w-5 h-5" />,
       gradient: 'from-purple-500 to-pink-600',
       description: 'Business insights & reports'
-    },
+    }] : []),
     { 
       id: 'payments', 
       label: 'Payments', 
@@ -401,7 +401,7 @@ const UserDashboard = () => {
         return <Marketplace />;
         
       case 'analytics':
-        return <AnalyticsDashboard userType={userType} />;
+        return userType === 'farmer' ? <AnalyticsDashboard userType={userType} /> : <div className="text-center py-12"><p className="text-gray-600">Analytics dashboard is only available for farmers.</p></div>;
         
       case 'payments':
         return <PaymentSystem userType={userType} />;

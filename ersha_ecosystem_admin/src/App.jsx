@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from './layouts/AdminLayout';
 import Dashboard from './pages/Dashboard';
-import AdminNews from './pages/AdminNews';
+import AdminNews from './pages/news/AdminNews';
 import AdminLogistics from './pages/logistics/AdminLogistics';
 import AdminFarmers from './pages/farmers/AdminFarmers';
 import AdminMerchants from './pages/merchants/AdminMerchants';

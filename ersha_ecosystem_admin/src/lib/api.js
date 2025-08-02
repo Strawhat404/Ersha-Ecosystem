@@ -159,7 +159,9 @@ export const newsAPI = {
   getNews: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     const response = await fetch(`${API_BASE_URL}/news/news/?${queryString}`, {
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     
     if (!response.ok) {
@@ -171,24 +173,39 @@ export const newsAPI = {
 
   // Create news article
   createNews: async (articleData) => {
+    console.log('API: Starting createNews call...'); // Debug log
+    console.log('API: URL:', `${API_BASE_URL}/news/news/`); // Debug log
+    console.log('API: Data:', articleData); // Debug log
+    
     const response = await fetch(`${API_BASE_URL}/news/news/`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(articleData),
     });
     
+    console.log('API: Response status:', response.status); // Debug log
+    console.log('API: Response ok:', response.ok); // Debug log
+    
     if (!response.ok) {
-      throw new Error('Failed to create news article');
+      const errorData = await response.json();
+      console.error('API: Error response:', errorData); // Debug log
+      throw new Error('Failed to create news article: ' + JSON.stringify(errorData));
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log('API: Success response:', result); // Debug log
+    return result;
   },
 
   // Update news article
   updateNews: async (articleId, articleData) => {
     const response = await fetch(`${API_BASE_URL}/news/news/${articleId}/`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(articleData),
     });
     
@@ -203,7 +220,9 @@ export const newsAPI = {
   deleteNews: async (articleId) => {
     const response = await fetch(`${API_BASE_URL}/news/news/${articleId}/`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     
     if (!response.ok) {

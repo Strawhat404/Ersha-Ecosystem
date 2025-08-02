@@ -27,6 +27,13 @@ const apiCall = async (endpoint, options = {}) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
+    // Handle blob responses differently
+    if (options.responseType === 'blob') {
+      const blob = await response.blob();
+      console.log('API Blob response received');
+      return blob;
+    }
+    
     const data = await response.json();
     console.log('API Success response:', data);
     return data;
@@ -235,6 +242,88 @@ export const weatherAPI = {
   
   getForecast: (location) => 
     apiCall(`/weather/?region=${encodeURIComponent(location)}`),
+};
+
+// Analytics API
+export const analyticsAPI = {
+  // Sales Analytics
+  getDashboard: () => apiCall('/analytics/sales/dashboard/'),
+  
+  getSalesOverview: () => apiCall('/analytics/sales/sales_overview/'),
+  
+  // Credit Score
+  getCreditOverview: () => apiCall('/analytics/credit-scores/overview/'),
+  
+  calculateCreditScore: () => 
+    apiCall('/analytics/credit-scores/calculate_score/', {
+      method: 'POST',
+    }),
+  
+  // Loan Offers
+  getLoanOffers: () => apiCall('/analytics/loan-offers/'),
+  
+  getFarmerLoanOffers: () => apiCall('/analytics/loan-offers/for_farmer/'),
+  
+  // Monthly Reports
+  getReportsOverview: () => apiCall('/analytics/monthly-reports/overview/'),
+  
+  generateReport: (reportData) => 
+    apiCall('/analytics/monthly-reports/generate_report/', {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    }),
+  
+  downloadReport: (reportId, format = 'pdf') => {
+    // For PDF, don't specify format parameter as backend defaults to PDF
+    const url = format === 'pdf' 
+      ? `/analytics/monthly-reports/${reportId}/download/`
+      : `/analytics/monthly-reports/${reportId}/download/?format=${format}`;
+    
+    return apiCall(url, {
+      method: 'GET',
+      responseType: 'blob',
+    });
+  },
+  
+  // Product Performance
+  getProductPerformance: () => apiCall('/analytics/product-performance/'),
+  
+  // Quick Actions - Sales Targets
+  getSalesTargets: () => apiCall('/analytics/sales-targets/'),
+  
+  createSalesTarget: (targetData) => 
+    apiCall('/analytics/sales-targets/', {
+      method: 'POST',
+      body: JSON.stringify(targetData),
+    }),
+  
+  updateTargetProgress: (targetId) => 
+    apiCall(`/analytics/sales-targets/${targetId}/update_progress/`, {
+      method: 'POST',
+    }),
+  
+  // Quick Actions - Payment Analysis
+  getPaymentAnalyses: () => apiCall('/analytics/payment-analysis/'),
+  
+  generatePaymentAnalysis: (analysisData) => 
+    apiCall('/analytics/payment-analysis/generate_analysis/', {
+      method: 'POST',
+      body: JSON.stringify(analysisData),
+    }),
+  
+  // Quick Actions - Export Requests
+  getExportRequests: () => apiCall('/analytics/export-requests/'),
+  
+  createExportRequest: (exportData) => 
+    apiCall('/analytics/export-requests/', {
+      method: 'POST',
+      body: JSON.stringify(exportData),
+    }),
+  
+  processExport: (exportId) => 
+    apiCall(`/analytics/export-requests/${exportId}/process_export/`, {
+      method: 'POST',
+    }),
 };
 
 // File upload helper

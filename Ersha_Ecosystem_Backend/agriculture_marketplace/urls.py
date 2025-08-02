@@ -90,6 +90,9 @@ urlpatterns = [
         # Payments
         path('payments/', include('payments.urls')),
         
+        # Sales Analytics
+        path('analytics/', include('sales_analytics.urls')),
+        
         # Admin Dashboard
         path('admin/dashboard/', include('users.urls')),
     ])),
