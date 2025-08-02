@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
+import ExpertProfileSetup from './ExpertProfileSetup';
 import { 
   Users, 
   Search,
-  Filter,
   Star,
   Calendar,
   Phone,
@@ -15,136 +16,192 @@ import {
   AlertCircle,
   Eye,
   MessageSquare,
-  Video,
-  User,
-  ChevronDown,
-  ChevronUp,
   MoreVertical,
   Download,
   RefreshCw
 } from 'lucide-react';
 
 const ExpertBookedUsers = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - replace with actual API calls
-  const [bookedUsers, setBookedUsers] = useState([
-    {
-      id: 1,
-      name: 'Abebe Kebede',
-      email: 'abebe.kebede@email.com',
-      phone: '+251-911-123-456',
-      location: 'Addis Ababa, Ethiopia',
-      avatar: 'AK',
-      totalConsultations: 8,
-      completedConsultations: 6,
-      rating: 4.8,
-      lastConsultation: '2024-01-28',
-      nextConsultation: '2024-02-05',
-      status: 'active',
-      consultationHistory: [
-        { date: '2024-01-28', topic: 'Tomato Disease Management', status: 'completed', rating: 5 },
-        { date: '2024-01-15', topic: 'Soil Testing Results', status: 'completed', rating: 4 },
-        { date: '2024-01-02', topic: 'Crop Rotation Planning', status: 'completed', rating: 5 }
-      ],
-      specializations: ['Vegetable Farming', 'Organic Methods'],
-      joinedDate: '2023-08-15',
-      farmSize: '2.5 hectares'
-    },
-    {
-      id: 2,
-      name: 'Meron Tadesse',
-      email: 'meron.tadesse@email.com',
-      phone: '+251-922-234-567',
-      location: 'Oromia, Ethiopia',
-      avatar: 'MT',
-      totalConsultations: 12,
-      completedConsultations: 10,
-      rating: 4.9,
-      lastConsultation: '2024-01-30',
-      nextConsultation: '2024-02-08',
-      status: 'active',
-      consultationHistory: [
-        { date: '2024-01-30', topic: 'Organic Farming Techniques', status: 'completed', rating: 5 },
-        { date: '2024-01-20', topic: 'Pest Control Methods', status: 'completed', rating: 5 },
-        { date: '2024-01-10', topic: 'Irrigation System Setup', status: 'completed', rating: 4 }
-      ],
-      specializations: ['Organic Farming', 'Irrigation'],
-      joinedDate: '2023-06-20',
-      farmSize: '5.0 hectares'
-    },
-    {
-      id: 3,
-      name: 'Dawit Solomon',
-      email: 'dawit.solomon@email.com',
-      phone: '+251-933-345-678',
-      location: 'Amhara, Ethiopia',
-      avatar: 'DS',
-      totalConsultations: 5,
-      completedConsultations: 4,
-      rating: 4.6,
-      lastConsultation: '2024-01-25',
-      nextConsultation: null,
-      status: 'inactive',
-      consultationHistory: [
-        { date: '2024-01-25', topic: 'Irrigation System Setup', status: 'completed', rating: 5 },
-        { date: '2024-01-12', topic: 'Crop Selection Advice', status: 'completed', rating: 4 },
-        { date: '2023-12-28', topic: 'Soil Health Assessment', status: 'completed', rating: 5 }
-      ],
-      specializations: ['Irrigation', 'Crop Management'],
-      joinedDate: '2023-10-10',
-      farmSize: '3.2 hectares'
-    },
-    {
-      id: 4,
-      name: 'Tigist Bekele',
-      email: 'tigist.bekele@email.com',
-      phone: '+251-944-456-789',
-      location: 'SNNPR, Ethiopia',
-      avatar: 'TB',
-      totalConsultations: 15,
-      completedConsultations: 14,
-      rating: 4.7,
-      lastConsultation: '2024-02-01',
-      nextConsultation: '2024-02-10',
-      status: 'active',
-      consultationHistory: [
-        { date: '2024-02-01', topic: 'Coffee Disease Management', status: 'completed', rating: 5 },
-        { date: '2024-01-22', topic: 'Harvest Timing Optimization', status: 'completed', rating: 4 },
-        { date: '2024-01-08', topic: 'Fertilizer Application', status: 'completed', rating: 5 }
-      ],
-      specializations: ['Coffee Farming', 'Disease Management'],
-      joinedDate: '2023-04-12',
-      farmSize: '1.8 hectares'
-    },
-    {
-      id: 5,
-      name: 'Yohannes Girma',
-      email: 'yohannes.girma@email.com',
-      phone: '+251-955-567-890',
-      location: 'Tigray, Ethiopia',
-      avatar: 'YG',
-      totalConsultations: 3,
-      completedConsultations: 2,
-      rating: 4.5,
-      lastConsultation: '2024-01-18',
-      nextConsultation: '2024-02-12',
-      status: 'pending',
-      consultationHistory: [
-        { date: '2024-01-18', topic: 'Drought Management', status: 'completed', rating: 4 },
-        { date: '2024-01-05', topic: 'Water Conservation', status: 'completed', rating: 5 },
-        { date: '2023-12-20', topic: 'Initial Consultation', status: 'cancelled', rating: null }
-      ],
-      specializations: ['Water Management', 'Drought Resistance'],
-      joinedDate: '2023-12-15',
-      farmSize: '4.1 hectares'
+  // Real data from API
+  const [consultations, setConsultations] = useState([]);
+
+  // Profile setup state
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [expertProfile, setExpertProfile] = useState(null);
+
+  // API Base URL
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+  // Handle profile creation
+  const handleProfileCreated = (profileData) => {
+    setExpertProfile(profileData);
+    setShowProfileSetup(false);
+    // Refresh consultations after profile creation
+    fetchConsultations();
+  };
+
+  // Fetch expert profile
+  const fetchExpertProfile = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/advisory/experts/my_profile/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 404) {
+        // Expert profile doesn't exist - show profile setup
+        setShowProfileSetup(true);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setExpertProfile(data);
+      setShowProfileSetup(false);
+    } catch (err) {
+      setError('Failed to load expert profile. Please try again.');
+      console.error('Error fetching expert profile:', err);
     }
-  ]);
+  };
+
+  // Fetch consultations
+  const fetchConsultations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/advisory/experts/my_consultations/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setConsultations(data);
+    } catch (err) {
+      setError('Failed to load consultations. Please try again.');
+      console.error('Error fetching consultations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on component mount
+  useEffect(() => {
+    if (user) {
+      fetchExpertProfile();
+      fetchConsultations();
+    }
+  }, [user]);
+
+  // Process consultations into user data
+  const processUserData = () => {
+    const userMap = new Map();
+    
+    consultations.forEach(consultation => {
+      const userEmail = consultation.user_email;
+      
+      if (!userMap.has(userEmail)) {
+        userMap.set(userEmail, {
+          id: userEmail,
+          name: consultation.user_name,
+          email: consultation.user_email,
+          phone: '+251-XXX-XXX-XXX', // Placeholder since we don't have phone in consultation data
+          location: 'Ethiopia', // Placeholder since we don't have location in consultation data
+          avatar: consultation.user_name.split(' ').map(n => n[0]).join('').toUpperCase(),
+          totalConsultations: 0,
+          completedConsultations: 0,
+          rating: 4.5, // Placeholder rating
+          lastConsultation: null,
+          nextConsultation: null,
+          status: 'active',
+          consultationHistory: [],
+          specializations: ['Agriculture'], // Placeholder
+          joinedDate: consultation.created_at,
+          farmSize: 'N/A' // Placeholder
+        });
+      }
+      
+      const user = userMap.get(userEmail);
+      user.totalConsultations++;
+      
+      if (consultation.status === 'completed') {
+        user.completedConsultations++;
+      }
+      
+      // Add to consultation history
+      user.consultationHistory.push({
+        date: consultation.preferred_date,
+        topic: consultation.subject,
+        status: consultation.status,
+        rating: consultation.status === 'completed' ? 5 : null // Placeholder rating
+      });
+      
+      // Update last and next consultation dates
+      const consultationDate = new Date(consultation.preferred_date);
+      if (!user.lastConsultation || consultationDate > new Date(user.lastConsultation)) {
+        user.lastConsultation = consultation.preferred_date;
+      }
+      
+      if (consultation.status === 'confirmed' && consultationDate > new Date()) {
+        if (!user.nextConsultation || consultationDate < new Date(user.nextConsultation)) {
+          user.nextConsultation = consultation.preferred_date;
+        }
+      }
+    });
+    
+    return Array.from(userMap.values());
+  };
+
+  const bookedUsers = processUserData();
+
+  const calculateAverageRating = (users) => {
+    if (!users || users.length === 0) {
+      return '0.0';
+    }
+    
+    const validRatings = users
+      .map(user => user.rating)
+      .filter(rating => rating !== null && rating !== undefined && !isNaN(rating));
+    
+    if (validRatings.length === 0) {
+      return '0.0';
+    }
+    
+    const average = validRatings.reduce((sum, rating) => sum + rating, 0) / validRatings.length;
+    return average.toFixed(1);
+  };
 
   const filteredUsers = bookedUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -361,136 +418,179 @@ const ExpertBookedUsers = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Booked Users</h1>
-          <p className="text-gray-600 mt-1">All clients who have booked consultations with you</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-          <button
-            onClick={() => setLoading(true)}
-            className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh</span>
-          </button>
-          <button className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center space-x-2">
-            <Download className="w-4 h-4" />
-            <span>Export</span>
-          </button>
-        </div>
-      </div>
+      {/* Show profile setup if no expert profile exists */}
+      {showProfileSetup && (
+        <ExpertProfileSetup
+          onProfileCreated={handleProfileCreated}
+          onCancel={() => setShowProfileSetup(false)}
+        />
+      )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-              <Users className="w-6 h-6 text-white" />
-            </div>
+      {/* Show booked users only if expert profile exists */}
+      {!showProfileSetup && (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{bookedUsers.length}</p>
+              <h1 className="text-3xl font-bold text-gray-900">Booked Users</h1>
+              <p className="text-gray-600 mt-1">All clients who have booked consultations with you</p>
+            </div>
+            <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+              <button
+                onClick={fetchConsultations}
+                disabled={loading}
+                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-2 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              <button className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center space-x-2">
+                <Download className="w-4 h-4" />
+                <span>Export</span>
+              </button>
             </div>
           </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-              <CheckCircle className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">{bookedUsers.filter(u => u.status === 'active').length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl">
-              <Star className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Avg Rating</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {(bookedUsers.reduce((sum, user) => sum + user.rating, 0) / bookedUsers.length).toFixed(1)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
-              <MessageSquare className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Consultations</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {bookedUsers.reduce((sum, user) => sum + user.totalConsultations, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading booked users...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  fetchConsultations();
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Content */}
+          {!loading && !error && (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Users</p>
+                      <p className="text-2xl font-bold text-gray-900">{bookedUsers.length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Active Users</p>
+                      <p className="text-2xl font-bold text-gray-900">{bookedUsers.filter(u => u.status === 'active').length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl">
+                      <Star className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Avg Rating</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {calculateAverageRating(bookedUsers)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                      <MessageSquare className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Consultations</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {bookedUsers.reduce((sum, user) => sum + user.totalConsultations, 0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Search users by name, email, or location..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="pending">Pending</option>
-            </select>
-            
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="recent">Most Recent</option>
-              <option value="name">Name A-Z</option>
-              <option value="rating">Highest Rating</option>
-              <option value="consultations">Most Consultations</option>
-            </select>
-          </div>
-        </div>
-      </div>
 
-      {/* Users Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {sortedUsers.map((user) => (
-          <UserCard key={user.id} user={user} />
-        ))}
-      </div>
+              {/* Filters and Search */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                  <div className="flex-1 max-w-md">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search users by name, email, or location..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                    
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="recent">Most Recent</option>
+                      <option value="name">Name A-Z</option>
+                      <option value="rating">Highest Rating</option>
+                      <option value="consultations">Most Consultations</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
 
-      {sortedUsers.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-          <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
-        </div>
+              {/* Users Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {sortedUsers.map((user) => (
+                  <UserCard key={user.id} user={user} />
+                ))}
+              </div>
+
+              {sortedUsers.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                  <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+                </div>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );
