@@ -44,9 +44,13 @@ const Login = () => {
       } else {
         console.log('Login successful, redirecting...');
         setSuccess('Login successful! Redirecting to dashboard...');
-        // Redirect to dashboard after successful login
+        // Redirect to appropriate dashboard based on user type
         setTimeout(() => {
-          navigate('/dashboard');
+          if (result.data && result.data.user && result.data.user.user_type === 'expert') {
+            navigate('/expert-dashboard');
+          } else {
+            navigate('/dashboard');
+          }
         }, 1500);
       }
     } catch (err) {
