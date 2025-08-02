@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-route
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Sprout, 
-  Home, 
   ShoppingBag, 
   BarChart3, 
   CreditCard, 
@@ -29,7 +28,6 @@ import {
 // import viteLogo from '/vite.svg'
 import './App.css'
 import News from './Component/News/News'
-import Homepage from './Component/Mainpage/Homepage'
 import Navbar from './Component/Mainpage/Navbar'
 import Herosection from './Component/Mainpage/Herosection'
 import Features from './Component/Mainpage/Features'
@@ -50,6 +48,7 @@ import LogisticsDashboard from './Component/Dashboard/LogisticsDashboard'
 
 // Authentication Components
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
 import Login from './Component/Auth/Login'
 import Register from './Component/Auth/Register'
 import ForgotPassword from './Component/Auth/ForgotPassword'
@@ -57,6 +56,11 @@ import UserProfile from './Component/Auth/UserProfile'
 import FaydaIntegration from './Component/Auth/FaydaIntegration'
 import Verification from './Component/Auth/Verification'
 import Callback from './Component/Auth/Callback'
+
+// Cart and Checkout Components
+import Cart from './Component/Marketplace/Cart'
+import Checkout from './Component/Marketplace/Checkout'
+import PaymentSuccess from './Component/Marketplace/PaymentSuccess'
 
 // Debug: Test Supabase Connection - REMOVED FOR PRODUCTION
 
@@ -101,7 +105,6 @@ function AppContent() {
   const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/expert-dashboard', '/logistics-dashboard', '/verification'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const { user, loading } = useAuth();
 
   const renderDashboardView = () => {
     switch(activeView) {
@@ -1228,6 +1231,30 @@ function AppContent() {
             <Callback />
           </ProtectedRoute>
         } />
+        <Route path="/cart" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <Cart />
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="/checkout" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <Checkout />
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="/payment-success" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <PaymentSuccess />
+            </div>
+          </ProtectedRoute>
+        } />
       </Routes>
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
@@ -1337,7 +1364,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -24,7 +26,8 @@ import {
   Camera,
   DollarSign,
   Package,
-  CheckCircle
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import Filters from "./Filters";
 import Products from "./Products";
@@ -33,6 +36,9 @@ import ProductCard from "./productCard";
 const Marketplace = () => {
   // Use AuthContext for user authentication
   const { user, profile, loading: authLoading } = useAuth();
+  // Use CartContext for cart functionality
+  const { addToCart, cartSummary } = useCart();
+  const navigate = useNavigate();
   
   // Add custom styles for scrollbar hiding
   React.useEffect(() => {
@@ -98,6 +104,7 @@ const Marketplace = () => {
   const [showEditListingModal, setShowEditListingModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
@@ -115,6 +122,69 @@ const Marketplace = () => {
     imagePreview: null
   });
 
+  // Check if product is in cart
+  const isProductInCart = (productId) => {
+    return cartSummary.cartItems?.some(item => item.product === productId) || false;
+  };
+
+  // Get cart item quantity
+  const getCartItemQuantity = (productId) => {
+    const cartItem = cartSummary.cartItems?.find(item => item.product === productId);
+    return cartItem ? cartItem.quantity : 0;
+  };
+
+  // Handle add to cart
+  const handleAddToCart = async (productId) => {
+    setAddingToCart(productId);
+    try {
+      const result = await addToCart(productId, 1);
+      if (result.success) {
+        // Show success feedback with animation
+        showSuccessMessage('Product added to cart successfully! 🛒');
+        
+        // Add a brief success animation to the cart icon
+        const cartIcon = document.querySelector('[data-cart-icon]');
+        if (cartIcon) {
+          cartIcon.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            cartIcon.style.transform = 'scale(1)';
+          }, 200);
+        }
+        
+        // Add success animation to the product card
+        const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+        if (productCard) {
+          productCard.style.transform = 'scale(1.02)';
+          productCard.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+          setTimeout(() => {
+            productCard.style.transform = 'scale(1)';
+            productCard.style.boxShadow = '';
+          }, 300);
+        }
+      } else {
+        showErrorMessage(result.error || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      showErrorMessage('Failed to add to cart. Please try again.');
+    } finally {
+      setAddingToCart(null);
+    }
+  };
+
+  // Toast notification system
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showSuccessMessage = (message) => {
+    setToast({ show: true, message, type: 'success' });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  const showErrorMessage = (message) => {
+    setToast({ show: true, message, type: 'error' });
+    setTimeout(() => setToast({ show: false, message: '', type: 'error' }), 4000);
+  };
+  
   // Get user role from AuthContext and map to marketplace roles
   const userType = profile?.user_type || user?.user_type || null;
   const role = userType === 'buyer' || userType === 'agricultural_business' ? 'merchant' : userType;
@@ -559,6 +629,68 @@ const Marketplace = () => {
         {/* Main Content - Only show if authenticated */}
         {!authLoading && user && (
           <>
+            {/* Toast Notification */}
+            <AnimatePresence>
+              {toast.show && (
+                <motion.div
+                  initial={{ opacity: 0, y: -50, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                  className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3 ${
+                    toast.type === 'success' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-red-500 text-white'
+                  }`}
+                >
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+                  }`}>
+                    {toast.type === 'success' ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4" />
+                    )}
+                  </div>
+                  <span className="font-medium">{toast.message}</span>
+                  <button
+                    onClick={() => setToast({ show: false, message: '', type: 'success' })}
+                    className="ml-2 hover:opacity-80 transition-opacity"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Floating Cart Indicator */}
+            {cartSummary.totalItems > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="fixed bottom-6 right-6 z-40"
+              >
+                <motion.button
+                  onClick={() => navigate('/cart')}
+                  className="bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium">View Cart</span>
+                    <span className="text-xs opacity-90">{cartSummary.totalItems} items</span>
+                  </div>
+                  <motion.div
+                    className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 0.5, repeat: Infinity }}
+                  >
+                    {cartSummary.totalItems}
+                  </motion.div>
+                </motion.button>
+              </motion.div>
+            )}
+
       {/* Hero Section */}
       <section className="relative min-h-[80vh] overflow-hidden">
         {/* Cinematic Background - Agricultural Landscape */}
@@ -881,98 +1013,183 @@ const Marketplace = () => {
               {/* Merchant View - Buy Products */}
               {role === "merchant" && (
                 <>
-                    {/* All Products - Merchant View */}
-                    <div className="mb-6">
+                  {/* Cart Summary Banner */}
+                  {cartSummary.totalItems > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-2xl shadow-lg"
+                    >
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-gray-900">
-                          {activeCategory === "all" ? "All Products" : categories.find(c => c.id === activeCategory)?.name}
-                        </h2>
-                        <div className="text-gray-600">
-                          {loading ? "Loading..." : `Showing ${allProducts.length} products`}
+                        <div className="flex items-center space-x-3">
+                          <ShoppingCart className="w-6 h-6" />
+                          <div>
+                            <h3 className="font-semibold">Items in your cart</h3>
+                            <p className="text-sm opacity-90">
+                              {cartSummary.totalItems} {cartSummary.totalItems === 1 ? 'item' : 'items'} • ETB {cartSummary.totalPrice.toFixed(2)}
+                            </p>
+                          </div>
                         </div>
-                        </div>
+                        <motion.button
+                          onClick={() => navigate('/cart')}
+                          className="px-4 py-2 bg-white text-green-600 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View Cart
+                        </motion.button>
                       </div>
-                      
-                    {/* Products Grid */}
-                    {loading ? (
-                      <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading products...</p>
+                    </motion.div>
+                  )}
+
+                  {/* All Products - Merchant View */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {activeCategory === "all" ? "All Products" : categories.find(c => c.id === activeCategory)?.name}
+                      </h2>
+                      <div className="text-gray-600">
+                        {loading ? "Loading..." : `Showing ${allProducts.length} products`}
                       </div>
-                    ) : error ? (
-                      <div className="text-center py-12 text-red-600">
-                        {error}
                       </div>
-                    ) : allProducts.length === 0 ? (
-                      <div className="text-center py-12 text-gray-500">
-                        No products found. Try adjusting your filters or search terms.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {allProducts.map((product, index) => (
-                          <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
-                          >
-                            <div className="relative h-40 sm:h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                              {product.image ? (
-                                <img 
-                                  src={product.image} 
-                                  alt={product.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <span className="text-4xl sm:text-6xl">🌿</span>
+                    </div>
+                    
+                  {/* Products Grid */}
+                  {loading ? (
+                    <div className="text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading products...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="text-center py-12 text-red-600">
+                      {error}
+                    </div>
+                  ) : allProducts.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      No products found. Try adjusting your filters or search terms.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {allProducts.map((product, index) => (
+                        <motion.div
+                          key={product.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+                          data-product-id={product.id}
+                        >
+                          <div className="relative h-40 sm:h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                            {product.image ? (
+                              <img 
+                                src={product.image} 
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-4xl sm:text-6xl">🌿</span>
+                            )}
+                            <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
+                              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
+                                product.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {product.is_active ? "Available" : "Unavailable"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-4 sm:p-6">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                            <p className="text-gray-600 mb-4 line-clamp-2 text-sm sm:text-base">{product.description}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-4 space-y-2 sm:space-y-0">
+                              <div className="text-gray-600 text-sm sm:text-base">
+                                <p className="font-medium">Price: ETB {product.price}/{product.unit}</p>
+                                <p>Stock: {product.quantity} {product.unit}</p>
+                              </div>
+                              <div className="text-gray-600 text-sm sm:text-base">
+                                <p>Harvest: {new Date(product.harvest_date).toLocaleDateString()}</p>
+                                <p>Organic: {product.organic ? "Yes" : "No"}</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+                              <div className="flex items-center space-x-1">
+                                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                                <span className="text-sm sm:text-base">{product.farmer?.region || "Location not set"}</span>
+                              </div>
+                              {product.organic && (
+                                <div className="flex items-center space-x-1 text-green-600">
+                                  <Leaf className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <span className="text-sm sm:text-base">Organic</span>
+                                </div>
                               )}
-                              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-                                <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                                  product.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                                }`}>
-                                  {product.is_active ? "Available" : "Unavailable"}
-                                </span>
+                              <div className="flex items-center space-x-1 text-blue-600">
+                                <span className="text-xs sm:text-sm font-medium capitalize">{product.category}</span>
                               </div>
                             </div>
-                            <div className="p-4 sm:p-6">
-                              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
-                              <p className="text-gray-600 mb-4 line-clamp-2 text-sm sm:text-base">{product.description}</p>
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-4 space-y-2 sm:space-y-0">
-                                <div className="text-gray-600 text-sm sm:text-base">
-                                  <p className="font-medium">Price: ETB {product.price}/{product.unit}</p>
-                                  <p>Stock: {product.quantity} {product.unit}</p>
-                                </div>
-                                <div className="text-gray-600 text-sm sm:text-base">
-                                  <p>Harvest: {new Date(product.harvest_date).toLocaleDateString()}</p>
-                                  <p>Organic: {product.organic ? "Yes" : "No"}</p>
-                                </div>
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
-                                <div className="flex items-center space-x-1">
-                                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                                  <span className="text-sm sm:text-base">{product.farmer?.region || "Location not set"}</span>
-                                </div>
-                                {product.organic && (
-                                  <div className="flex items-center space-x-1 text-green-600">
-                                    <Leaf className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    <span className="text-sm sm:text-base">Organic</span>
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                              {isProductInCart(product.id) ? (
+                                <div className="flex flex-col space-y-2">
+                                  <div className="text-center text-sm text-green-600 font-medium">
+                                    ✓ In Cart ({getCartItemQuantity(product.id)} {product.unit})
                                   </div>
-                                )}
-                                <div className="flex items-center space-x-1 text-blue-600">
-                                  <span className="text-xs sm:text-sm font-medium capitalize">{product.category}</span>
+                                  <motion.button 
+                                    className="w-full px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-medium hover:bg-blue-200 transition-all duration-300 text-sm sm:text-base flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => handleAddToCart(product.id)}
+                                    disabled={addingToCart === product.id}
+                                    whileHover={addingToCart !== product.id ? { scale: 1.02, y: -1 } : {}}
+                                    whileTap={addingToCart !== product.id ? { scale: 0.98 } : {}}
+                                  >
+                                    {addingToCart === product.id ? (
+                                      <>
+                                        <motion.div 
+                                          className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700"
+                                          animate={{ rotate: 360 }}
+                                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                        />
+                                        <span>Adding...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ShoppingCart className="w-4 h-4" />
+                                        <span>Add More</span>
+                                      </>
+                                    )}
+                                  </motion.button>
                                 </div>
-                              </div>
-                              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                                <button className="w-full px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-xl font-medium hover:bg-green-200 transition-colors text-sm sm:text-base">
-                                  Add to Cart
-                                </button>
-                              </div>
+                              ) : (
+                                <motion.button 
+                                  className={`w-full px-3 sm:px-4 py-2 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base flex items-center justify-center space-x-2 ${
+                                    addingToCart === product.id
+                                      ? 'bg-green-600 text-white shadow-lg'
+                                      : 'bg-green-100 text-green-700 hover:bg-green-200 hover:shadow-md'
+                                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                  onClick={() => handleAddToCart(product.id)}
+                                  disabled={addingToCart === product.id}
+                                  whileHover={addingToCart !== product.id ? { scale: 1.02, y: -1 } : {}}
+                                  whileTap={addingToCart !== product.id ? { scale: 0.98 } : {}}
+                                >
+                                  {addingToCart === product.id ? (
+                                    <>
+                                      <motion.div 
+                                        className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                      />
+                                      <span>Adding...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingCart className="w-4 h-4" />
+                                      <span>Add to Cart</span>
+                                    </>
+                                  )}
+                                </motion.button>
+                              )}
                             </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
 

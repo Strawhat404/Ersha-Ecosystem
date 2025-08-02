@@ -3,6 +3,8 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.db import transaction
 from django_filters import rest_framework as filters
+import uuid
+from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -13,6 +15,7 @@ from .serializers import (
 )
 from marketplace.models import Cart
 from core.permissions import IsOrderOwnerOrReadOnly
+from payments.services.processor import PaymentProcessor
 
 
 class OrderFilter(filters.FilterSet):
@@ -43,6 +46,82 @@ class OrderViewSet(viewsets.ModelViewSet):
         elif self.action in ['update_status']:
             return OrderStatusUpdateSerializer
         return OrderSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Create a new order"""
+        try:
+            with transaction.atomic():
+                # Extract data from request
+                items_data = request.data.get('items', [])
+                delivery_address = request.data.get('delivery_address', {})
+                customer_info = request.data.get('customer_info', {})
+                total_amount = Decimal(request.data.get('total_amount', 0))
+                
+                # Validate required data
+                if not items_data:
+                    return Response(
+                        {'error': 'No items provided'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                if not delivery_address.get('address') or not delivery_address.get('city') or not delivery_address.get('region'):
+                    return Response(
+                        {'error': 'Complete delivery address is required'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                if not customer_info.get('email') or not customer_info.get('phone'):
+                    return Response(
+                        {'error': 'Customer email and phone are required'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Create order
+                order_data = {
+                    'buyer': request.user,
+                    'delivery_address': f"{delivery_address.get('address')}, {delivery_address.get('city')}, {delivery_address.get('region')}",
+                    'delivery_phone': customer_info.get('phone'),
+                    'delivery_notes': delivery_address.get('delivery_instructions', ''),
+                    'total_amount': total_amount,
+                    'status': 'pending_payment'
+                }
+                
+                order = Order.objects.create(**order_data)
+                
+                # Create order items
+                for item_data in items_data:
+                    from marketplace.models import Product
+                    try:
+                        product = Product.objects.get(id=item_data['product_id'])
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=Decimal(item_data['quantity']),
+                            unit_price=Decimal(item_data['price'])
+                        )
+                    except Product.DoesNotExist:
+                        raise Exception(f"Product with id {item_data['product_id']} not found")
+                
+                # Create notification for farmers
+                for item in order.items.all():
+                    Notification.objects.create(
+                        user=item.product.farmer,
+                        notification_type='order_status',
+                        title='New Order Received',
+                        message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}'
+                    )
+                
+                return Response({
+                    'success': True,
+                    'order_id': order.id,
+                    'message': 'Order created successfully'
+                }, status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     @action(detail=False, methods=['post'])
     def create_from_cart(self, request):
@@ -116,6 +195,118 @@ class OrderViewSet(viewsets.ModelViewSet):
                     OrderSerializer(order).data, 
                     status=status.HTTP_201_CREATED
                 )
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['post'])
+    async def create_with_payment(self, request):
+        """Create order with payment integration"""
+        try:
+            with transaction.atomic():
+                # Extract data from request
+                items_data = request.data.get('items', [])
+                delivery_address = request.data.get('delivery_address', {})
+                customer_info = request.data.get('customer_info', {})
+                total_amount = Decimal(request.data.get('total_amount', 0))
+                payment_provider = request.data.get('payment_provider', 'chapa')
+                
+                # Validate required data
+                if not items_data:
+                    return Response(
+                        {'error': 'No items provided'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                if not delivery_address.get('address') or not delivery_address.get('city') or not delivery_address.get('region'):
+                    return Response(
+                        {'error': 'Complete delivery address is required'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                if not customer_info.get('email') or not customer_info.get('phone'):
+                    return Response(
+                        {'error': 'Customer email and phone are required'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Create order
+                order_data = {
+                    'buyer': request.user,
+                    'delivery_address': f"{delivery_address.get('address')}, {delivery_address.get('city')}, {delivery_address.get('region')}",
+                    'delivery_phone': customer_info.get('phone'),
+                    'delivery_notes': delivery_address.get('delivery_instructions', ''),
+                    'total_amount': total_amount,
+                    'status': 'pending_payment'
+                }
+                
+                order = Order.objects.create(**order_data)
+                
+                # Create order items
+                for item_data in items_data:
+                    from marketplace.models import Product
+                    try:
+                        product = Product.objects.get(id=item_data['product_id'])
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=Decimal(item_data['quantity']),
+                            unit_price=Decimal(item_data['price'])
+                        )
+                    except Product.DoesNotExist:
+                        raise Exception(f"Product with id {item_data['product_id']} not found")
+                
+                # Generate unique reference for payment
+                payment_reference = f"order_{order.id}_{uuid.uuid4().hex[:8]}"
+                
+                # Prepare payment data
+                payment_data = {
+                    'amount': float(total_amount),
+                    'currency': 'ETB',
+                    'phone_number': customer_info.get('phone'),
+                    'reference': payment_reference,
+                    'description': f'Payment for Order #{order.id}',
+                    'provider': payment_provider
+                }
+                
+                # Initialize payment processor
+                payment_processor = PaymentProcessor()
+                
+                # Process payment
+                payment_result = await payment_processor.process_payment(payment_data)
+                
+                if payment_result['success']:
+                    # Update order with payment reference
+                    order.payment_reference = payment_reference
+                    order.save()
+                    
+                    # Clear cart if items came from cart
+                    Cart.objects.filter(user=request.user).delete()
+                    
+                    # Create notification for farmers
+                    for item in order.items.all():
+                        Notification.objects.create(
+                            user=item.product.farmer,
+                            notification_type='order_status',
+                            title='New Order Received',
+                            message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}'
+                        )
+                    
+                    return Response({
+                        'order_id': order.id,
+                        'payment_url': payment_result.get('checkout_url'),
+                        'transaction_id': payment_result.get('transaction_id'),
+                        'message': 'Order created and payment initiated successfully'
+                    }, status=status.HTTP_201_CREATED)
+                else:
+                    # If payment fails, delete the order
+                    order.delete()
+                    return Response({
+                        'error': payment_result.get('error', 'Payment initiation failed')
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
             return Response(
