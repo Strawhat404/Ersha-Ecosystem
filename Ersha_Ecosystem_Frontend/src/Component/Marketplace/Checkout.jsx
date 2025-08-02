@@ -75,7 +75,7 @@ const Checkout = () => {
     }
     
     // Basic phone validation
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
     if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
       setError('Please enter a valid phone number');
       return false;

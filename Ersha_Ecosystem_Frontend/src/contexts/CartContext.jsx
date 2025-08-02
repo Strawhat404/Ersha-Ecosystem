@@ -75,17 +75,6 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateCartSummary = (items) => {
-    // Calculate summary from items array (fallback method)
-    const itemsArray = Array.isArray(items) ? items : [];
-    const totalItems = itemsArray.length;
-    const totalPrice = itemsArray.reduce((sum, item) => {
-      const price = parseFloat(item.total_price || 0);
-      return sum + price;
-    }, 0);
-    setCartSummary({ totalItems, totalPrice, cartItems: items });
-  };
-
   const addToCart = async (productId, quantity = 1) => {
     setLoading(true);
     setError(null);

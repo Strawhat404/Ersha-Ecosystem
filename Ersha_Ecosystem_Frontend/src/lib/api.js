@@ -1,33 +1,39 @@
-// Django Backend API Service
+// API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-// Helper function for API calls
+// API call utility function
 const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('access_token');
   
-  const config = {
+  const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers
-    },
-    ...options
+    }
+  };
+
+  const config = {
+    ...defaultOptions,
+    ...options,
+    headers: {
+      ...defaultOptions.headers,
+      ...options.headers
+    }
   };
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${endpoint}`, config);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
       const errorText = await response.text();
-      
       let errorData;
       try {
         errorData = JSON.parse(errorText);
-      } catch (e) {
-        errorData = { detail: errorText };
+      } catch {
+        errorData = { message: errorText || 'Network error' };
       }
-      
-      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      throw new Error(errorData.message || `HTTP ${response.status}`);
     }
     
     const data = await response.json();

@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-route
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Sprout, 
-  Home, 
   ShoppingBag, 
   BarChart3, 
   CreditCard, 
@@ -29,7 +28,6 @@ import {
 // import viteLogo from '/vite.svg'
 import './App.css'
 import News from './Component/News/News'
-import Homepage from './Component/Mainpage/Homepage'
 import Navbar from './Component/Mainpage/Navbar'
 import Herosection from './Component/Mainpage/Herosection'
 import Features from './Component/Mainpage/Features'
@@ -107,7 +105,6 @@ function AppContent() {
   const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/expert-dashboard', '/logistics-dashboard', '/verification'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const { user, loading } = useAuth();
 
   const renderDashboardView = () => {
     switch(activeView) {
