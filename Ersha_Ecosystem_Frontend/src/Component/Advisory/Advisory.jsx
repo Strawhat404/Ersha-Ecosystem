@@ -1,425 +1,250 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Sprout, BookOpen } from 'lucide-react';
+import { User, Sprout, BookOpen, Search, Filter, Star, MapPin, Clock, DollarSign, ExternalLink } from 'lucide-react';
+import { useAuth } from "../../contexts/AuthContext";
 
 const Advisory = () => {
-  const [selectedTab, setSelectedTab] = useState("courses");
+  const { user, profile, loading: authLoading } = useAuth();
+  const [selectedTab, setSelectedTab] = useState("advice");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // API data states
+  const [experts, setExperts] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [advisoryContent, setAdvisoryContent] = useState([]);
+  
+  // Booking modal state
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedExpert, setSelectedExpert] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
-  const experts = [
-    {
-      id: 1,
-      name: "Dr. Alemayehu Bekele",
-      specialization: "Crop Management",
-      experience: "15 years",
-      rating: 4.9,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face"
-            alt="Dr. Alemayehu Bekele"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Expert in sustainable farming practices and crop rotation techniques.",
-      availability: "Available",
-      consultationPrice: "500 ETB/hour",
-      languages: ["Amharic", "English"]
-    },
-    {
-      id: 2,
-      name: "Sara Mekonnen",
-      specialization: "Livestock Management", 
-      experience: "12 years",
-      rating: 4.8,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face"
-            alt="Sara Mekonnen"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Specializes in dairy farming and animal nutrition programs.",
-      availability: "Busy",
-      consultationPrice: "450 ETB/hour",
-      languages: ["Amharic", "English", "Oromo"]
-    },
-    {
-      id: 3,
-      name: "Dr. Tadesse Worku",
-      specialization: "Soil Science",
-      experience: "20 years", 
-      rating: 4.9,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-            alt="Dr. Tadesse Worku"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Leading researcher in soil health and fertilizer optimization.",
-      availability: "Available",
-      consultationPrice: "600 ETB/hour",
-      languages: ["Amharic", "English"]
-    },
-    {
-      id: 4,
-      name: "Meron Alemu",
-      specialization: "Agricultural Technology",
-      experience: "8 years",
-      rating: 4.7,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1494790108755-2616b612b75c?w=150&h=150&fit=crop&crop=face"
-            alt="Meron Alemu"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Specialist in modern farming technology and precision agriculture.",
-      availability: "Available",
-      consultationPrice: "400 ETB/hour",
-      languages: ["Amharic", "English"]
-    },
-    {
-      id: 5,
-      name: "Dr. Berhanu Gebre",
-      specialization: "Climate Adaptation",
-      experience: "18 years",
-      rating: 4.8,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-            alt="Dr. Berhanu Gebre"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Expert in climate-smart agriculture and drought-resistant farming.",
-      availability: "Available",
-      consultationPrice: "550 ETB/hour",
-      languages: ["Amharic", "English"]
-    },
-    {
-      id: 6,
-      name: "Tigist Haile",
-      specialization: "Organic Farming",
-      experience: "10 years",
-      rating: 4.6,
-      image: (
-        <div className="w-20 h-20 rounded-full overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-            alt="Tigist Haile"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      bio: "Certified organic farming consultant and sustainable agriculture advocate.",
-      availability: "Available",
-      consultationPrice: "350 ETB/hour",
-      languages: ["Amharic", "English"],
-      certifications: ["Organic Certification Expert", "Permaculture Designer"]
-    }
-  ];
+  // API Base URL
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-  const guides = [
-    {
-      id: 1,
-      title: "Organic Farming Best Practices",
-      category: "farming",
-      difficulty: "Beginner",
-      duration: "45 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400&h=300&fit=crop"
-            alt="Organic Farming Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Learn the fundamentals of organic farming, including soil preparation, natural pest control, and sustainable harvesting techniques.",
-      author: "Dr. Alemayehu Bekele",
-      views: 2450,
-      rating: 4.8,
-      modules: ["Soil Health", "Composting", "Natural Pest Control", "Certification Process"],
-      price: "Free"
-    },
-    {
-      id: 2,
-      title: "Seasonal Crop Planning Guide",
-      category: "planning",
-      difficulty: "Intermediate", 
-      duration: "60 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop"
-            alt="Crop Planning Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Comprehensive guide to planning your crops according to Ethiopian seasons, weather patterns, and market demand.",
-      author: "Sara Mekonnen",
-      views: 1870,
-      rating: 4.7,
-      modules: ["Seasonal Calendar", "Market Analysis", "Risk Management", "Crop Rotation"],
-      price: "299 ETB"
-    },
-    {
-      id: 3,
-      title: "Modern Irrigation Techniques",
-      category: "technology",
-      difficulty: "Advanced",
-      duration: "90 mins", 
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop"
-            alt="Irrigation Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Master efficient irrigation systems including drip irrigation, sprinkler systems, and water conservation methods.",
-      author: "Dr. Tadesse Worku",
-      views: 3120,
-      rating: 4.9,
-      modules: ["Drip Systems", "Smart Irrigation", "Water Management", "System Maintenance"],
-      price: "499 ETB"
-    },
-    {
-      id: 4,
-      title: "Precision Agriculture with Drones",
-      category: "technology",
-      difficulty: "Advanced",
-      duration: "120 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop"
-            alt="Drone Technology Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Learn how to use drone technology for crop monitoring, soil analysis, and precision application of inputs.",
-      author: "Meron Alemu",
-      views: 1560,
-      rating: 4.8,
-      modules: ["Drone Operations", "Data Analysis", "Mapping Techniques", "ROI Calculation"],
-      price: "799 ETB"
-    },
-    {
-      id: 5,
-      title: "Climate-Smart Agriculture",
-      category: "climate",
-      difficulty: "Intermediate",
-      duration: "75 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop"
-            alt="Climate Smart Agriculture Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Strategies for adapting farming practices to climate change and building resilient agricultural systems.",
-      author: "Dr. Berhanu Gebre",
-      views: 2100,
-      rating: 4.7,
-      modules: ["Climate Adaptation", "Drought Management", "Resilient Varieties", "Risk Assessment"],
-      price: "399 ETB"
-    },
-    {
-      id: 6,
-      title: "Livestock Management Essentials",
-      category: "livestock",
-      difficulty: "Beginner",
-      duration: "55 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1560457079-9a6532ccb118?w=400&h=300&fit=crop"
-            alt="Livestock Management Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Complete guide to livestock management including feeding, breeding, health management, and housing.",
-      author: "Sara Mekonnen",
-      views: 1890,
-      rating: 4.6,
-      modules: ["Animal Nutrition", "Breeding Techniques", "Health Management", "Housing Design"],
-      price: "249 ETB"
-    },
-    {
-      id: 7,
-      title: "Sustainable Soil Management",
-      category: "soil",
-      difficulty: "Intermediate",
-      duration: "70 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop"
-            alt="Soil Management Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Learn advanced soil management techniques to improve fertility and prevent degradation.",
-      author: "Dr. Tadesse Worku",
-      views: 2300,
-      rating: 4.8,
-      modules: ["Soil Testing", "Nutrient Management", "Erosion Control", "Soil Amendment"],
-      price: "349 ETB"
-    },
-    {
-      id: 8,
-      title: "Integrated Pest Management",
-      category: "pest-control",
-      difficulty: "Intermediate",
-      duration: "50 mins",
-      image: (
-        <div className="w-full h-48 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=400&h=300&fit=crop"
-            alt="Pest Management Course"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-      description: "Comprehensive approach to pest control using biological, cultural, and minimal chemical methods.",
-      author: "Tigist Haile",
-      views: 1750,
-      rating: 4.7,
-      modules: ["Pest Identification", "Biological Control", "Cultural Practices", "Monitoring Systems"],
-      price: "299 ETB"
-    }
-  ];
+  // Fetch experts from API
+  const fetchExperts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      const headers = token ? {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      } : {
+        'Content-Type': 'application/json',
+      };
 
-  const resources = [
-    {
-      id: 1,
-      title: "Crop Disease Identification Manual",
-      type: "PDF Guide",
-      description: "Comprehensive visual guide for identifying common crop diseases in Ethiopian agriculture.",
-      downloads: 1520,
-      fileSize: "12.5 MB",
-      category: "health",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=64&h=64&fit=crop"
-            alt="Disease Guide"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
-    },
-    {
-      id: 2,
-      title: "Fertilizer Application Calculator",
-      type: "Excel Tool",
-      description: "Calculate optimal fertilizer quantities based on soil tests and crop requirements.",
-      downloads: 890,
-      fileSize: "2.8 MB",
-      category: "tools",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=64&h=64&fit=crop"
-            alt="Calculator Tool"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
-    },
-    {
-      id: 3,
-      title: "Ethiopian Agricultural Calendar",
-      type: "PDF Reference",
-      description: "Season-wise planting and harvesting guide for major crops in different Ethiopian regions.",
-      downloads: 2340,
-      fileSize: "8.1 MB",
-      category: "planning",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=64&h=64&fit=crop"
-            alt="Calendar Guide"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
-    },
-    {
-      id: 4,
-      title: "Soil Testing Kit Instructions",
-      type: "Video Guide",
-      description: "Step-by-step video guide on how to use soil testing kits for optimal crop nutrition.",
-      downloads: 670,
-      fileSize: "45.2 MB",
-      category: "soil",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=64&h=64&fit=crop"
-            alt="Soil Testing Guide"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
-    },
-    {
-      id: 5,
-      title: "Market Price Analysis Reports",
-      type: "Data Reports",
-      description: "Monthly analysis of agricultural commodity prices and market trends in Ethiopian markets.",
-      downloads: 1150,
-      fileSize: "15.7 MB",
-      category: "market",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=64&h=64&fit=crop"
-            alt="Market Analysis"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
-    },
-    {
-      id: 6,
-      title: "Organic Certification Handbook",
-      type: "PDF Guide",
-      description: "Complete guide to obtaining organic certification for your agricultural products in Ethiopia.",
-      downloads: 450,
-      fileSize: "6.9 MB",
-      category: "certification",
-      image: (
-        <div className="w-16 h-16 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=64&h=64&fit=crop"
-            alt="Certification Guide"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )
+      const response = await fetch(`${API_BASE_URL}/advisory/experts/`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setExperts(data.results || data);
+    } catch (err) {
+      setError('Failed to load experts. Please try again.');
+      console.error('Error fetching experts:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Fetch courses from API
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      const headers = token ? {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      } : {
+        'Content-Type': 'application/json',
+      };
+
+      const response = await fetch(`${API_BASE_URL}/advisory/courses/`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCourses(data.results || data);
+    } catch (err) {
+      setError('Failed to load courses. Please try again.');
+      console.error('Error fetching courses:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch resources from API
+  const fetchResources = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      const headers = token ? {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      } : {
+        'Content-Type': 'application/json',
+      };
+
+      const response = await fetch(`${API_BASE_URL}/advisory/resources/`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setResources(data.results || data);
+    } catch (err) {
+      setError('Failed to load resources. Please try again.');
+      console.error('Error fetching resources:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch advisory content from API
+  const fetchAdvisoryContent = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      const headers = token ? {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      } : {
+        'Content-Type': 'application/json',
+      };
+
+      const response = await fetch(`${API_BASE_URL}/advisory/advisory-content/`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAdvisoryContent(data.results || data);
+    } catch (err) {
+      setError('Failed to load advisory content. Please try again.');
+      console.error('Error fetching advisory content:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Book consultation with expert
+  const handleBookConsultation = async (expert) => {
+    if (!user) {
+      alert('Please log in to book a consultation.');
+      return;
+    }
+
+    setSelectedExpert(expert);
+    setShowBookingModal(true);
+  };
+
+  // Confirm booking and redirect to Calendly
+  const confirmBooking = async () => {
+    if (!selectedExpert) return;
+
+    try {
+      setBookingLoading(true);
+      
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/advisory/experts/${selectedExpert.id}/book_consultation/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to book consultation');
+      }
+
+      const data = await response.json();
+      
+      // Redirect to Calendly
+      if (data.calendly_link) {
+        window.open(data.calendly_link, '_blank');
+      }
+      
+      setShowBookingModal(false);
+      setSelectedExpert(null);
+      
+    } catch (err) {
+      alert(err.message || 'Failed to book consultation. Please try again.');
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // Load data based on selected tab
+  useEffect(() => {
+    if (selectedTab === "advice") {
+      fetchExperts();
+    } else if (selectedTab === "courses") {
+      fetchCourses();
+    } else if (selectedTab === "resources") {
+      fetchResources();
+    }
+  }, [selectedTab]);
+
+  // Filter experts based on search and category
+  const filteredExperts = experts.filter(expert => {
+    const matchesSearch = expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         expert.specialization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         expert.bio.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || expert.specialization.toLowerCase().includes(selectedCategory.toLowerCase());
+    return matchesSearch && matchesCategory;
+  });
+
+  // Filter courses based on search and category
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Filter resources based on search and category
+  const filteredResources = resources.filter(resource => {
+    const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         resource.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || resource.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const tabs = [
     { 
@@ -622,7 +447,21 @@ const Advisory = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="grid grid-cols-1 lg:grid-cols-3 gap-8"
               >
-                {experts.map((expert, index) => (
+                {loading ? (
+                  <div className="col-span-full text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading experts...</p>
+                  </div>
+                ) : error ? (
+                  <div className="col-span-full text-center py-12 text-red-600">
+                    {error}
+                  </div>
+                ) : filteredExperts.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    No experts found. Try adjusting your search or filters.
+                  </div>
+                ) : (
+                  filteredExperts.map((expert, index) => (
                   <motion.div
                     key={expert.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -636,52 +475,90 @@ const Advisory = () => {
                         whileHover={{ scale: 1.1 }}
                         className="mr-4"
                       >
-                        {expert.image}
+                          <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                            {expert.profile_image ? (
+                              <img 
+                                src={expert.profile_image} 
+                                alt={expert.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-10 h-10 text-green-600" />
+                            )}
+                          </div>
                       </motion.div>
                       <div>
                         <h3 className="font-bold text-gray-900">{expert.name}</h3>
                         <p className="text-sm text-gray-600">{expert.specialization}</p>
-                        <p className="text-xs text-emerald-600 font-medium">{expert.experience}</p>
-                      </div>
+                          <p className="text-xs text-emerald-600 font-medium">{expert.experience_years} years experience</p>
+                        </div>
                     </div>
                     
                     <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
                       <div className="flex items-center">
-                        <motion.svg 
-                          className="w-4 h-4 text-orange-400 mr-1" 
-                          fill="currentColor" 
-                          viewBox="0 0 20 20"
-                          animate={{ rotate: [0, 360] }}
-                          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </motion.svg>
+                          <Star className="w-4 h-4 text-orange-400 mr-1" />
                         {expert.rating}
-                      </div>
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 text-gray-400 mr-1" />
+                          {expert.region || "Location not specified"}
+                        </div>
+                        <div className="flex items-center">
+                          <DollarSign className="w-4 h-4 text-green-600 mr-1" />
+                          {expert.consultation_price} ETB/hour
+                        </div>
                     </div>
                     
                     <div className="bg-gray-50 rounded-lg p-4 mb-4">
                       <p className="text-sm text-gray-700 italic">"{expert.bio}"</p>
                     </div>
                     
-                    <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-4">
                       <span className={`text-xs px-3 py-1 rounded-full ${
-                        expert.availability === "Available" 
+                          expert.availability === "available" 
                           ? "bg-green-100 text-green-700" 
-                          : "bg-orange-100 text-orange-700"
-                      }`}>
-                        {expert.availability}
+                            : expert.availability === "busy"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {expert.availability.charAt(0).toUpperCase() + expert.availability.slice(1)}
+                        </span>
+                        {expert.verified && (
+                          <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+                            Verified
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap gap-1">
+                          {expert.languages && expert.languages.slice(0, 2).map((lang, idx) => (
+                            <span key={idx} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                              {lang}
                       </span>
+                          ))}
+                        </div>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="btn-primary text-sm px-4 py-2"
-                      >
-                        Book Consultation
+                          onClick={() => handleBookConsultation(expert)}
+                          disabled={expert.availability === "unavailable" || !expert.calendly_connected}
+                          className={`text-sm px-4 py-2 rounded-xl font-medium transition-colors ${
+                            expert.availability === "unavailable" || !expert.calendly_connected
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-green-600 text-white hover:bg-green-700"
+                          }`}
+                        >
+                          {expert.availability === "unavailable" 
+                            ? "Unavailable" 
+                            : !expert.calendly_connected 
+                            ? "Not Connected" 
+                            : "Book Consultation"}
                       </motion.button>
                     </div>
                   </motion.div>
-                ))}
+                  ))
+                )}
               </motion.div>
             )}
 
@@ -693,9 +570,23 @@ const Advisory = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
-                {guides.map((guide, index) => (
+                {loading ? (
+                  <div className="col-span-full text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading courses...</p>
+                  </div>
+                ) : error ? (
+                  <div className="col-span-full text-center py-12 text-red-600">
+                    {error}
+                  </div>
+                ) : filteredCourses.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    No courses found. Try adjusting your search or filters.
+                  </div>
+                ) : (
+                  filteredCourses.map((course, index) => (
                   <motion.div
-                    key={guide.id}
+                      key={course.id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -704,67 +595,63 @@ const Advisory = () => {
                   >
                     <div className="relative">
                       <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        {guide.image}
+                          {course.image ? (
+                            <img 
+                              src={course.image} 
+                              alt={course.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <BookOpen className="w-16 h-16 text-gray-400" />
+                          )}
                       </div>
                       <div className="absolute top-4 left-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          guide.difficulty === "Beginner" ? "bg-green-100 text-green-700" :
-                          guide.difficulty === "Intermediate" ? "bg-orange-100 text-orange-700" :
+                            course.difficulty === "beginner" ? "bg-green-100 text-green-700" :
+                            course.difficulty === "intermediate" ? "bg-orange-100 text-orange-700" :
                           "bg-red-100 text-red-700"
                         }`}>
-                          {guide.difficulty}
+                            {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)}
                         </span>
                       </div>
                       <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-bold text-emerald-600">
-                        {guide.duration}
+                          {course.duration}
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{guide.title}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{guide.description}</p>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
+                        <p className="text-gray-600 text-sm mb-4">{course.description}</p>
                       
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                         <div className="flex items-center">
-                          <motion.svg 
-                            className="w-4 h-4 mr-1" 
-                            fill="currentColor" 
-                            viewBox="0 0 20 20"
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                          >
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path>
-                          </motion.svg>
-                          {guide.author}
-                        </div>
-                        <div>{guide.views} views</div>
+                            <User className="w-4 h-4 mr-1 text-gray-400" />
+                            {course.author_name || "Unknown Author"}
+                          </div>
+                          <div>{course.views} views</div>
                       </div>
                       
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center text-sm text-gray-600">
-                          <motion.svg 
-                            className="w-4 h-4 text-orange-400 mr-1" 
-                            fill="currentColor" 
-                            viewBox="0 0 20 20"
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                          </motion.svg>
-                          {guide.rating}
-                        </div>
+                            <Star className="w-4 h-4 text-orange-400 mr-1" />
+                            {course.rating}
+                          </div>
+                          <div className="text-sm font-medium text-green-600">
+                            {course.is_free ? "Free" : `${course.price} ETB`}
+                          </div>
                       </div>
                       
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full btn-primary"
+                          className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
                       >
-                        Enroll Now
+                          {course.is_free ? "Enroll Free" : "Enroll Now"}
                       </motion.button>
                     </div>
                   </motion.div>
-                ))}
+                  ))
+                )}
               </motion.div>
             )}
 
@@ -776,7 +663,21 @@ const Advisory = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
-                {resources.map((resource, index) => (
+                {loading ? (
+                  <div className="col-span-full text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading resources...</p>
+                  </div>
+                ) : error ? (
+                  <div className="col-span-full text-center py-12 text-red-600">
+                    {error}
+                  </div>
+                ) : filteredResources.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    No resources found. Try adjusting your search or filters.
+                  </div>
+                ) : (
+                  filteredResources.map((resource, index) => (
                   <motion.div
                     key={resource.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -786,9 +687,19 @@ const Advisory = () => {
                     className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      {resource.image}
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          {resource.image ? (
+                            <img 
+                              src={resource.image} 
+                              alt={resource.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <BookOpen className="w-8 h-8 text-gray-400" />
+                          )}
+                        </div>
                       <span className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
-                        {resource.type}
+                          {resource.resource_type}
                       </span>
                     </div>
                     
@@ -797,32 +708,135 @@ const Advisory = () => {
                     
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                       <div>{resource.downloads} downloads</div>
-                      <div>{resource.fileSize}</div>
+                        <div>{resource.file_size}</div>
                     </div>
                     
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full btn-secondary border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                    >
-                      <motion.svg 
-                        className="w-4 h-4 mr-2" 
-                        fill="currentColor" 
-                        viewBox="0 0 20 20"
-                        animate={{ y: [0, 3, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        onClick={() => window.open(resource.file_url, '_blank')}
+                        className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
                       >
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"></path>
-                      </motion.svg>
                       Download
                     </motion.button>
                   </motion.div>
-                ))}
+                  ))
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <AnimatePresence>
+        {showBookingModal && selectedExpert && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowBookingModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Book Consultation</h2>
+                  <p className="text-gray-600">Schedule a consultation with {selectedExpert.name}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                      {selectedExpert.profile_image ? (
+                        <img 
+                          src={selectedExpert.profile_image} 
+                          alt={selectedExpert.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-6 h-6 text-green-600" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">{selectedExpert.name}</h3>
+                      <p className="text-sm text-gray-600">{selectedExpert.specialization}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-orange-400 mr-2" />
+                      <span>{selectedExpert.rating} rating</span>
+                    </div>
+                    <div className="flex items-center">
+                      <DollarSign className="w-4 h-4 text-green-600 mr-2" />
+                      <span>{selectedExpert.consultation_price} ETB/hour</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                      <span>{selectedExpert.region || "Location not specified"}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 text-blue-600 mr-2" />
+                      <span>{selectedExpert.experience_years} years experience</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <ExternalLink className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium text-blue-900">Calendly Booking</span>
+                    </div>
+                    <p className="text-sm text-blue-700">
+                      You'll be redirected to {selectedExpert.name}'s Calendly page to select your preferred time slot.
+                    </p>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowBookingModal(false)}
+                      disabled={bookingLoading}
+                      className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmBooking}
+                      disabled={bookingLoading}
+                      className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+                    >
+                      {bookingLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Redirecting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="w-4 h-4" />
+                          <span>Book Now</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
