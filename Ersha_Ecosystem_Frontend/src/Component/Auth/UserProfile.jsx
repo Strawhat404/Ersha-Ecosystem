@@ -16,7 +16,9 @@ import {
   ShoppingBag,
   Building,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  Truck
 } from 'lucide-react';
 
 const UserProfile = ({ onClose }) => {
@@ -46,8 +48,10 @@ const UserProfile = ({ onClose }) => {
         return <Leaf className="w-5 h-5 text-green-600" />;
       case 'buyer':
         return <ShoppingBag className="w-5 h-5 text-blue-600" />;
-      case 'agricultural_business':
-        return <Building className="w-5 h-5 text-purple-600" />;
+      case 'expert':
+        return <GraduationCap className="w-5 h-5 text-purple-600" />;
+      case 'logistics':
+        return <Truck className="w-5 h-5 text-orange-600" />;
       default:
         return <User className="w-5 h-5 text-gray-600" />;
     }
@@ -59,8 +63,10 @@ const UserProfile = ({ onClose }) => {
         return 'Farmer';
       case 'buyer':
         return 'Buyer/Merchant';
-      case 'agricultural_business':
-        return 'Agricultural Business';
+      case 'expert':
+        return 'Expert';
+      case 'logistics':
+        return 'Logistics Company';
       default:
         return 'User';
     }
@@ -302,11 +308,11 @@ const UserProfile = ({ onClose }) => {
               </div>
             )}
 
-            {/* Business License (for merchants) */}
-            {profile?.user_type === 'agricultural_business' && (
+            {/* Business License (for logistics) */}
+            {profile?.user_type === 'logistics' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Business License Number
+                  Company Registration Number
                 </label>
                 {isEditing ? (
                   <input
@@ -314,11 +320,11 @@ const UserProfile = ({ onClose }) => {
                     value={formData.business_license}
                     onChange={(e) => setFormData({ ...formData, business_license: e.target.value })}
                     className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your business license number"
+                    placeholder="Enter your company registration number"
                   />
                 ) : (
                   <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-xl">
-                    <Building className="h-5 w-5 text-gray-400" />
+                    <Truck className="h-5 w-5 text-gray-400" />
                     <span className="text-gray-700">{profile?.business_license || 'Not provided'}</span>
                   </div>
                 )}
