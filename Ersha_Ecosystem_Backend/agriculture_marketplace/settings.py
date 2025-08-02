@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'weather',
     'logistics',
     'payments',
+    'sales_analytics',
 ]
 
 MIDDLEWARE = [

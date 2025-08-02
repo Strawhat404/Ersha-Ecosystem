@@ -12,7 +12,7 @@ class NewsArticle(models.Model):
     author = models.CharField(max_length=255, blank=True)
     source = models.CharField(max_length=255, blank=True)
     source_url = models.URLField(blank=True)
-    image_url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True, max_length=500)
     featured = models.BooleanField(default=False)
     views = models.IntegerField(default=0)
     published_at = models.DateTimeField(default=timezone.now)

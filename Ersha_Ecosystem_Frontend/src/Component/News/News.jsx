@@ -89,10 +89,31 @@ const News = () => {
   useEffect(() => {
     const fetchNews = async () => {
       setLoading(true);
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newsData = [
+      try {
+        // Fetch news from Django backend API
+        const response = await fetch('http://localhost:8000/api/news/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch news');
+        }
+        const newsData = await response.json();
+        
+        // Transform backend data to match frontend format
+        const transformedNews = newsData.results ? newsData.results.map(article => ({
+          id: article.id,
+          title: article.title,
+          excerpt: article.excerpt || article.content.substring(0, 200) + '...',
+          image: article.image_url || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=250&fit=crop&crop=center',
+          category: article.category,
+          author: article.author || 'Ersha Ecosystem',
+          date: new Date(article.published_at).toISOString().split('T')[0],
+          readTime: Math.ceil(article.content.length / 200) + ' min read',
+          featured: article.featured,
+          tags: Array.isArray(article.tags) ? article.tags : [],
+          fullContent: article.content
+        })) : [];
+        
+        // If no news from backend, use fallback data
+        const fallbackNewsData = [
         {
           id: 1,
           title: "Ethiopian Coffee Exports Hit Record Highs in 2024",
@@ -196,17 +217,42 @@ const News = () => {
           readTime: "6 min read",
           featured: false,
           tags: ["Cooperatives", "Collective Farming", "Efficiency"],
-          fullContent: "Agricultural cooperatives across Ethiopia are demonstrating the power of collective action in improving farmer livelihoods and agricultural productivity. A recent assessment of 500 cooperatives shows that member farmers achieve 35% higher incomes compared to individual farmers, primarily through collective bargaining for better input prices and direct market access. The cooperatives have also facilitated knowledge sharing, with experienced farmers mentoring newer members in improved farming techniques. Success stories include coffee cooperatives in Oromia that have secured direct export contracts, bypassing traditional middlemen and increasing farmer profits by up to 50%. The model is being expanded to include value-addition activities such as processing and packaging."
+          fullContent: "Agricultural cooperatives across Ethiopia are demonstrating the power of collective action in improving farmer livelihoods and agricultural productivity."
         }
       ];
       
-      setArticles(newsData);
-      setFilteredArticles(newsData);
+      // Use backend news if available, otherwise use fallback
+      const finalNewsData = transformedNews.length > 0 ? transformedNews : fallbackNewsData;
+      setArticles(finalNewsData);
+      setFilteredArticles(finalNewsData);
+      
+    } catch (error) {
+      console.error('Error fetching news from backend:', error);
+      // Use fallback data if API fails
+      const fallbackNewsData = [
+        {
+          id: 1,
+          title: "Ethiopian Coffee Exports Hit Record Highs in 2024",
+          excerpt: "Coffee exports from Ethiopia reached unprecedented levels this quarter.",
+          image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=250&fit=crop&crop=center",
+          category: "market",
+          author: "Dawit Negash",
+          date: "2024-03-20",
+          readTime: "5 min read",
+          featured: true,
+          tags: ["Export", "Coffee", "Market Analysis"],
+          fullContent: "Ethiopian coffee exports have reached unprecedented levels in the first quarter of 2024."
+        }
+      ];
+      setArticles(fallbackNewsData);
+      setFilteredArticles(fallbackNewsData);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchNews();
-  }, []);
+  fetchNews();
+}, []);
 
   useEffect(() => {
     let filtered = articles;

@@ -9,7 +9,7 @@ const categories = [
 
 const NewsCard = ({ item, onEdit, onDelete }) => (
   <div className="bg-white rounded-xl shadow p-4 flex flex-col">
-    <img src={item.image} alt={item.title} className="h-40 w-full object-cover rounded mb-3" />
+    <img src={item.image_url || item.image} alt={item.title} className="h-40 w-full object-cover rounded mb-3" />
     <div className="flex-1">
       <h2 className="font-bold text-lg mb-1">{item.title}</h2>
       <p className="text-gray-600 text-sm mb-2">{item.excerpt}</p>

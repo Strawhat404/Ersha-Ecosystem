@@ -720,7 +720,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         
         total_users = User.objects.count()
         farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
-        merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+        merchants = User.objects.filter(user_type=User.UserType.BUYER).count()
         verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
         pending_users = User.objects.filter(verification_status=User.VerificationStatus.PENDING).count()
         
@@ -750,7 +750,7 @@ class AdminDashboardView(APIView):
         # User statistics
         total_users = User.objects.count()
         farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
-        merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+        merchants = User.objects.filter(user_type=User.UserType.BUYER).count()
         verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
         
         # Recent activity (last 7 days)
@@ -795,7 +795,7 @@ class ComprehensiveAdminDashboardView(APIView):
             # User statistics
             total_users = User.objects.count()
             farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
-            merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+            merchants = User.objects.filter(user_type=User.UserType.BUYER).count()
             verified_users = User.objects.filter(verification_status=User.VerificationStatus.VERIFIED).count()
             pending_users = User.objects.filter(verification_status=User.VerificationStatus.PENDING).count()
             
