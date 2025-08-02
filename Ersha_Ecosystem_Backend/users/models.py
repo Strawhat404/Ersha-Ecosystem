@@ -11,7 +11,8 @@ class User(AbstractUser):
     class UserType(models.TextChoices):
         FARMER = 'farmer', 'Farmer'
         BUYER = 'buyer', 'Buyer/Merchant'
-        AGRICULTURAL_BUSINESS = 'agricultural_business', 'Agricultural Business'
+        EXPERT = 'expert', 'Expert'
+        LOGISTICS = 'logistics', 'Logistics Company'
         ADMIN = 'admin', 'Admin'
     
     class VerificationStatus(models.TextChoices):
@@ -83,12 +84,16 @@ class User(AbstractUser):
         return self.user_type == self.UserType.BUYER
     
     @property
-    def is_agricultural_business(self):
-        return self.user_type == self.UserType.AGRICULTURAL_BUSINESS
+    def is_expert(self):
+        return self.user_type == self.UserType.EXPERT
+    
+    @property
+    def is_logistics(self):
+        return self.user_type == self.UserType.LOGISTICS
     
     @property
     def is_merchant(self):
-        return self.user_type in [self.UserType.BUYER, self.UserType.AGRICULTURAL_BUSINESS]
+        return self.user_type in [self.UserType.BUYER, self.UserType.EXPERT, self.UserType.LOGISTICS]
     
     @property
     def is_admin(self):
@@ -132,7 +137,7 @@ class Profile(models.Model):
         max_length=100, 
         blank=True, 
         null=True,
-        help_text="Business license number (required for agricultural businesses)"
+        help_text="Business license number (required for logistics providers)"
     )
     woreda = models.CharField(
         max_length=100, 
@@ -164,6 +169,39 @@ class Profile(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])],
         help_text="Profile picture image file (JPG, JPEG, PNG only)"
     )
+    
+    # Expert-specific fields
+    area_of_expertise = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Area of expertise (required for experts)"
+    )
+    certificate_of_expertise = models.FileField(
+        upload_to='expert_certificates/',
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
+        help_text="Certificate of expertise (PDF, JPG, JPEG, PNG only)"
+    )
+    
+    # Logistics-specific fields
+    coverage_areas = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="List of coverage areas for logistics services"
+    )
+    deliveries_count = models.IntegerField(
+        default=0,
+        help_text="Total number of deliveries completed"
+    )
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.00,
+        help_text="Average rating (0.00 to 5.00)"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -192,9 +230,13 @@ class Profile(models.Model):
             logger.error("Validation failed: Farm size is required for farmers")
             raise ValidationError("Farm size is required for farmers")
         
-        if self.user.user_type == User.UserType.AGRICULTURAL_BUSINESS and not self.business_license_number:
-            logger.error("Validation failed: Business license number is required for agricultural businesses")
-            raise ValidationError("Business license number is required for agricultural businesses")
+        if self.user.user_type == User.UserType.LOGISTICS and not self.business_license_number:
+            logger.error("Validation failed: Business license number is required for logistics providers")
+            raise ValidationError("Business license number is required for logistics providers")
+        
+        if self.user.user_type == User.UserType.EXPERT and not self.area_of_expertise:
+            logger.error("Validation failed: Area of expertise is required for experts")
+            raise ValidationError("Area of expertise is required for experts")
     
     def save(self, *args, **kwargs):
         # Skip validation if this is an update operation with specific fields or skip_validation is True
@@ -206,3 +248,46 @@ class Profile(models.Model):
         else:
             self.clean()
             super().save(*args, **kwargs)
+
+
+class PKCESession(models.Model):
+    """Model to store PKCE session data for Fayda OIDC flow"""
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='pkce_sessions',
+        help_text="User associated with this PKCE session"
+    )
+    state = models.CharField(
+        max_length=128,
+        unique=True,
+        help_text="State parameter for CSRF protection"
+    )
+    code_verifier = models.CharField(
+        max_length=128,
+        help_text="PKCE code verifier"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="When this session expires")
+    
+    class Meta:
+        db_table = 'users_pkce_session'
+        indexes = [
+            models.Index(fields=['state']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"PKCE Session for {self.user.email} - {self.state[:10]}..."
+    
+    @property
+    def is_expired(self):
+        """Check if the session has expired"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    @classmethod
+    def cleanup_expired(cls):
+        """Remove expired PKCE sessions"""
+        from django.utils import timezone
+        cls.objects.filter(expires_at__lt=timezone.now()).delete()

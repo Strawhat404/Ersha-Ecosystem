@@ -23,7 +23,8 @@ import {
   ShieldX,
   Clock,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  GraduationCap
 } from 'lucide-react';
 
 // Import dashboard components
@@ -193,8 +194,10 @@ const UserDashboard = () => {
         return <Leaf className="w-6 h-6 text-green-600" />;
       case 'buyer':
         return <ShoppingBag className="w-6 h-6 text-blue-600" />;
-      case 'agricultural_business':
-        return <Building className="w-6 h-6 text-purple-600" />;
+      case 'expert':
+        return <GraduationCap className="w-6 h-6 text-purple-600" />;
+      case 'logistics':
+        return <Truck className="w-6 h-6 text-orange-600" />;
       default:
         return <User className="w-6 h-6 text-gray-600" />;
     }
@@ -206,8 +209,10 @@ const UserDashboard = () => {
         return 'Farmer';
       case 'buyer':
         return 'Buyer/Merchant';
-      case 'agricultural_business':
-        return 'Agricultural Business';
+      case 'expert':
+        return 'Expert';
+      case 'logistics':
+        return 'Logistics Company';
       default:
         return 'User';
     }

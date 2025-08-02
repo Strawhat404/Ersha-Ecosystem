@@ -15,7 +15,11 @@ import {
   Leaf,
   ShoppingBag,
   Users,
-  Building
+  Building,
+  GraduationCap,
+  Truck,
+  Upload,
+  MapPin
 } from 'lucide-react';
 
 const Register = () => {
@@ -31,13 +35,17 @@ const Register = () => {
     userType: 'farmer',
     region: '',
     farmSize: '',
-    businessLicense: ''
+    businessLicense: '',
+    areaOfExpertise: '',
+    certificateOfExpertise: null,
+    coverageAreas: []
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [newCoverageArea, setNewCoverageArea] = useState('');
 
   const { signUp } = useAuth();
 
@@ -55,16 +63,29 @@ const Register = () => {
       description: 'I buy agricultural products for resale'
     },
     { 
-      id: 'agricultural_business', 
-      label: 'Agricultural Business', 
-      icon: <Building className="w-5 h-5" />,
-      description: 'I run an agricultural business'
+      id: 'expert', 
+      label: 'Expert', 
+      icon: <GraduationCap className="w-5 h-5" />,
+      description: 'I provide agricultural expertise and consulting'
+    },
+    { 
+      id: 'logistics', 
+      label: 'Logistics Company', 
+      icon: <Truck className="w-5 h-5" />,
+      description: 'We provide transportation and delivery services'
     }
   ];
 
   const regions = [
     'Addis Ababa', 'Oromia', 'Amhara', 'SNNPR', 'Tigray', 
     'Afar', 'Somali', 'Benishangul-Gumuz', 'Gambella', 'Harari'
+  ];
+
+  const expertiseAreas = [
+    'Crop Production', 'Livestock Management', 'Soil Science', 
+    'Agricultural Technology', 'Pest Management', 'Irrigation Systems',
+    'Organic Farming', 'Sustainable Agriculture', 'Agricultural Economics',
+    'Food Safety', 'Agricultural Extension', 'Research & Development'
   ];
 
   const handleSubmit = async (e) => {
@@ -98,7 +119,10 @@ const Register = () => {
         phone: formData.phone,
         region: formData.region,
         farm_size: formData.farmSize ? parseFloat(formData.farmSize) : null,
-        business_license_number: formData.businessLicense
+        business_license_number: formData.businessLicense,
+        area_of_expertise: formData.areaOfExpertise,
+        certificate_of_expertise: formData.certificateOfExpertise,
+        coverage_areas: formData.coverageAreas
       };
 
       const { error } = await signUp(formData.email, formData.password, userData);
@@ -125,6 +149,31 @@ const Register = () => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({
+      ...formData,
+      certificateOfExpertise: file
+    });
+  };
+
+  const handleAddCoverageArea = () => {
+    if (newCoverageArea.trim() && !formData.coverageAreas.includes(newCoverageArea.trim())) {
+      setFormData({
+        ...formData,
+        coverageAreas: [...formData.coverageAreas, newCoverageArea.trim()]
+      });
+      setNewCoverageArea('');
+    }
+  };
+
+  const handleRemoveCoverageArea = (area) => {
+    setFormData({
+      ...formData,
+      coverageAreas: formData.coverageAreas.filter(a => a !== area)
+    });
   };
 
   const handleSwitchToLogin = () => {
@@ -170,7 +219,7 @@ const Register = () => {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 I am a:
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {userTypes.map((type) => (
                   <motion.button
                     key={type.id}
@@ -204,7 +253,7 @@ const Register = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
+                  {formData.userType === 'logistics' ? 'Company Name' : 'First Name'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -218,14 +267,14 @@ const Register = () => {
                     value={formData.first_name}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your first name"
+                    placeholder={formData.userType === 'logistics' ? 'Enter your company name' : 'Enter your first name'}
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
+                  {formData.userType === 'logistics' ? 'Contact Person' : 'Last Name'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -239,7 +288,7 @@ const Register = () => {
                     value={formData.last_name}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your last name"
+                    placeholder={formData.userType === 'logistics' ? 'Enter contact person name' : 'Enter your last name'}
                   />
                 </div>
               </div>
@@ -304,11 +353,11 @@ const Register = () => {
               </div>
             )}
 
-            {/* Business License (for merchants) */}
-            {formData.userType === 'agricultural_business' && (
+            {/* Business License (for logistics) */}
+            {formData.userType === 'logistics' && (
               <div>
                 <label htmlFor="businessLicense" className="block text-sm font-medium text-gray-700 mb-2">
-                  Business License Number
+                  Company Registration Number
                 </label>
                 <input
                   id="businessLicense"
@@ -317,8 +366,112 @@ const Register = () => {
                   value={formData.businessLicense}
                   onChange={handleInputChange}
                   className="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your business license number"
+                  placeholder="Enter your company registration number"
                 />
+              </div>
+            )}
+
+            {/* Area of Expertise (for experts) */}
+            {formData.userType === 'expert' && (
+              <div>
+                <label htmlFor="areaOfExpertise" className="block text-sm font-medium text-gray-700 mb-2">
+                  Area of Expertise
+                </label>
+                <select
+                  id="areaOfExpertise"
+                  name="areaOfExpertise"
+                  value={formData.areaOfExpertise}
+                  onChange={handleInputChange}
+                  className="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select your area of expertise</option>
+                  {expertiseAreas.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Certificate of Expertise (for experts) */}
+            {formData.userType === 'expert' && (
+              <div>
+                <label htmlFor="certificateOfExpertise" className="block text-sm font-medium text-gray-700 mb-2">
+                  Certificate of Expertise
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Upload className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="certificateOfExpertise"
+                    name="certificateOfExpertise"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="block w-full pl-10 pr-3 py-3 text-sm text-gray-900 border border-gray-300 rounded-xl cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                  />
+                </div>
+                {formData.certificateOfExpertise && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Selected file: {formData.certificateOfExpertise.name}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Coverage Areas (for logistics) */}
+            {formData.userType === 'logistics' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Service Coverage Areas
+                </label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={newCoverageArea}
+                        onChange={(e) => setNewCoverageArea(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCoverageArea();
+                          }
+                        }}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Enter service area (e.g., Addis Ababa)"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddCoverageArea}
+                      className="px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {formData.coverageAreas.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.coverageAreas.map((area, index) => (
+                        <span key={index} className="flex items-center bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                          {area}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCoverageArea(area)}
+                            className="ml-2 text-green-600 hover:text-green-800 focus:outline-none"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

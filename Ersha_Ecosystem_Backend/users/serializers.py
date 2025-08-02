@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name': {'help_text': 'User last name'},
             'phone': {'help_text': 'Phone number (optional)'},
             'region': {'help_text': 'User region/location'},
-            'user_type': {'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'},
+            'user_type': {'help_text': 'Type of user: farmer, buyer, expert, logistics, or admin'},
         }
 
 
@@ -35,18 +35,24 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'farm_size', 'farm_size_unit', 'woreda', 'kebele',
             'business_license_number', 'business_license', 'bio', 'profile_picture', 
-            'full_location', 'created_at', 'updated_at'
+            'full_location', 'created_at', 'updated_at', 'area_of_expertise', 
+            'certificate_of_expertise', 'coverage_areas', 'deliveries_count', 'rating'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
             'farm_size': {'help_text': 'Size of the farm in decimal format (required for farmers)'},
             'farm_size_unit': {'help_text': 'Unit of farm size (e.g., hectares, acres)'},
-            'business_license_number': {'help_text': 'Business license number (required for agricultural businesses)'},
+            'business_license_number': {'help_text': 'Company registration number (required for logistics companies)'},
             'woreda': {'help_text': 'Woreda (district) name'},
             'kebele': {'help_text': 'Kebele (sub-district) name'},
             'business_license': {'help_text': 'Business license number (for merchants) - deprecated'},
             'bio': {'help_text': 'User biography or description'},
             'profile_picture': {'help_text': 'Profile picture image file'},
+            'area_of_expertise': {'help_text': 'Area of expertise (required for experts)'},
+            'certificate_of_expertise': {'help_text': 'Certificate of expertise file'},
+            'coverage_areas': {'help_text': 'List of service coverage areas for logistics companies'},
+            'deliveries_count': {'help_text': 'Total number of deliveries completed'},
+            'rating': {'help_text': 'Average rating (0.00 to 5.00)'},
         }
 
 
@@ -68,7 +74,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name': {'help_text': 'User last name'},
             'phone': {'help_text': 'Phone number'},
             'region': {'help_text': 'User region/location'},
-            'user_type': {'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'},
+            'user_type': {'help_text': 'Type of user: farmer, buyer, expert, logistics, or admin'},
         }
 
 
@@ -103,7 +109,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         required=False, 
         allow_null=True,
         allow_blank=True,
-        help_text="Business license number (required for agricultural businesses)"
+        help_text="Company registration number (required for logistics companies)"
+    )
+    
+    # Expert-specific fields
+    area_of_expertise = serializers.CharField(
+        max_length=200,
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        help_text="Area of expertise (required for experts)"
+    )
+    certificate_of_expertise = serializers.FileField(
+        required=False,
+        allow_null=True,
+        help_text="Certificate of expertise (PDF, JPG, JPEG, PNG only)"
+    )
+    
+    # Logistics-specific fields
+    coverage_areas = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        required=False,
+        allow_null=True,
+        help_text="List of coverage areas for logistics services"
     )
     
     class Meta:
@@ -111,7 +139,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = [
             'email', 'username', 'first_name', 'last_name', 'password', 
             'password_confirm', 'phone', 'region', 'user_type', 'farm_size',
-            'farm_size_unit', 'business_license_number'
+            'farm_size_unit', 'business_license_number', 'area_of_expertise',
+            'certificate_of_expertise', 'coverage_areas'
         ]
         extra_kwargs = {
             'email': {
@@ -121,10 +150,10 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'help_text': 'Username for the account'
             },
             'first_name': {
-                'help_text': 'User first name'
+                'help_text': 'User first name (or company name for logistics)'
             },
             'last_name': {
-                'help_text': 'User last name'
+                'help_text': 'User last name (or contact person for logistics)'
             },
             'phone': {
                 'help_text': 'Phone number (optional)'
@@ -133,7 +162,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'help_text': 'User region/location'
             },
             'user_type': {
-                'help_text': 'Type of user: farmer, buyer, agricultural_business, or admin'
+                'help_text': 'Type of user: farmer, buyer, expert, logistics company, or admin'
             },
         }
     
@@ -151,11 +180,18 @@ class RegisterSerializer(serializers.ModelSerializer):
                     'farm_size': 'Farm size is required for farmers'
                 })
         
-        elif user_type == User.UserType.AGRICULTURAL_BUSINESS:
+        elif user_type == User.UserType.LOGISTICS:
             business_license_number = attrs.get('business_license_number')
             if business_license_number is None or business_license_number == '':
                 raise serializers.ValidationError({
-                    'business_license_number': 'Business license number is required for agricultural businesses'
+                    'business_license_number': 'Company registration number is required for logistics companies'
+                })
+        
+        elif user_type == User.UserType.EXPERT:
+            area_of_expertise = attrs.get('area_of_expertise')
+            if area_of_expertise is None or area_of_expertise == '':
+                raise serializers.ValidationError({
+                    'area_of_expertise': 'Area of expertise is required for experts'
                 })
         
         return attrs
@@ -165,12 +201,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         farm_size = validated_data.pop('farm_size', None)
         farm_size_unit = validated_data.pop('farm_size_unit', None)
         business_license_number = validated_data.pop('business_license_number', None)
+        area_of_expertise = validated_data.pop('area_of_expertise', None)
+        certificate_of_expertise = validated_data.pop('certificate_of_expertise', None)
+        coverage_areas = validated_data.pop('coverage_areas', None)
         
         # Remove password confirmation
         validated_data.pop('password_confirm')
         
         logger.info(f"Creating user with data: {validated_data}")
         logger.info(f"Profile data - farm_size: {farm_size}, farm_size_unit: {farm_size_unit}, business_license_number: {business_license_number}")
+        logger.info(f"Expert data - area_of_expertise: {area_of_expertise}, certificate_of_expertise: {certificate_of_expertise}")
+        logger.info(f"Logistics data - coverage_areas: {coverage_areas}")
         
         try:
             # Create user
@@ -189,6 +230,12 @@ class RegisterSerializer(serializers.ModelSerializer):
                 profile_data['farm_size_unit'] = farm_size_unit
             if business_license_number is not None and business_license_number != '':
                 profile_data['business_license_number'] = business_license_number
+            if area_of_expertise is not None and area_of_expertise != '':
+                profile_data['area_of_expertise'] = area_of_expertise
+            if certificate_of_expertise is not None:
+                profile_data['certificate_of_expertise'] = certificate_of_expertise
+            if coverage_areas is not None:
+                profile_data['coverage_areas'] = coverage_areas
             
             logger.info(f"Creating profile with data: {profile_data}")
             

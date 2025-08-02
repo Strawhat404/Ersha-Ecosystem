@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ersha_ecosystem_mobile/src/common/common_banner_appbar.dart';
 import 'package:ersha_ecosystem_mobile/src/common/common_drawer.dart';
+
 import '../widgets/news_header.dart';
 import '../widgets/news_list.dart';
+import 'news_detail_screen.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -197,45 +199,56 @@ class _NewsScreenState extends State<NewsScreen> {
                       ),
                     ),
                   if (filteredArticles.isNotEmpty)
-                    ...filteredArticles.map((article) => Container(
-                      margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-                            child: Image.network(
-                              article["image"],
-                              height: 180,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
+                    ...filteredArticles.map((article) => InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NewsDetailScreen(article: article),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(article["title"], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF14532d))),
-                                const SizedBox(height: 8),
-                                Text(article["excerpt"], style: const TextStyle(fontSize: 16, color: Colors.black87)),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(article["author"], style: const TextStyle(color: Colors.grey)),
-                                    Text(article["readTime"], style: const TextStyle(color: Colors.grey)),
-                                  ],
-                                ),
-                              ],
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                              child: Image.network(
+                                article["image"],
+                                height: 180,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(article["title"], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF14532d))),
+                                  const SizedBox(height: 8),
+                                  Text(article["excerpt"], style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(article["author"], style: const TextStyle(color: Colors.grey)),
+                                      Text(article["readTime"], style: const TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     )),
                 ],
