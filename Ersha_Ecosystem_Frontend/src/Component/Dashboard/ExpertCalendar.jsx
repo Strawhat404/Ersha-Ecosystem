@@ -15,12 +15,10 @@ import {
   AlertCircle,
   XCircle,
   Edit,
-  Trash2,
-  Eye,
-  Filter,
   Download,
   Link,
-  X
+  X,
+  Phone,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 const ExpertCalendar = () => {

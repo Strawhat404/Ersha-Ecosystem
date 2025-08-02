@@ -5,7 +5,6 @@ import ExpertProfileSetup from './ExpertProfileSetup';
 import { 
   Users, 
   Search,
-  Filter,
   Star,
   Calendar,
   Phone,
@@ -17,10 +16,6 @@ import {
   AlertCircle,
   Eye,
   MessageSquare,
-  Video,
-  User,
-  ChevronDown,
-  ChevronUp,
   MoreVertical,
   Download,
   RefreshCw
