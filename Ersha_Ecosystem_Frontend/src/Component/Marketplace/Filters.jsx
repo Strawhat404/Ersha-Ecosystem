@@ -138,7 +138,7 @@ const Filters = ({ onFilterChange }) => {
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 w-80"
+      className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 w-full"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

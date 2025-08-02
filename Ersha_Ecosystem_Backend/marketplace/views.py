@@ -9,7 +9,7 @@ from datetime import timedelta
 
 from .models import Product, Cart
 from .serializers import (
-    ProductSerializer, ProductCreateSerializer,
+    ProductSerializer, ProductCreateSerializer, ProductUpdateSerializer,
     CartSerializer, CartCreateSerializer, CartUpdateSerializer
 )
 from core.permissions import IsFarmer, IsProductOwnerOrReadOnly, IsCartOwnerOrReadOnly
@@ -21,10 +21,11 @@ class ProductFilter(filters.FilterSet):
     organic = filters.BooleanFilter()
     farmer = filters.NumberFilter(field_name="farmer__id")
     region = filters.CharFilter(field_name="farmer__region", lookup_expr='icontains')
+    category = filters.CharFilter(field_name="category", lookup_expr='exact')
     
     class Meta:
         model = Product
-        fields = ['organic', 'unit', 'farmer', 'region']
+        fields = ['organic', 'unit', 'farmer', 'region', 'category']
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -39,7 +40,19 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return ProductCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return ProductUpdateSerializer
         return ProductSerializer
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated, IsFarmer]
+        else:
+            permission_classes = self.permission_classes
+        return [permission() for permission in permission_classes]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -55,6 +68,32 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
         
         return queryset
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new product listing.
+        Only farmers can create products.
+        """
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create product: {str(e)}'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    def update(self, request, *args, **kwargs):
+        """
+        Update a product listing.
+        Only the product owner (farmer) can update their products.
+        """
+        try:
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update product: {str(e)}'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def approve_product(self, request, pk=None):

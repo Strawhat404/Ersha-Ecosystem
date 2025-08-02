@@ -105,7 +105,7 @@ function AppContent() {
 
   const renderDashboardView = () => {
     switch(activeView) {
-      case 'home':
+      case 'home': {
         return (
           <main>
             {/* Hero Section */}
@@ -954,7 +954,7 @@ function AppContent() {
             </section>
           </main>
         );
-
+      }
       case 'marketplace':
         return <Marketplace />;
         

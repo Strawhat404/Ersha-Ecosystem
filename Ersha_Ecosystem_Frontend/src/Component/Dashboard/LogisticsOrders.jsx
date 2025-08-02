@@ -215,9 +215,10 @@ const LogisticsOrders = () => {
     switch (sortBy) {
       case 'date':
         return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'priority':
+      case 'priority': {
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
+      }
       case 'status':
         return a.status.localeCompare(b.status);
       case 'value':
