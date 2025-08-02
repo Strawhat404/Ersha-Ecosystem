@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { newsAPI } from '../lib/api';
 
 const initialNews = [
   {
@@ -44,7 +45,7 @@ const categories = [
 ];
 
 const AdminNews = () => {
-  const [news, setNews] = useState(initialNews);
+  const [news, setNews] = useState([]);
   const [form, setForm] = useState({
     title: '',
     excerpt: '',
@@ -53,6 +54,27 @@ const AdminNews = () => {
     featured: false,
   });
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch news from backend on mount
+  useEffect(() => {
+    const fetchNews = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await newsAPI.getNews();
+        setNews(data);
+      } catch (err) {
+        setError('Failed to fetch news.');
+        // Fallback to initialNews if API fails
+        setNews(initialNews);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -62,28 +84,28 @@ const AdminNews = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      setNews((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...item, ...form } : item
-        )
-      );
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingId) {
+        // Update existing news
+        await newsAPI.updateNews(editingId, form);
+      } else {
+        // Create new news
+        await newsAPI.createNews(form);
+      }
+      // Refresh news list
+      const data = await newsAPI.getNews();
+      setNews(data);
       setEditingId(null);
-    } else {
-      setNews((prev) => [
-        {
-          ...form,
-          id: Date.now(),
-          author: 'Admin',
-          date: new Date().toISOString().slice(0, 10),
-          readTime: '2 min read',
-        },
-        ...prev,
-      ]);
+      setForm({ title: '', excerpt: '', image: '', category: categories[0].id, featured: false });
+    } catch (err) {
+      setError('Failed to save news.');
+    } finally {
+      setLoading(false);
     }
-    setForm({ title: '', excerpt: '', image: '', category: categories[0].id, featured: false });
   };
 
   const handleEdit = (item) => {
@@ -97,14 +119,26 @@ const AdminNews = () => {
     setEditingId(item.id);
   };
 
-  const handleDelete = (id) => {
-    setNews((prev) => prev.filter((item) => item.id !== id));
-    if (editingId === id) setEditingId(null);
+  const handleDelete = async (id) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await newsAPI.deleteNews(id);
+      const data = await newsAPI.getNews();
+      setNews(data);
+      if (editingId === id) setEditingId(null);
+    } catch (err) {
+      setError('Failed to delete news.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
       <h1 className="text-2xl font-bold mb-6">Manage News</h1>
+      {error && <div className="mb-4 text-red-600">{error}</div>}
+      {loading && <div className="mb-4 text-gray-500">Loading...</div>}
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-6 mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block font-medium mb-1">Title</label>

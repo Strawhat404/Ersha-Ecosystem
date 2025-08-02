@@ -1,42 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { newsAPI } from '../../lib/api';
 import NewsForm from './components/NewsForm';
 import NewsCard from './components/NewsCard';
 
-const initialNews = [
-  {
-    id: 1,
-    title: 'Market Prices Surge in July',
-    excerpt: 'Grain and vegetable prices see a sharp increase due to weather conditions.',
-    image: 'https://source.unsplash.com/featured/?farm,market',
-    author: 'Admin',
-    date: '2025-07-20',
-    category: 'market',
-    featured: true,
-    readTime: '3 min read',
-  },
-  {
-    id: 2,
-    title: 'New Farm Tech Revolutionizes Harvest',
-    excerpt: 'Innovative machinery boosts productivity for local farmers.',
-    image: 'https://source.unsplash.com/featured/?farm,technology',
-    author: 'Admin',
-    date: '2025-07-15',
-    category: 'technology',
-    featured: false,
-    readTime: '2 min read',
-  },
-  {
-    id: 3,
-    title: 'Weather Patterns Affect Crop Yields',
-    excerpt: 'Unusual rainfall patterns impact this season’s harvest.',
-    image: 'https://source.unsplash.com/featured/?farm,weather',
-    author: 'Admin',
-    date: '2025-07-10',
-    category: 'climate',
-    featured: false,
-    readTime: '4 min read',
-  },
-];
+// Removed initialNews, will fetch from backend
 
 const categories = [
   { id: 'market', name: 'Market Trends' },
@@ -47,7 +14,7 @@ const categories = [
 
 
 const AdminNews = () => {
-  const [news, setNews] = useState(initialNews);
+  const [news, setNews] = useState([]);
   const [form, setForm] = useState({
     title: '',
     excerpt: '',
@@ -57,6 +24,25 @@ const AdminNews = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch news from backend on mount
+  useEffect(() => {
+    const fetchNews = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await newsAPI.getNews();
+        setNews(data);
+      } catch (err) {
+        setError('Failed to fetch news.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -66,29 +52,29 @@ const AdminNews = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      setNews((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...item, ...form } : item
-        )
-      );
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingId) {
+        // Update existing news
+        await newsAPI.updateNews(editingId, form);
+      } else {
+        // Create new news
+        await newsAPI.createNews(form);
+      }
+      // Refresh news list
+      const data = await newsAPI.getNews();
+      setNews(data);
       setEditingId(null);
-    } else {
-      setNews((prev) => [
-        {
-          ...form,
-          id: Date.now(),
-          author: 'Admin',
-          date: new Date().toISOString().slice(0, 10),
-          readTime: '2 min read',
-        },
-        ...prev,
-      ]);
+      setForm({ title: '', excerpt: '', image: '', category: categories[0].id, featured: false });
+      setShowForm(false);
+    } catch (err) {
+      setError('Failed to save news.');
+    } finally {
+      setLoading(false);
     }
-    setForm({ title: '', excerpt: '', image: '', category: categories[0].id, featured: false });
-    setShowForm(false);
   };
 
   const handleEdit = (item) => {
@@ -103,9 +89,19 @@ const AdminNews = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    setNews((prev) => prev.filter((item) => item.id !== id));
-    if (editingId === id) setEditingId(null);
+  const handleDelete = async (id) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await newsAPI.deleteNews(id);
+      const data = await newsAPI.getNews();
+      setNews(data);
+      if (editingId === id) setEditingId(null);
+    } catch (err) {
+      setError('Failed to delete news.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAdd = () => {
@@ -130,6 +126,8 @@ const AdminNews = () => {
           Add News
         </button>
       </h1>
+      {error && <div className="mb-4 text-red-600">{error}</div>}
+      {loading && <div className="mb-4 text-gray-500">Loading...</div>}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-md">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl relative">

@@ -12,6 +12,7 @@ from django.db import models
 class NewsArticleViewSet(viewsets.ModelViewSet):
     queryset = NewsArticle.objects.all()
     serializer_class = NewsArticleSerializer
+    permission_classes = [permissions.AllowAny]  # Allow public access to news
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'featured']
     search_fields = ['title', 'excerpt', 'content', 'tags', 'author', 'source']
