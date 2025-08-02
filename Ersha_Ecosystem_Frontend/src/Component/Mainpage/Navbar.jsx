@@ -12,9 +12,11 @@ import {
   X,
   User,
   LogOut,
-  BarChart3
+  BarChart3,
+  ShoppingCart
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 
 const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [scrollProgress, setScrollProgress] = useState(0);
   const { user } = useAuth();
+  const { cartSummary } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -191,6 +194,29 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
 
             {/* Auth Buttons - Changed from md:flex to lg:flex */}
             <div className="hidden lg:flex items-center space-x-3">
+              {/* Cart Icon */}
+              {user && (
+                <motion.button
+                  onClick={() => navigate('/cart')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                  data-cart-icon
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Cart</span>
+                  {cartSummary.totalItems > 0 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                    >
+                      {cartSummary.totalItems}
+                    </motion.div>
+                  )}
+                </motion.button>
+              )}
+              
               {user ? (
                 <motion.button
                   onClick={onUserProfileClick}
@@ -285,6 +311,22 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                 
                 {/* Mobile Auth Buttons */}
                 <div className="pt-4 border-t border-gray-200 space-y-2">
+                  {/* Mobile Cart Button */}
+                  {user && (
+                    <button 
+                      onClick={() => navigate('/cart')}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors duration-200 relative"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Cart</span>
+                      {cartSummary.totalItems > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {cartSummary.totalItems}
+                        </div>
+                      )}
+                    </button>
+                  )}
+                  
                   {user ? (
                     <button 
                       onClick={onUserProfileClick}

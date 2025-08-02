@@ -9,33 +9,28 @@ const apiCall = async (endpoint, options = {}) => {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
+      ...options.headers
     },
-    ...options,
+    ...options
   };
 
-  console.log('API Call:', `${API_BASE_URL}${endpoint}`);
-  console.log('API Config:', config);
-
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    console.log('API Response status:', response.status);
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${endpoint}`, config);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.log('API Error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    // Handle blob responses differently
-    if (options.responseType === 'blob') {
-      const blob = await response.blob();
-      console.log('API Blob response received');
-      return blob;
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { detail: errorText };
+      }
+      
+      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('API Success response:', data);
     return data;
   } catch (error) {
     console.error('API call failed:', error);
@@ -112,17 +107,17 @@ export const productsAPI = {
 
 // Cart API
 export const cartAPI = {
-  getCart: () => apiCall('/cart/'),
+  getCart: () => apiCall('/cart/summary/'),
   
   addToCart: (productId, quantity = 1) => 
-    apiCall('/cart/add/', {
+    apiCall('/cart/add_item/', {
       method: 'POST',
-      body: JSON.stringify({ product_id: productId, quantity }),
+      body: JSON.stringify({ product: productId, quantity }),
     }),
   
   updateCartItem: (itemId, quantity) => 
-    apiCall(`/cart/${itemId}/`, {
-      method: 'PUT',
+    apiCall(`/cart/${itemId}/update_quantity/`, {
+      method: 'POST',
       body: JSON.stringify({ quantity }),
     }),
   
@@ -133,7 +128,7 @@ export const cartAPI = {
   
   clearCart: () => 
     apiCall('/cart/clear/', {
-      method: 'POST',
+      method: 'DELETE',
     }),
 };
 
@@ -148,6 +143,33 @@ export const ordersAPI = {
       method: 'POST',
       body: JSON.stringify(orderData),
     }),
+  
+  createWithPayment: async (orderData) => {
+    try {
+      const response = await apiCall('/orders/create_with_payment/', {
+        method: 'POST',
+        body: JSON.stringify(orderData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating order with payment:', error);
+      throw error;
+    }
+  },
+
+  // Create order without payment
+  createOrder: async (orderData) => {
+    try {
+      const response = await apiCall('/orders/', {
+        method: 'POST',
+        body: JSON.stringify(orderData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  },
   
   updateStatus: (id, status) => 
     apiCall(`/orders/${id}/`, {

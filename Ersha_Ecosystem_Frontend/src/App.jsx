@@ -50,6 +50,7 @@ import LogisticsDashboard from './Component/Dashboard/LogisticsDashboard'
 
 // Authentication Components
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
 import Login from './Component/Auth/Login'
 import Register from './Component/Auth/Register'
 import ForgotPassword from './Component/Auth/ForgotPassword'
@@ -57,6 +58,11 @@ import UserProfile from './Component/Auth/UserProfile'
 import FaydaIntegration from './Component/Auth/FaydaIntegration'
 import Verification from './Component/Auth/Verification'
 import Callback from './Component/Auth/Callback'
+
+// Cart and Checkout Components
+import Cart from './Component/Marketplace/Cart'
+import Checkout from './Component/Marketplace/Checkout'
+import PaymentSuccess from './Component/Marketplace/PaymentSuccess'
 
 // Debug: Test Supabase Connection - REMOVED FOR PRODUCTION
 
@@ -1228,6 +1234,30 @@ function AppContent() {
             <Callback />
           </ProtectedRoute>
         } />
+        <Route path="/cart" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <Cart />
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="/checkout" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <Checkout />
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="/payment-success" element={
+          <ProtectedRoute>
+            <div className="min-h-screen bg-gray-50">
+              <Navbar setActiveView={setActiveView} onUserProfileClick={() => setShowUserProfile(true)} />
+              <PaymentSuccess />
+            </div>
+          </ProtectedRoute>
+        } />
       </Routes>
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
@@ -1337,7 +1367,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );
