@@ -3,7 +3,9 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters import rest_framework as filters
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import Product, Cart
 from .serializers import (
@@ -53,6 +55,77 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
         
         return queryset
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def approve_product(self, request, pk=None):
+        """Admin action to approve a product"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        product = self.get_object()
+        product.is_active = True
+        product.save()
+        
+        return Response({
+            'message': f'Product "{product.name}" has been approved',
+            'is_active': product.is_active
+        })
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def deactivate_product(self, request, pk=None):
+        """Admin action to deactivate a product"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        product = self.get_object()
+        product.is_active = False
+        product.save()
+        
+        return Response({
+            'message': f'Product "{product.name}" has been deactivated',
+            'is_active': product.is_active
+        })
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def admin_stats(self, request):
+        """Get marketplace statistics for admin dashboard"""
+        if not request.user.is_admin:
+            return Response({'error': 'Admin access required'}, status=403)
+        
+        from users.models import User
+        
+        total_products = Product.objects.count()
+        active_products = Product.objects.filter(is_active=True).count()
+        total_farmers = User.objects.filter(user_type=User.UserType.FARMER).count()
+        total_merchants = User.objects.filter(user_type__in=[User.UserType.BUYER, User.UserType.AGRICULTURAL_BUSINESS]).count()
+        
+        # Products by category/type
+        organic_products = Product.objects.filter(organic=True).count()
+        recent_products = Product.objects.filter(created_at__gte=timezone.now() - timedelta(days=7)).count()
+        
+        # Top farmers by product count
+        top_farmers = User.objects.filter(user_type=User.UserType.FARMER).annotate(
+            product_count=Count('products')
+        ).order_by('-product_count')[:5]
+        
+        farmer_stats = []
+        for farmer in top_farmers:
+            farmer_stats.append({
+                'name': f"{farmer.first_name} {farmer.last_name}",
+                'email': farmer.email,
+                'product_count': farmer.product_count,
+                'region': farmer.region
+            })
+        
+        return Response({
+            'total_products': total_products,
+            'active_products': active_products,
+            'total_farmers': total_farmers,
+            'total_merchants': total_merchants,
+            'organic_products': organic_products,
+            'recent_products': recent_products,
+            'top_farmers': farmer_stats
+        })
     
     @action(detail=False, methods=['get'])
     def my_products(self, request):

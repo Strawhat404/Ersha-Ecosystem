@@ -89,6 +89,9 @@ urlpatterns = [
         
         # Payments
         path('payments/', include('payments.urls')),
+        
+        # Admin Dashboard
+        path('admin/dashboard/', include('users.urls')),
     ])),
 ]
 
