@@ -135,6 +135,8 @@ const Register = () => {
         setTimeout(() => {
           if (formData.userType === 'expert') {
             navigate('/expert-dashboard');
+          } else if (formData.userType === 'logistics') {
+            navigate('/logistics-dashboard');
           } else {
             navigate('/dashboard');
           }

@@ -48,6 +48,8 @@ const Login = () => {
         setTimeout(() => {
           if (result.data && result.data.user && result.data.user.user_type === 'expert') {
             navigate('/expert-dashboard');
+          } else if (result.data && result.data.user && result.data.user.user_type === 'logistics') {
+            navigate('/logistics-dashboard');
           } else {
             navigate('/dashboard');
           }
