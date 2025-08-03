@@ -1,0 +1,603 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "download": "Download",
+    "upload": "Upload",
+    "select": "Select",
+    "choose": "Choose",
+    "all": "All",
+    "none": "None",
+    "unknown": "Unknown",
+    "notSpecified": "Not specified",
+    "unavailable": "Unavailable",
+    "available": "Available",
+    "busy": "Busy",
+    "verified": "Verified",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed",
+    "active": "Active",
+    "inactive": "Inactive",
+    "online": "Online",
+    "offline": "Offline",
+    "learnMore": "Learn More"
+  },
+  "navigation": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "weather": "Weather",
+    "advisory": "Advisory",
+    "news": "News",
+    "dashboard": "Dashboard",
+    "faydaId": "Fayda ID",
+    "cart": "Cart",
+    "profile": "Profile",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "getStarted": "Get Started",
+    "language": "Language",
+    "english": "English",
+    "amharic": "Amharic"
+  },
+  "brand": {
+    "name": "Ersha-Ecosystem",
+    "tagline": "Agricultural Platform",
+    "agroLife": "THE AGRO LIFE",
+    "agriculturalMarketplace": "AGRICULTURAL MARKETPLACE"
+  },
+  "hero": {
+    "title": "Step into the future of agriculture. Connect directly with farmers, access real-time market data, and grow your agricultural business through our comprehensive ecosystem.",
+    "exploreMarketplace": "Explore Marketplace",
+    "watchDemo": "Watch Demo",
+    "stats": {
+      "activeFarmers": "Active Farmers",
+      "monthlyTrade": "Monthly Trade",
+      "successRate": "Success Rate"
+    }
+  },
+  "home": {
+    "marketplacePreview": {
+      "title": "Step Into Our",
+      "digitalMarketplace": "Digital Marketplace",
+      "description": "Discover the beauty of sustainable agriculture through our curated marketplace. Connect directly with farmers and experience authentic, fresh produce.",
+      "exploreJourneys": "Explore Our Journeys",
+      "stats": {
+        "products": "12,300+ Products",
+        "productsDescription": "Fresh produce from verified farmers across the beautiful landscapes of Ethiopia",
+        "verified": "98% Verified",
+        "verifiedDescription": "Trusted sellers with quality guarantee, ensuring sustainable and authentic products",
+        "fastDelivery": "Fast Delivery",
+        "fastDeliveryDescription": "Direct farm-to-market logistics network, bringing nature's bounty to your doorstep"
+      }
+    },
+    "weatherPreview": {
+      "title": "Smart",
+      "weatherInsights": "Weather Insights",
+      "description": "Get real-time weather data and agricultural recommendations for your location.",
+      "viewDashboard": "View Full Weather Dashboard",
+      "cards": {
+        "currentWeather": {
+          "title": "Current Weather",
+          "description": "Real-time conditions for Addis Ababa",
+          "condition": "Partly Cloudy"
+        },
+        "farmingTips": {
+          "title": "Farming Tips",
+          "description": "Weather-based recommendations",
+          "recommendation": "Ideal conditions for planting. Consider irrigation for next week."
+        },
+        "forecast": {
+          "title": "5-Day Forecast",
+          "description": "Extended weather outlook",
+          "outlook": "Sunny → Cloudy → Rain → Clear → Sunny"
+        }
+      }
+    },
+    "advisoryPreview": {
+      "title": "Expert",
+      "agriculturalAdvisory": "Agricultural Advisory",
+      "description": "Learn from agricultural experts, access training courses, and get personalized farming advice."
+    }
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInToAccount": "Sign in to your AgroGebeya account",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "forgotPassword": "Forgot Password?",
+    "dontHaveAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginSuccessful": "Login successful! Redirecting to dashboard...",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "joinErshaEcosystem": "Join Ersha-Ecosystem",
+    "createAccount": "Create your account and start your agricultural journey",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "confirmPassword": "Confirm Password",
+    "enterFirstName": "Enter your first name",
+    "enterLastName": "Enter your last name",
+    "enterPhoneNumber": "Enter your phone number",
+    "enterConfirmPassword": "Confirm your password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "accountCreated": "Account created successfully! Please check your email for verification.",
+    "verificationRequired": "Email verification required",
+    "checkEmail": "Please check your email for a verification link.",
+    "resendVerification": "Resend verification email",
+    "verificationSent": "Verification email sent!",
+    "resetPassword": "Reset Password",
+    "resetPasswordDescription": "Enter your email address and we'll send you a link to reset your password.",
+    "sendResetLink": "Send Reset Link",
+    "resetLinkSent": "Reset link sent! Please check your email.",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "passwordResetSuccess": "Password reset successful! You can now sign in with your new password."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "marketplace": "Marketplace",
+    "analytics": "Analytics",
+    "payments": "Payments",
+    "logistics": "Logistics",
+    "weather": "Weather",
+    "advisory": "Advisory",
+    "news": "News",
+    "welcome": "Welcome to your farming dashboard",
+    "totalEarnings": "Total Earnings",
+    "weather": "Weather",
+    "activeOrders": "Active Orders",
+    "nextStep": "Your Next Step",
+    "sellProducts": "Sell Products",
+    "getVerified": "Get Verified",
+    "listProducts": "List your products to start selling",
+    "completeVerification": "Complete verification to access all features",
+    "noPendingOrders": "No pending orders",
+    "pendingOrders": "pending",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "viewAll": "View All",
+    "newOrderReceived": "New order received",
+    "hoursAgo": "hours ago",
+    "analyticsOnlyForFarmers": "Analytics dashboard is only available for farmers.",
+    "userTypes": {
+      "farmer": "Farmer",
+      "buyer": "Buyer/Merchant",
+      "expert": "Expert",
+      "logistics": "Logistics Company",
+      "user": "User"
+    },
+    "verification": {
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification",
+      "verificationFailed": "Verification Failed",
+      "notVerified": "Not Verified",
+      "verifyNow": "Verify Now",
+      "getVerified": "Get Verified"
+    },
+    "profile": {
+      "profileSettings": "Profile Settings",
+      "verification": "Verification",
+      "signOut": "Sign Out"
+    }
+  },
+  "marketplace": {
+    "title": "Agricultural Marketplace",
+    "description": "Connect directly with farmers and merchants. Trade quality produce at competitive prices.",
+    "searchProducts": "Search products...",
+    "filterByCategory": "Filter by category",
+    "sortBy": "Sort by",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "newestFirst": "Newest First",
+    "oldestFirst": "Oldest First",
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "viewDetails": "View Details",
+    "productDetails": "Product Details",
+    "seller": "Seller",
+    "category": "Category",
+    "harvestDate": "Harvest Date",
+    "expiryDate": "Expiry Date",
+    "location": "Location",
+    "delivery": "Delivery",
+    "pickup": "Pickup",
+    "shipping": "Shipping",
+    "freeShipping": "Free Shipping",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "limitedStock": "Limited Stock",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "writeReview": "Write a Review",
+    "relatedProducts": "Related Products",
+    "recommendations": "Recommendations",
+    "cart": {
+      "title": "Shopping Cart",
+      "empty": "Your cart is empty",
+      "continueShopping": "Continue Shopping",
+      "checkout": "Proceed to Checkout",
+      "remove": "Remove",
+      "updateQuantity": "Update Quantity",
+      "cartTotal": "Cart Total",
+      "items": "items"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "shippingAddress": "Shipping Address",
+      "billingAddress": "Billing Address",
+      "paymentMethod": "Payment Method",
+      "orderSummary": "Order Summary",
+      "placeOrder": "Place Order",
+      "orderConfirmation": "Order Confirmation",
+      "orderNumber": "Order Number",
+      "estimatedDelivery": "Estimated Delivery",
+      "trackOrder": "Track Order"
+    }
+  },
+  "weather": {
+    "title": "Weather Information",
+    "currentWeather": "Current Weather",
+    "forecast": "Forecast",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "windSpeed": "Wind Speed",
+    "pressure": "Pressure",
+    "visibility": "Visibility",
+    "uvIndex": "UV Index",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "feelsLike": "Feels Like",
+    "high": "High",
+    "low": "Low",
+    "precipitation": "Precipitation",
+    "chanceOfRain": "Chance of Rain",
+    "weatherAlerts": "Weather Alerts",
+    "agriculturalAdvice": "Agricultural Advice",
+    "plantingSeason": "Planting Season",
+    "harvestSeason": "Harvest Season",
+    "cropRecommendations": "Crop Recommendations",
+    "tabs": {
+      "current": "Current",
+      "forecast": "Forecast",
+      "alerts": "Alerts",
+      "cropCalendar": "Crop Calendar",
+      "activities": "Activities"
+    },
+    "searchBar": {
+      "placeholder": "Enter city name",
+      "button": "Search"
+    },
+    "crops": {
+      "teff": "Teff",
+      "maize": "Maize",
+      "barley": "Barley",
+      "wheat": "Wheat",
+      "sorghum": "Sorghum",
+      "coffee": "Coffee"
+    },
+    "alerts": {
+      "heatWave": {
+        "title": "Heat Wave Alert",
+        "message": "Extreme heat conditions. Increase irrigation and provide crop shade."
+      },
+      "coldWave": {
+        "title": "Cold Wave Alert",
+        "message": "Cold conditions detected. Protect sensitive crops from frost damage."
+      },
+      "highHumidity": {
+        "title": "High Humidity Alert",
+        "message": "Increased risk of fungal diseases. Monitor crops closely."
+      },
+      "strongWinds": {
+        "title": "Strong Winds Alert",
+        "message": "Protect tall crops and seedlings from wind damage."
+      },
+      "recommendedActions": "Recommended Actions",
+      "noActiveAlerts": {
+        "title": "No Active Alerts",
+        "message": "Weather conditions are favorable for farming activities"
+      }
+    },
+    "activities": {
+      "irrigation": {
+        "title": "Irrigation",
+        "description": "Increase watering frequency due to high temperatures"
+      },
+      "frostProtection": {
+        "title": "Frost Protection",
+        "description": "Protect crops from frost damage"
+      },
+      "drainage": {
+        "title": "Drainage",
+        "description": "Ensure proper drainage to prevent waterlogging"
+      },
+      "fertilization": {
+        "title": "Fertilization",
+        "description": "Apply fertilizers for optimal crop growth"
+      },
+      "mulching": {
+        "title": "Mulching",
+        "description": "Apply mulch to retain soil moisture"
+      },
+      "priority": "Priority"
+    },
+    "tips": {
+      "extremeHeat": {
+        "title": "Extreme Heat Alert",
+        "message": "Consider additional irrigation and provide shade for sensitive crops"
+      },
+      "highTemperature": {
+        "title": "High Temperature",
+        "message": "Increase watering frequency and monitor for heat stress"
+      },
+      "frostRisk": {
+        "title": "Frost Risk",
+        "message": "Protect crops from frost damage and delay outdoor planting"
+      },
+      "coolWeather": {
+        "title": "Cool Weather",
+        "message": "Good conditions for cool-season crops like lettuce and spinach"
+      },
+      "perfectTemperature": {
+        "title": "Perfect Temperature",
+        "message": "Ideal conditions for most crop growth and outdoor activities"
+      },
+      "highHumidityAlert": {
+        "title": "High Humidity Alert",
+        "message": "Monitor for fungal diseases and ensure proper ventilation"
+      },
+      "lowHumidity": {
+        "title": "Low Humidity",
+        "message": "Increase irrigation and consider mulching to retain moisture"
+      },
+      "goodHumidity": {
+        "title": "Good Humidity",
+        "message": "Optimal moisture levels for healthy plant growth"
+      },
+      "rainfallDetected": {
+        "title": "Rainfall Detected",
+        "message": "Great natural irrigation! Reduce manual watering accordingly"
+      },
+      "clearSkies": {
+        "title": "Clear Skies",
+        "message": "Perfect conditions for outdoor farm activities and harvesting"
+      },
+      "highWindAlert": {
+        "title": "High Wind Alert",
+        "message": "Secure tall plants and avoid pesticide spraying"
+      },
+      "lowPressureSystem": {
+        "title": "Low Pressure System",
+        "message": "Weather changes possible - monitor forecasts closely"
+      }
+    },
+    "cropCalendar": {
+      "plantingSeason": "Planting Season",
+      "harvestSeason": "Harvest Season",
+      "maintenance": "Maintenance",
+      "planting": "Planting",
+      "harvest": "Harvest",
+      "optimal": "Optimal for current region"
+    }
+  },
+  "advisory": {
+    "title": "Expert Agricultural Advisory",
+    "subtitle": "Learn from the Best Experts",
+    "description": "Access world-class agricultural knowledge, expert consultations, and comprehensive training resources to transform your farming practices.",
+    "expertAdvice": "Expert Advice",
+    "aiCourses": "AI Courses",
+    "resources": "Resources",
+    "experts": {
+      "title": "Expert Advice",
+      "specialization": "Specialization",
+      "experience": "years experience",
+      "rating": "rating",
+      "consultationPrice": "ETB/hour",
+      "bookConsultation": "Book Consultation",
+      "notConnected": "Not Connected",
+      "languages": "Languages",
+      "bio": "Bio",
+      "availability": "Availability"
+    },
+    "courses": {
+      "title": "AI-Powered Courses",
+      "subtitle": "Generate personalized agricultural learning courses",
+      "generateCourse": "Generate Course",
+      "personalizedLearning": "Personalized Learning",
+      "structuredModules": "Structured Modules",
+      "practicalExercises": "Practical Exercises",
+      "downloadCourse": "Download Course",
+      "courseInDevelopment": "Course in Development",
+      "difficulty": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "aiGenerated": "AI Generated",
+      "views": "views",
+      "duration": "Duration"
+    },
+    "resources": {
+      "title": "Resources",
+      "resourceType": "Resource Type",
+      "downloads": "downloads",
+      "fileSize": "File Size",
+      "download": "Download"
+    },
+    "booking": {
+      "title": "Book Consultation",
+      "description": "Schedule a consultation with",
+      "calendlyBooking": "Calendly Booking",
+      "calendlyDescription": "You'll be redirected to the expert's Calendly page to select your preferred time slot.",
+      "bookNow": "Book Now",
+      "redirecting": "Redirecting..."
+    }
+  },
+  "news": {
+    "title": "Agricultural News",
+    "latestNews": "Latest News",
+    "trending": "Trending",
+    "categories": "Categories",
+    "readMore": "Read More",
+    "publishedOn": "Published on",
+    "author": "Author",
+    "source": "Source",
+    "relatedArticles": "Related Articles",
+    "searchNews": "Search news...",
+    "filterByCategory": "Filter by category",
+    "noNewsFound": "No news articles found.",
+    "allNews": "All News",
+    "marketTrends": "Market Trends",
+    "farmTech": "Farm Tech",
+    "weatherClimate": "Weather & Climate",
+    "policyRegulations": "Policy & Regulations"
+  },
+  "footer": {
+    "about": "About",
+    "services": "Services",
+    "contact": "Contact",
+    "support": "Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© 2024 Ersha-Ecosystem. All rights reserved.",
+    "followUs": "Follow Us",
+    "newsletter": "Newsletter",
+    "subscribe": "Subscribe",
+    "emailPlaceholder": "Enter your email"
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDescription": "The page you're looking for doesn't exist.",
+    "goHome": "Go Home",
+    "serverError": "Server Error",
+    "serverErrorDescription": "Something went wrong on our end. Please try again later.",
+    "networkError": "Network Error",
+    "networkErrorDescription": "Please check your internet connection and try again.",
+    "unauthorized": "Unauthorized",
+    "unauthorizedDescription": "You need to be logged in to access this page.",
+    "forbidden": "Forbidden",
+    "forbiddenDescription": "You don't have permission to access this resource."
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "password": "Password must be at least 8 characters long",
+    "passwordMatch": "Passwords must match",
+    "phone": "Please enter a valid phone number",
+    "minLength": "Must be at least {min} characters",
+    "maxLength": "Must be no more than {max} characters",
+    "numeric": "Must be a number",
+    "positive": "Must be a positive number",
+    "url": "Please enter a valid URL"
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "dismiss": "Dismiss",
+    "close": "Close"
+  },
+  "features": {
+    "whyErshaEcosystem": "Why Ersha-Ecosystem?",
+    "empoweringEthiopian": "Empowering Ethiopian",
+    "agricultureTogether": "Agriculture Together",
+    "discoverPowerfulFeatures": "Discover powerful features designed to revolutionize how farmers and merchants connect, trade, and grow their agricultural businesses in Ethiopia.",
+    "trustedBy": "Trusted by",
+    "thousands": "Thousands",
+    "joinGrowingCommunity": "Join our growing community of successful farmers and merchants",
+    "startJourneyToday": "Start Your Journey Today",
+    "joinOverFarmers": "Join over 15,000+ farmers and merchants already using AgroGebeya",
+    "directMarketplace": {
+      "title": "Direct Marketplace",
+      "description": "Connect directly with farmers and buyers, eliminating middlemen and maximizing profits for everyone.",
+      "benefits": {
+        "zeroCommission": "Zero commission fees",
+        "directCommunication": "Direct communication",
+        "qualityAssurance": "Quality assurance",
+        "fairPricing": "Fair pricing"
+      }
+    },
+    "integratedPayments": {
+      "title": "Integrated Payments",
+      "description": "Secure and fast payment processing with multiple Ethiopian payment methods and cryptocurrencies.",
+      "benefits": {
+        "multipleOptions": "Multiple payment options",
+        "instantTransactions": "Instant transactions",
+        "lowFees": "Low fees",
+        "fraudProtection": "Fraud protection"
+      }
+    },
+    "financialGrowth": {
+      "title": "Financial Growth",
+      "description": "Build your selling history and credit score to access better loan opportunities and financial services.",
+      "benefits": {
+        "creditScore": "Credit score building",
+        "loanEligibility": "Loan eligibility",
+        "salesAnalytics": "Sales analytics",
+        "revenueTracking": "Revenue tracking"
+      }
+    },
+    "smartAnalytics": {
+      "title": "Smart Analytics",
+      "description": "Advanced analytics and insights to help you make informed decisions and optimize your agricultural business.",
+      "benefits": {
+        "marketTrends": "Market trends",
+        "pricePredictions": "Price predictions",
+        "performanceMetrics": "Performance metrics",
+        "growthInsights": "Growth insights"
+      }
+    },
+    "securityTrust": {
+      "title": "Security & Trust",
+      "description": "Bank-level security with verified farmers and merchants, ensuring safe and reliable transactions.",
+      "benefits": {
+        "identityVerification": "Identity verification",
+        "secureTransactions": "Secure transactions",
+        "disputeResolution": "Dispute resolution",
+        "insuranceCoverage": "Insurance coverage"
+      }
+    },
+    "mobileFirst": {
+      "title": "Mobile-First Design",
+      "description": "Manage your agricultural business anywhere with our responsive mobile platform.",
+      "benefits": {
+        "offlineCapability": "Offline capability",
+        "pushNotifications": "Push notifications",
+        "gpsIntegration": "GPS integration",
+        "voiceCommands": "Voice commands"
+      }
+    },
+    "stats": {
+      "uptimeGuarantee": "Uptime Guarantee",
+      "customerSupport": "Customer Support",
+      "sslEncryption": "SSL Encryption",
+      "paymentMethods": "Payment Methods"
+    }
+  }
+} 

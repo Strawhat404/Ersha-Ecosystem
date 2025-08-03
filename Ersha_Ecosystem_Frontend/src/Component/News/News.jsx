@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocale } from '../../contexts/LocaleContext';
 
 const News = () => {
+  const { t } = useLocale();
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,7 +13,7 @@ const News = () => {
   const categories = [
     { 
       id: "all", 
-      name: "All News", 
+      name: t('news.categories.allNews'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -26,7 +28,7 @@ const News = () => {
     },
     { 
       id: "market", 
-      name: "Market Trends", 
+      name: t('news.categories.marketTrends'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -41,7 +43,7 @@ const News = () => {
     },
     { 
       id: "technology", 
-      name: "Farm Tech", 
+      name: t('news.categories.farmTech'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -56,7 +58,7 @@ const News = () => {
     },
     { 
       id: "climate", 
-      name: "Weather & Climate", 
+      name: t('news.categories.weatherClimate'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -71,7 +73,7 @@ const News = () => {
     },
     { 
       id: "policy", 
-      name: "Policy & Regulations", 
+      name: t('news.categories.policyRegulations'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 

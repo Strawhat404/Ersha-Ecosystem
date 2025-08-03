@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Sprout, BookOpen, Search, Filter, Star, MapPin, Clock, DollarSign, ExternalLink, Sparkles, Cloud, TrendingUp, GraduationCap, Target, Download } from 'lucide-react';
 import { useAuth } from "../../contexts/AuthContext";
+import { useLocale } from "../../contexts/LocaleContext";
 import CourseGenerationModal from "./CourseGenerationModal";
 
 const Advisory = () => {
   const { user, profile, loading: authLoading } = useAuth();
+  const { t } = useLocale();
   const [selectedTab, setSelectedTab] = useState("advice");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -282,7 +284,7 @@ const Advisory = () => {
   const tabs = [
     { 
       id: "advice", 
-      label: "Expert Advice", 
+      label: t('advisory.expertAdvice'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -297,7 +299,7 @@ const Advisory = () => {
     },
     { 
       id: "courses", 
-      label: "AI Courses", 
+      label: t('advisory.aiCourses'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -312,7 +314,7 @@ const Advisory = () => {
     },
     { 
       id: "resources", 
-      label: "Resources", 
+      label: t('advisory.resources'), 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
@@ -426,16 +428,15 @@ const Advisory = () => {
               >
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </motion.svg>
-              Expert Agricultural Advisory
+              {t('advisory.title')}
             </motion.div>
             
             <h1 className="heading-lg text-gray-900 mb-6">
-              Learn from the <span className="text-gradient">Best Experts</span>
+              {t('advisory.subtitle')}
             </h1>
             
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Access world-class agricultural knowledge, expert consultations, and comprehensive 
-              training resources to transform your farming practices.
+              {t('advisory.description')}
             </p>
           </motion.div>
 
@@ -491,7 +492,7 @@ const Advisory = () => {
                   </div>
                 ) : filteredExperts.length === 0 ? (
                   <div className="col-span-full text-center py-12 text-gray-500">
-                    No experts found. Try adjusting your search or filters.
+                    {t('common.noResults')}
                   </div>
                 ) : (
                   filteredExperts.map((expert, index) => (
@@ -523,22 +524,22 @@ const Advisory = () => {
                       <div>
                         <h3 className="font-bold text-gray-900">{expert.name}</h3>
                         <p className="text-sm text-gray-600">{expert.specialization}</p>
-                          <p className="text-xs text-emerald-600 font-medium">{expert.experience_years} years experience</p>
+                          <p className="text-xs text-emerald-600 font-medium">{expert.experience_years} {t('advisory.experts.experience')}</p>
                         </div>
                     </div>
                     
                     <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
                       <div className="flex items-center">
                           <Star className="w-4 h-4 text-orange-400 mr-1" />
-                        {expert.rating}
+                        {expert.rating} {t('advisory.experts.rating')}
                         </div>
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 text-gray-400 mr-1" />
-                          {expert.region || "Location not specified"}
+                          {expert.region || t('common.notSpecified')}
                         </div>
                         <div className="flex items-center">
                           <DollarSign className="w-4 h-4 text-green-600 mr-1" />
-                          {expert.consultation_price} ETB/hour
+                          {expert.consultation_price} {t('advisory.experts.consultationPrice')}
                         </div>
                     </div>
                     
@@ -554,11 +555,11 @@ const Advisory = () => {
                             ? "bg-orange-100 text-orange-700"
                             : "bg-red-100 text-red-700"
                         }`}>
-                          {expert.availability.charAt(0).toUpperCase() + expert.availability.slice(1)}
+                          {t(`common.${expert.availability}`)}
                         </span>
                         {expert.verified && (
                           <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700">
-                            Verified
+                            {t('common.verified')}
                           </span>
                         )}
                       </div>
@@ -583,10 +584,10 @@ const Advisory = () => {
                           }`}
                         >
                           {expert.availability === "unavailable" 
-                            ? "Unavailable" 
+                            ? t('common.unavailable')
                             : !expert.calendly_connected 
-                            ? "Not Connected" 
-                            : "Book Consultation"}
+                            ? t('advisory.experts.notConnected')
+                            : t('advisory.experts.bookConsultation')}
                       </motion.button>
                     </div>
                   </motion.div>
@@ -611,8 +612,8 @@ const Advisory = () => {
                         <GraduationCap className="w-6 h-6 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900">AI-Powered Courses</h3>
-                        <p className="text-gray-600">Generate personalized agricultural learning courses</p>
+                        <h3 className="text-xl font-bold text-gray-900">{t('advisory.courses.title')}</h3>
+                        <p className="text-gray-600">{t('advisory.courses.subtitle')}</p>
                       </div>
                     </div>
                     <motion.button
@@ -622,21 +623,21 @@ const Advisory = () => {
                       className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 flex items-center space-x-2"
                     >
                       <Sparkles className="w-4 h-4" />
-                      <span>Generate Course</span>
+                      <span>{t('advisory.courses.generateCourse')}</span>
                     </motion.button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-2">
                       <GraduationCap className="w-4 h-4 text-blue-500" />
-                      <span>Personalized Learning</span>
+                      <span>{t('advisory.courses.personalizedLearning')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <BookOpen className="w-4 h-4 text-green-500" />
-                      <span>Structured Modules</span>
+                      <span>{t('advisory.courses.structuredModules')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Target className="w-4 h-4 text-emerald-500" />
-                      <span>Practical Exercises</span>
+                      <span>{t('advisory.courses.practicalExercises')}</span>
                     </div>
                   </div>
                 </div>
@@ -654,7 +655,7 @@ const Advisory = () => {
                     </div>
                   ) : filteredCourses.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-gray-500">
-                      No courses found. Generate your first personalized course!
+                      {t('common.noResults')}
                     </div>
                   ) : (
                     filteredCourses.map((course, index) => (
@@ -684,12 +685,12 @@ const Advisory = () => {
                             course.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
                             'bg-red-100 text-red-700'
                           }`}>
-                            {course.difficulty}
+                            {t(`advisory.courses.difficulty.${course.difficulty}`)}
                           </span>
                           {course.is_ai_generated && (
                             <span className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1">
                               <Sparkles className="w-3 h-3" />
-                              <span>AI Generated</span>
+                              <span>{t('advisory.courses.aiGenerated')}</span>
                             </span>
                           )}
                         </div>
@@ -705,7 +706,7 @@ const Advisory = () => {
                         </div>
                         <div className="flex items-center space-x-1">
                           <BookOpen className="w-4 h-4" />
-                          <span>{course.views} views</span>
+                          <span>{course.views} {t('advisory.courses.views')}</span>
                         </div>
                       </div>
                       
@@ -717,11 +718,11 @@ const Advisory = () => {
                           className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
                         >
                           <Download className="w-4 h-4" />
-                          <span>Download Course</span>
+                          <span>{t('advisory.courses.downloadCourse')}</span>
                         </motion.button>
                       ) : (
                         <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-xl font-medium text-center">
-                          Course in Development
+                          {t('advisory.courses.courseInDevelopment')}
                         </div>
                       )}
                     </motion.div>
@@ -752,7 +753,7 @@ const Advisory = () => {
                     </div>
                   ) : filteredResources.length === 0 ? (
                     <div className="col-span-full text-center py-12 text-gray-500">
-                      No resources found. Try adjusting your search or filters.
+                      {t('common.noResults')}
                     </div>
                   ) : (
                     filteredResources.map((resource, index) => (
@@ -783,7 +784,7 @@ const Advisory = () => {
                           {resource.is_ai_generated && (
                             <span className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1">
                               <Sparkles className="w-3 h-3" />
-                              <span>AI Generated</span>
+                              <span>{t('advisory.courses.aiGenerated')}</span>
                             </span>
                           )}
                         </div>
@@ -793,7 +794,7 @@ const Advisory = () => {
                       <p className="text-gray-600 text-sm mb-4">{resource.description}</p>
                       
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                        <div>{resource.downloads} downloads</div>
+                        <div>{resource.downloads} {t('advisory.resources.downloads')}</div>
                         <div>{resource.file_size}</div>
                       </div>
                       
@@ -803,7 +804,7 @@ const Advisory = () => {
                         onClick={() => window.open(resource.file_url, '_blank')}
                         className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
                       >
-                        Download
+                        {t('advisory.resources.download')}
                       </motion.button>
                     </motion.div>
                     ))
@@ -838,8 +839,8 @@ const Advisory = () => {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="w-8 h-8 text-green-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Book Consultation</h2>
-                  <p className="text-gray-600">Schedule a consultation with {selectedExpert.name}</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('advisory.booking.title')}</h2>
+                  <p className="text-gray-600">{t('advisory.booking.description')} {selectedExpert.name}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -864,19 +865,19 @@ const Advisory = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center">
                       <Star className="w-4 h-4 text-orange-400 mr-2" />
-                      <span>{selectedExpert.rating} rating</span>
+                      <span>{selectedExpert.rating} {t('advisory.experts.rating')}</span>
                     </div>
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 text-green-600 mr-2" />
-                      <span>{selectedExpert.consultation_price} ETB/hour</span>
+                      <span>{selectedExpert.consultation_price} {t('advisory.experts.consultationPrice')}</span>
                     </div>
                     <div className="flex items-center">
                       <MapPin className="w-4 h-4 text-gray-400 mr-2" />
-                      <span>{selectedExpert.region || "Location not specified"}</span>
+                      <span>{selectedExpert.region || t('common.notSpecified')}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 text-blue-600 mr-2" />
-                      <span>{selectedExpert.experience_years} years experience</span>
+                      <span>{selectedExpert.experience_years} {t('advisory.experts.experience')}</span>
                     </div>
                   </div>
                 </div>
@@ -885,10 +886,10 @@ const Advisory = () => {
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                     <div className="flex items-center space-x-2 mb-2">
                       <ExternalLink className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-blue-900">Calendly Booking</span>
+                      <span className="font-medium text-blue-900">{t('advisory.booking.calendlyBooking')}</span>
                     </div>
                     <p className="text-sm text-blue-700">
-                      You'll be redirected to {selectedExpert.name}'s Calendly page to select your preferred time slot.
+                      {t('advisory.booking.calendlyDescription')}
                     </p>
                   </div>
 
@@ -898,7 +899,7 @@ const Advisory = () => {
                       disabled={bookingLoading}
                       className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                     <button
                       onClick={confirmBooking}
@@ -908,12 +909,12 @@ const Advisory = () => {
                       {bookingLoading ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Redirecting...</span>
+                          <span>{t('advisory.booking.redirecting')}</span>
                         </>
                       ) : (
                         <>
                           <ExternalLink className="w-4 h-4" />
-                          <span>Book Now</span>
+                          <span>{t('advisory.booking.bookNow')}</span>
                         </>
                       )}
                     </button>

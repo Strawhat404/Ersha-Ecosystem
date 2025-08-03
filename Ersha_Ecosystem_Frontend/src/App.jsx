@@ -23,6 +23,7 @@ import {
   User,
   Calendar
 } from 'lucide-react'
+import { useLocale } from './contexts/LocaleContext'
 
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
@@ -49,6 +50,7 @@ import LogisticsDashboard from './Component/Dashboard/LogisticsDashboard'
 // Authentication Components
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
+import { LocaleProvider } from './contexts/LocaleContext'
 import Login from './Component/Auth/Login'
 import Register from './Component/Auth/Register'
 import ForgotPassword from './Component/Auth/ForgotPassword'
@@ -67,13 +69,14 @@ import PaymentSuccess from './Component/Marketplace/PaymentSuccess'
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const { t } = useLocale();
   
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -85,13 +88,14 @@ const ProtectedRoute = ({ children }) => {
 // Public Route Component (redirects to dashboard if already authenticated)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const { t } = useLocale();
   
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -101,6 +105,7 @@ const PublicRoute = ({ children }) => {
 };
 
 function AppContent() {
+  const { t } = useLocale();
   const location = useLocation();
   const hideNavbar = ['/login', '/register', '/forgot-password', '/dashboard', '/expert-dashboard', '/logistics-dashboard', '/verification'].includes(location.pathname);
   const [activeView, setActiveView] = useState('home');
@@ -178,14 +183,13 @@ function AppContent() {
                     transition={{ duration: 0.8 }}
                   >
                     <h2 className="text-5xl lg:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                      Step Into Our{" "}
+                      {t('home.marketplacePreview.title')}{" "}
                       <span className="block bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                        Digital Marketplace
+                        {t('home.marketplacePreview.digitalMarketplace')}
                       </span>
                     </h2>
                     <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
-                      Discover the beauty of sustainable agriculture through our curated marketplace. 
-                      Connect directly with farmers and experience authentic, fresh produce.
+                      {t('home.marketplacePreview.description')}
                     </p>
                   </motion.div>
                   
@@ -200,7 +204,7 @@ function AppContent() {
                     className="group bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white px-10 py-5 rounded-full text-lg font-bold shadow-2xl hover:shadow-green-500/30 transition-all duration-300 inline-flex items-center"
                   >
                     <ShoppingBag className="w-6 h-6 mr-3" />
-                    <span>Explore Our Journeys</span>
+                    <span>{t('home.marketplacePreview.exploreJourneys')}</span>
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -226,8 +230,8 @@ function AppContent() {
                       <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <span className="text-3xl">🌾</span>
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">12,300+ Products</h3>
-                      <p className="text-gray-600 text-center leading-relaxed">Fresh produce from verified farmers across the beautiful landscapes of Ethiopia</p>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">{t('home.marketplacePreview.stats.products')}</h3>
+                      <p className="text-gray-600 text-center leading-relaxed">{t('home.marketplacePreview.stats.productsDescription')}</p>
                     </div>
                   </motion.div>
 
@@ -244,8 +248,8 @@ function AppContent() {
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <Shield className="w-10 h-10 text-blue-600" />
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">98% Verified</h3>
-                      <p className="text-gray-600 text-center leading-relaxed">Trusted sellers with quality guarantee, ensuring sustainable and authentic products</p>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">{t('home.marketplacePreview.stats.verified')}</h3>
+                      <p className="text-gray-600 text-center leading-relaxed">{t('home.marketplacePreview.stats.verifiedDescription')}</p>
                     </div>
                   </motion.div>
 
@@ -262,8 +266,8 @@ function AppContent() {
                       <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <TruckIcon className="w-10 h-10 text-orange-600" />
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">Fast Delivery</h3>
-                      <p className="text-gray-600 text-center leading-relaxed">Direct farm-to-market logistics network, bringing nature's bounty to your doorstep</p>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">{t('home.marketplacePreview.stats.fastDelivery')}</h3>
+                      <p className="text-gray-600 text-center leading-relaxed">{t('home.marketplacePreview.stats.fastDeliveryDescription')}</p>
                     </div>
                   </motion.div>
                 </div>
@@ -293,10 +297,10 @@ function AppContent() {
               <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h2 className="heading-lg text-white mb-4">
-                    Smart <span className="text-gradient-teal">Weather Insights</span>
+                    {t('home.weatherPreview.title')} <span className="text-gradient-teal">{t('home.weatherPreview.weatherInsights')}</span>
                   </h2>
                   <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-                    Get real-time weather data and agricultural recommendations for your location.
+                    {t('home.weatherPreview.description')}
                   </p>
                   <motion.button
                     onClick={() => setActiveView('weather')}
@@ -304,7 +308,7 @@ function AppContent() {
                     whileTap={{ scale: 0.95 }}
                     className="bg-gradient-to-r from-cyan-500 via-blue-600 to-teal-600 text-white px-8 py-4 rounded-xl font-medium hover:from-cyan-600 hover:via-blue-700 hover:to-teal-700 transition-all duration-300 shadow-xl hover:shadow-2xl"
                   >
-                    View Full Weather Dashboard
+                    {t('home.weatherPreview.viewDashboard')}
                   </motion.button>
                 </div>
 
@@ -318,11 +322,11 @@ function AppContent() {
                   >
                     <div className="flex items-center mb-4">
                       <Cloud className="w-8 h-8 text-cyan-300 mr-3" />
-                      <h3 className="text-xl font-bold text-white">Current Weather</h3>
+                      <h3 className="text-xl font-bold text-white">{t('home.weatherPreview.cards.currentWeather.title')}</h3>
                     </div>
-                    <p className="text-white/80 mb-4">Real-time conditions for Addis Ababa</p>
+                    <p className="text-white/80 mb-4">{t('home.weatherPreview.cards.currentWeather.description')}</p>
                     <div className="text-3xl font-bold text-white mb-2">22°C</div>
-                    <div className="text-white/70">Partly Cloudy</div>
+                    <div className="text-white/70">{t('home.weatherPreview.cards.currentWeather.condition')}</div>
                   </motion.div>
 
                   <motion.div
@@ -334,10 +338,10 @@ function AppContent() {
                   >
                     <div className="flex items-center mb-4">
                       <Sprout className="w-8 h-8 text-green-300 mr-3" />
-                      <h3 className="text-xl font-bold text-white">Farming Tips</h3>
+                      <h3 className="text-xl font-bold text-white">{t('home.weatherPreview.cards.farmingTips.title')}</h3>
                     </div>
-                    <p className="text-white/80 mb-4">Weather-based recommendations</p>
-                    <div className="text-white/70">Ideal conditions for planting. Consider irrigation for next week.</div>
+                    <p className="text-white/80 mb-4">{t('home.weatherPreview.cards.farmingTips.description')}</p>
+                    <div className="text-white/70">{t('home.weatherPreview.cards.farmingTips.recommendation')}</div>
                   </motion.div>
 
                   <motion.div
@@ -349,10 +353,10 @@ function AppContent() {
                   >
                     <div className="flex items-center mb-4">
                       <Calendar className="w-8 h-8 text-orange-300 mr-3" />
-                      <h3 className="text-xl font-bold text-white">5-Day Forecast</h3>
+                      <h3 className="text-xl font-bold text-white">{t('home.weatherPreview.cards.forecast.title')}</h3>
                     </div>
-                    <p className="text-white/80 mb-4">Extended weather outlook</p>
-                    <div className="text-white/70">Sunny → Cloudy → Rain → Clear → Sunny</div>
+                    <p className="text-white/80 mb-4">{t('home.weatherPreview.cards.forecast.description')}</p>
+                    <div className="text-white/70">{t('home.weatherPreview.cards.forecast.outlook')}</div>
                   </motion.div>
                 </div>
               </div>
@@ -363,10 +367,10 @@ function AppContent() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h2 className="heading-lg text-gray-900 mb-4">
-                    Expert <span className="text-gradient">Agricultural Advisory</span>
+                    {t('home.advisoryPreview.title')} <span className="text-gradient">{t('home.advisoryPreview.agriculturalAdvisory')}</span>
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                    Learn from agricultural experts, access training courses, and get personalized farming advice.
+                    {t('home.advisoryPreview.description')}
                   </p>
                   <motion.button
                     onClick={() => setActiveView('advisory')}
@@ -1363,11 +1367,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </AuthProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </AuthProvider>
+      </LocaleProvider>
     </BrowserRouter>
   );
 }
