@@ -126,6 +126,17 @@ class Course(models.Model):
     views = models.IntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     featured = models.BooleanField(default=False)
+    
+    # AI Generation fields
+    is_ai_generated = models.BooleanField(default=False)
+    ai_generation_data = models.JSONField(default=dict, blank=True)  # Store user data used for generation
+    ai_model_used = models.CharField(max_length=100, blank=True)  # e.g., "gemini-pro"
+    generated_for_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='ai_generated_courses')
+    generation_timestamp = models.DateTimeField(null=True, blank=True)
+    download_url = models.URLField(blank=True)  # PDF course file
+    file_size = models.CharField(max_length=20, blank=True)  # e.g., "12.5 MB"
+    file_size_bytes = models.BigIntegerField(null=True, blank=True)  # for sorting
+    
     published_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -148,6 +159,7 @@ class Resource(models.Model):
         ('Video Guide', 'Video Guide'),
         ('Data Reports', 'Data Reports'),
         ('PDF Reference', 'PDF Reference'),
+        ('AI Generated', 'AI Generated'),
     ])
     category = models.CharField(max_length=100, choices=[
         ('health', 'Health'),
@@ -156,6 +168,7 @@ class Resource(models.Model):
         ('soil', 'Soil'),
         ('market', 'Market'),
         ('certification', 'Certification'),
+        ('ai_generated', 'AI Generated'),
     ])
     file_url = models.URLField()
     file_size = models.CharField(max_length=20)  # e.g., "12.5 MB"
@@ -163,6 +176,14 @@ class Resource(models.Model):
     downloads = models.IntegerField(default=0)
     image = models.URLField(blank=True)
     featured = models.BooleanField(default=False)
+
+    # AI Generation fields
+    is_ai_generated = models.BooleanField(default=False)
+    ai_generation_data = models.JSONField(default=dict, blank=True)  # Store input data used for generation
+    ai_model_used = models.CharField(max_length=100, blank=True)  # e.g., "gemini-pro"
+    generated_for_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    generation_timestamp = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

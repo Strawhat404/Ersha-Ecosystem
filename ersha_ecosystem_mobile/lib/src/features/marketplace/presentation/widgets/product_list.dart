@@ -4,15 +4,25 @@ import 'package:flutter/material.dart';
 
 class ProductList extends StatelessWidget {
   final ViewMode viewMode;
+  final UserRole userRole;
+  final String? currentUserId; // Will be used to filter farmer's own products
 
-  const ProductList({super.key, this.viewMode = ViewMode.grid});
+  const ProductList({
+    super.key, 
+    this.viewMode = ViewMode.grid,
+    required this.userRole,
+    this.currentUserId,
+  });
 
   // --- MOCK DATA ---
   // A list of maps, where each map represents a product.
-  final List<Map<String, dynamic>> mockProducts = const [
+  // In a real app, this would come from an API
+  static const List<Map<String, dynamic>> mockProducts = const [
     {
+      "id": "1",
       "name": "Premium Fresh Carrots",
       "farmer": "Oromia Organic Farm",
+      "farmerId": "farmer1", // In a real app, this would be the farmer's user ID
       "price": "ETB 45/kg",
       "rating": 4.8,
       "location": "Addis Ababa",
@@ -76,8 +86,49 @@ class ProductList extends StatelessWidget {
     },
   ];
 
+  // Filter products based on user role
+  List<Map<String, dynamic>> getFilteredProducts() {
+    if (userRole == UserRole.farmer && currentUserId != null) {
+      // For farmers, only show their own products
+      return List<Map<String, dynamic>>.from(mockProducts.where(
+        (product) => product['farmerId'] == currentUserId
+      ).toList());
+    }
+    // For merchants, show all products
+    return List<Map<String, dynamic>>.from(mockProducts);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredProducts = getFilteredProducts();
+    
+    if (filteredProducts.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                userRole == UserRole.farmer 
+                  ? 'You haven\'t listed any products yet.'
+                  : 'No products available at the moment.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     // We'll primarily build the grid view as requested.
     // The logic to switch to a list view would go here.
     if (viewMode == ViewMode.grid) {
@@ -93,7 +144,7 @@ class ProductList extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
               // Get the product data for the current index
-              final product = mockProducts[index];
+              final product = filteredProducts[index];
               // Create a ProductCard and pass the data to it
               return ProductCard(
                 name: product['name'],
@@ -102,9 +153,11 @@ class ProductList extends StatelessWidget {
                 rating: product['rating'],
                 location: product['location'],
                 imageUrl: product['imageUrl'],
+                // Show actions only for farmers on their own products
+                canEdit: userRole == UserRole.farmer,
               );
             },
-            childCount: mockProducts.length, // The number of items in the grid
+            childCount: filteredProducts.length, // The number of items in the grid
           ),
         ),
       );
