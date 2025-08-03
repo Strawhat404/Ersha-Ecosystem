@@ -329,13 +329,24 @@ class LogisticsAnalyticsViewSet(viewsets.ModelViewSet):
         successful_deliveries = Delivery.objects.filter(status='delivered').count()
         success_rate = (successful_deliveries / total_deliveries * 100) if total_deliveries > 0 else 0
         
-        # Average delivery time
-        avg_delivery_time = Delivery.objects.filter(
+        # Calculate average delivery time in Python
+        delivered_orders = Delivery.objects.filter(
             status='delivered',
             actual_delivery__isnull=False
-        ).aggregate(
-            avg_time=Avg('actual_delivery' - 'created_at')
-        )['avg_time']
+        ).values_list('created_at', 'actual_delivery')
+        
+        # Calculate time differences in Python
+        time_differences = []
+        for created, delivered in delivered_orders:
+            if created and delivered:
+                time_diff = delivered - created
+                time_differences.append(time_diff.total_seconds())
+        
+        # Calculate average in seconds and convert to days
+        avg_delivery_time_days = 0
+        if time_differences:
+            avg_seconds = sum(time_differences) / len(time_differences)
+            avg_delivery_time_days = round(avg_seconds / (24 * 3600), 2)  # Convert to days
         
         # Revenue trends
         monthly_revenue = LogisticsTransaction.objects.filter(
@@ -346,7 +357,7 @@ class LogisticsAnalyticsViewSet(viewsets.ModelViewSet):
         
         metrics = {
             'success_rate': round(success_rate, 2),
-            'avg_delivery_time_days': avg_delivery_time.days if avg_delivery_time else 0,
+            'avg_delivery_time_days': avg_delivery_time_days,
             'monthly_revenue': monthly_revenue,
             'total_providers': ServiceProvider.objects.filter(is_active=True).count(),
             'active_deliveries': Delivery.objects.filter(
