@@ -1,3 +1,4 @@
+import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/add_product_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/widgets/product_list.dart';
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/models/marketplace_enums.dart';
 import 'package:flutter/material.dart';
@@ -165,15 +166,27 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         return Scaffold(
           appBar: const CommonBannerAppBar(),
           drawer: const CommonDrawer(),
-          floatingActionButton: userRole == UserRole.farmer
-              ? FloatingActionButton.extended(
-                  onPressed: _showAddProductDialog,
-                  label: const Text('Add Product'),
-                  icon: const Icon(Iconsax.add),
-                  backgroundColor: const Color(0xFF14532d),
-                  foregroundColor: Colors.white,
-                )
-              : null, // Don't show the button for merchants
+          floatingActionButton: Consumer<AuthProvider>(
+            builder: (context, authProvider, _) {
+              // Only show FAB for farmers
+              final userRole = _getUserRoleFromProvider(authProvider);
+              if (userRole != UserRole.farmer) {
+                return const SizedBox.shrink();
+              }
+              return FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AddProductScreen()),
+                  );
+                },
+                icon: const Icon(Iconsax.add),
+                label: const Text('Add Product'),
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              );
+            },
+          ),
           body: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
