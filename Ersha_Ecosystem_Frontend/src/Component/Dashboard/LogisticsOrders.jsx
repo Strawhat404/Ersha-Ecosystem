@@ -269,10 +269,11 @@ const LogisticsOrders = () => {
         }
         case 'status':
           return (a.status || '').localeCompare(b.status || '');
-                                case 'value':
+                                case 'value': {
                           const aCost = typeof a.cost === 'string' ? parseFloat(a.cost) : (a.cost || 0);
                           const bCost = typeof b.cost === 'string' ? parseFloat(b.cost) : (b.cost || 0);
                           return bCost - aCost;
+                        }
         default:
           return 0;
       }
