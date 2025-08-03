@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -23,15 +23,57 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import { logisticsAPI } from '../../lib/api';
 
 const LogisticsOrders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [ordersData, setOrdersData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock orders data
-  const ordersData = [
+  // Add error boundary
+  const handleError = (error) => {
+    console.error('LogisticsOrders error:', error);
+    setError('An unexpected error occurred. Please try again.');
+  };
+
+  // Fetch orders data
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        console.log('LogisticsOrders: Starting to fetch orders...');
+        
+        // Check if user is authenticated
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          throw new Error('No authentication token found. Please login first.');
+        }
+        
+        const response = await logisticsAPI.getDeliveries();
+        console.log('LogisticsOrders: API response:', response);
+        
+        if (response && response.results) {
+          setOrdersData(response.results);
+        } else {
+          setOrdersData([]);
+        }
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  // Mock orders data (fallback)
+  const mockOrdersData = [
     {
       id: 'ORD-001',
       orderNumber: 'AGR-2024-001',
@@ -202,29 +244,41 @@ const LogisticsOrders = () => {
   };
 
   const filteredOrders = ordersData.filter(order => {
-    const matchesSearch = order.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.client.contact.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    try {
+      const matchesSearch = order.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           order.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           order.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    } catch (error) {
+      console.error('Error filtering order:', order, error);
+      return false;
+    }
   });
 
   const sortedOrders = [...filteredOrders].sort((a, b) => {
-    switch (sortBy) {
-      case 'date':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'priority': {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
+    try {
+      switch (sortBy) {
+        case 'date':
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        case 'priority': {
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+        }
+        case 'status':
+          return (a.status || '').localeCompare(b.status || '');
+                                case 'value':
+                          const aCost = typeof a.cost === 'string' ? parseFloat(a.cost) : (a.cost || 0);
+                          const bCost = typeof b.cost === 'string' ? parseFloat(b.cost) : (b.cost || 0);
+                          return bCost - aCost;
+        default:
+          return 0;
       }
-      case 'status':
-        return a.status.localeCompare(b.status);
-      case 'value':
-        return b.value - a.value;
-      default:
-        return 0;
+    } catch (error) {
+      console.error('Error sorting orders:', error);
+      return 0;
     }
   });
 
@@ -236,20 +290,63 @@ const LogisticsOrders = () => {
     console.log(`Updating order ${orderId} to status: ${newStatus}`);
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
-          <p className="text-gray-600 mt-1">Track and manage all delivery orders</p>
-        </div>
-        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-          <span className="text-sm text-gray-600">
-            {filteredOrders.length} of {ordersData.length} orders
-          </span>
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading orders...</p>
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Orders</h3>
+          <p className="text-gray-600">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Add safety check for ordersData
+  if (!ordersData || ordersData.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Orders Found</h3>
+          <p className="text-gray-600">There are no orders to display at the moment.</p>
+        </div>
+      </div>
+    );
+  }
+
+  try {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
+            <p className="text-gray-600 mt-1">Track and manage all delivery orders</p>
+          </div>
+          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+            <span className="text-sm text-gray-600">
+              {filteredOrders.length} of {ordersData.length} orders
+            </span>
+          </div>
+        </div>
 
       {/* Filters and Search */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -297,27 +394,34 @@ const LogisticsOrders = () => {
 
       {/* Orders List */}
       <div className="space-y-4">
-        {sortedOrders.map((order, index) => (
-          <motion.div
-            key={order.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-          >
+        {sortedOrders.map((order, index) => {
+          // Add safety check for order data
+          if (!order || !order.id) {
+            console.error('Invalid order data:', order);
+            return null;
+          }
+          
+          return (
+            <motion.div
+              key={order.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            >
             {/* Order Header */}
             <div className="p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <Package className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{order.orderNumber}</h3>
-                      <p className="text-sm text-gray-600">{order.client.name}</p>
-                    </div>
-                  </div>
+                                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <Package className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{order.order_id || order.tracking_number}</h3>
+                          <p className="text-sm text-gray-600">{order.product_name}</p>
+                        </div>
+                      </div>
 
                   <div className="flex items-center space-x-3">
                     <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
@@ -345,19 +449,19 @@ const LogisticsOrders = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{order.distance}</span>
+                  <span className="text-sm text-gray-600">{order.distance_km ? `${order.distance_km}km` : 'N/A'}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{order.estimatedDuration}</span>
+                  <span className="text-sm text-gray-600">{order.progress_percentage}%</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">${order.value.toFixed(2)}</span>
-                </div>
+                                                    <div className="flex items-center space-x-2">
+                                      <DollarSign className="w-4 h-4 text-gray-400" />
+                                      <span className="text-sm text-gray-600">ETB {typeof order.cost === 'string' ? parseFloat(order.cost).toFixed(2) : (order.cost?.toFixed(2) || '0.00')}</span>
+                                    </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{new Date(order.pickup.date).toLocaleDateString()}</span>
+                  <span className="text-sm text-gray-600">{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -464,9 +568,10 @@ const LogisticsOrders = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        ))}
-      </div>
+                        </motion.div>
+            );
+          })}
+        </div>
 
       {/* Empty State */}
       {sortedOrders.length === 0 && (
@@ -478,6 +583,24 @@ const LogisticsOrders = () => {
       )}
     </div>
   );
+  } catch (error) {
+    handleError(error);
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Orders</h3>
+          <p className="text-gray-600">An unexpected error occurred. Please try again.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default LogisticsOrders;

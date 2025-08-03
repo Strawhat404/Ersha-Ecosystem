@@ -15,7 +15,7 @@ const apiCall = async (endpoint, options = {}) => {
   };
 
   console.log('API Call:', `${API_BASE_URL}${endpoint}`);
-  console.log('API Config:', config);
+  console.log('Token exists:', !!token);
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
@@ -30,12 +30,10 @@ const apiCall = async (endpoint, options = {}) => {
     // Handle blob responses differently
     if (options.responseType === 'blob') {
       const blob = await response.blob();
-      console.log('API Blob response received');
       return blob;
     }
     
     const data = await response.json();
-    console.log('API Success response:', data);
     return data;
   } catch (error) {
     console.error('API call failed:', error);
@@ -345,4 +343,58 @@ export const uploadFile = async (file, endpoint = '/upload/') => {
   }
   
   return await response.json();
+};
+
+// Logistics API
+export const logisticsAPI = {
+  // Service Providers
+  getProviders: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/logistics/providers/?${queryString}`);
+  },
+  getVerifiedProviders: () => apiCall('/logistics/providers/verified_providers/'),
+  getProvidersByRegion: (region) => apiCall(`/logistics/providers/by_region/?region=${region}`),
+  getTopPerformers: () => apiCall('/logistics/providers/top_performers/'),
+  
+  // Deliveries
+  getDeliveries: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/logistics/deliveries/?${queryString}`);
+  },
+  getActiveDeliveries: () => apiCall('/logistics/deliveries/active_deliveries/'),
+  getOverdueDeliveries: () => apiCall('/logistics/deliveries/overdue_deliveries/'),
+  getDeliveryByTracking: (trackingNumber) => apiCall(`/logistics/deliveries/by_tracking_number/?tracking_number=${trackingNumber}`),
+  updateDeliveryStatus: (deliveryId, data) => apiCall(`/logistics/deliveries/${deliveryId}/update_status/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  addTrackingEvent: (deliveryId, data) => apiCall(`/logistics/deliveries/${deliveryId}/add_tracking_event/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  
+  // Cost Estimates
+  getEstimates: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/logistics/estimates/?${queryString}`);
+  },
+  calculateEstimate: (data) => apiCall('/logistics/estimates/calculate/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  
+  // Analytics
+  getAnalytics: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/logistics/analytics/?${queryString}`);
+  },
+  getDashboard: () => apiCall('/logistics/analytics/dashboard/'),
+  getPerformanceMetrics: () => apiCall('/logistics/analytics/performance_metrics/'),
+  
+  // Transactions
+  getTransactions: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/logistics/transactions/?${queryString}`);
+  },
+  getTransactionsByDelivery: (deliveryId) => apiCall(`/logistics/transactions/by_delivery/?delivery_id=${deliveryId}`),
 }; 

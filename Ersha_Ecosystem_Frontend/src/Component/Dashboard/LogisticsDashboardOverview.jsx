@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Package, 
@@ -15,9 +15,45 @@ import {
   Star
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { logisticsAPI } from '../../lib/api';
 
 const LogisticsDashboardOverview = () => {
-  // Mock data for demonstration
+  const [dashboardData, setDashboardData] = useState(null);
+  const [performanceMetrics, setPerformanceMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Check if user is authenticated
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          throw new Error('No authentication token found. Please login first.');
+        }
+        
+        const [dashboardResponse, metricsResponse] = await Promise.all([
+          logisticsAPI.getDashboard(),
+          logisticsAPI.getPerformanceMetrics()
+        ]);
+        
+        setDashboardData(dashboardResponse);
+        setPerformanceMetrics(metricsResponse);
+      } catch (err) {
+        console.error('Error fetching logistics dashboard data:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Mock data for demonstration (fallback)
   const weeklyDeliveries = [
     { day: 'Mon', deliveries: 45, earnings: 2250 },
     { day: 'Tue', deliveries: 38, earnings: 1900 },
@@ -60,7 +96,7 @@ const LogisticsDashboardOverview = () => {
   const stats = [
     {
       title: 'Active Orders',
-      value: '24',
+      value: dashboardData?.active_deliveries?.toString() || '0',
       change: '+12%',
       changeType: 'increase',
       icon: <Package className="w-6 h-6" />,
@@ -69,7 +105,7 @@ const LogisticsDashboardOverview = () => {
     },
     {
       title: 'Pending Pickups',
-      value: '8',
+      value: dashboardData?.pending_deliveries?.toString() || '0',
       change: '+5%',
       changeType: 'increase',
       icon: <Clock className="w-6 h-6" />,
@@ -78,7 +114,7 @@ const LogisticsDashboardOverview = () => {
     },
     {
       title: 'Total Deliveries',
-      value: '342',
+      value: dashboardData?.total_deliveries?.toString() || '0',
       change: '+18%',
       changeType: 'increase',
       icon: <CheckCircle className="w-6 h-6" />,
@@ -87,14 +123,43 @@ const LogisticsDashboardOverview = () => {
     },
     {
       title: 'Average Rating',
-      value: '4.8/5.0',
+      value: performanceMetrics?.success_rate ? `${performanceMetrics.success_rate}%` : '0%',
       change: '+0.2',
       changeType: 'increase',
       icon: <Star className="w-6 h-6" />,
       gradient: 'from-yellow-500 to-amber-500',
-      description: 'Client satisfaction'
+      description: 'Success rate'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading logistics dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-12">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Dashboard</h3>
+          <p className="text-gray-600">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

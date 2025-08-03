@@ -31,6 +31,7 @@ import {
 import AnalyticsDashboard from './AnalyticsDashboard';
 import PaymentSystem from './PaymentSystem';
 import LogisticsTracker from './LogisticsTracker';
+import LogisticsDashboard from './LogisticsDashboard';
 import Marketplace from '../Marketplace/Marketplace';
 import Weather from '../Weather/EnhancedWeather';
 import Advisory from '../Advisory/Advisory';
@@ -488,7 +489,7 @@ const UserDashboard = () => {
         return <PaymentSystem userType={userType} />;
         
       case 'logistics':
-        return <LogisticsTracker userType={userType} />;
+        return userType === 'logistics' ? <LogisticsDashboard /> : <LogisticsTracker userType={userType} />;
         
       case 'weather':
         return <Weather />;
