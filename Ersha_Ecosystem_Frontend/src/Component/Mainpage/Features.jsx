@@ -9,9 +9,11 @@ import {
   Smartphone,
   CheckCircle
 } from 'lucide-react';
+import { useLocale } from '../../contexts/LocaleContext';
 
 const Features = () => {
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const { t } = useLocale();
 
   const features = [
     {
@@ -31,9 +33,14 @@ const Features = () => {
           <ShoppingBag className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Direct Marketplace",
-      description: "Connect directly with farmers and buyers, eliminating middlemen and maximizing profits for everyone.",
-      benefits: ["Zero commission fees", "Direct communication", "Quality assurance", "Fair pricing"],
+      title: t('features.directMarketplace.title'),
+      description: t('features.directMarketplace.description'),
+      benefits: [
+        t('features.directMarketplace.benefits.zeroCommission'),
+        t('features.directMarketplace.benefits.directCommunication'),
+        t('features.directMarketplace.benefits.qualityAssurance'),
+        t('features.directMarketplace.benefits.fairPricing')
+      ],
       color: "from-teal-400 to-teal-600"
     },
     {
@@ -53,9 +60,14 @@ const Features = () => {
           <DollarSign className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Integrated Payments",
-      description: "Secure and fast payment processing with multiple Ethiopian payment methods and cryptocurrencies.",
-      benefits: ["Multiple payment options", "Instant transactions", "Low fees", "Fraud protection"],
+      title: t('features.integratedPayments.title'),
+      description: t('features.integratedPayments.description'),
+      benefits: [
+        t('features.integratedPayments.benefits.multipleOptions'),
+        t('features.integratedPayments.benefits.instantTransactions'),
+        t('features.integratedPayments.benefits.lowFees'),
+        t('features.integratedPayments.benefits.fraudProtection')
+      ],
       color: "from-blue-400 to-blue-600"
     },
     {
@@ -75,9 +87,14 @@ const Features = () => {
           <BarChart3 className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Financial Growth",
-      description: "Build your selling history and credit score to access better loan opportunities and financial services.",
-      benefits: ["Credit score building", "Loan eligibility", "Sales analytics", "Revenue tracking"],
+      title: t('features.financialGrowth.title'),
+      description: t('features.financialGrowth.description'),
+      benefits: [
+        t('features.financialGrowth.benefits.creditScore'),
+        t('features.financialGrowth.benefits.loanEligibility'),
+        t('features.financialGrowth.benefits.salesAnalytics'),
+        t('features.financialGrowth.benefits.revenueTracking')
+      ],
       color: "from-orange-400 to-orange-600"
     },
     {
@@ -97,9 +114,14 @@ const Features = () => {
           <TrendingUp className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Smart Analytics",
-      description: "Advanced analytics and insights to help you make informed decisions and optimize your agricultural business.",
-      benefits: ["Market trends", "Price predictions", "Performance metrics", "Growth insights"],
+      title: t('features.smartAnalytics.title'),
+      description: t('features.smartAnalytics.description'),
+      benefits: [
+        t('features.smartAnalytics.benefits.marketTrends'),
+        t('features.smartAnalytics.benefits.pricePredictions'),
+        t('features.smartAnalytics.benefits.performanceMetrics'),
+        t('features.smartAnalytics.benefits.growthInsights')
+      ],
       color: "from-purple-400 to-purple-600"
     },
     {
@@ -119,9 +141,14 @@ const Features = () => {
           <Shield className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Security & Trust",
-      description: "Bank-level security with verified farmers and merchants, ensuring safe and reliable transactions.",
-      benefits: ["Identity verification", "Secure transactions", "Dispute resolution", "Insurance coverage"],
+      title: t('features.securityTrust.title'),
+      description: t('features.securityTrust.description'),
+      benefits: [
+        t('features.securityTrust.benefits.identityVerification'),
+        t('features.securityTrust.benefits.secureTransactions'),
+        t('features.securityTrust.benefits.disputeResolution'),
+        t('features.securityTrust.benefits.insuranceCoverage')
+      ],
       color: "from-green-400 to-green-600"
     },
     {
@@ -141,9 +168,14 @@ const Features = () => {
           <Smartphone className="w-8 h-8" />
         </motion.div>
       ),
-      title: "Mobile-First Design",
-      description: "Manage your agricultural business anywhere with our responsive mobile platform.",
-      benefits: ["Offline capability", "Push notifications", "GPS integration", "Voice commands"],
+      title: t('features.mobileFirst.title'),
+      description: t('features.mobileFirst.description'),
+      benefits: [
+        t('features.mobileFirst.benefits.offlineCapability'),
+        t('features.mobileFirst.benefits.pushNotifications'),
+        t('features.mobileFirst.benefits.gpsIntegration'),
+        t('features.mobileFirst.benefits.voiceCommands')
+      ],
       color: "from-pink-400 to-pink-600"
     }
   ];
@@ -151,7 +183,7 @@ const Features = () => {
   const stats = [
     { 
       number: "99.9%", 
-      label: "Uptime Guarantee", 
+      label: t('features.stats.uptimeGuarantee'), 
       icon: (
         <motion.svg 
           className="w-8 h-8 text-teal-600" 
@@ -166,7 +198,7 @@ const Features = () => {
     },
     { 
       number: "24/7", 
-      label: "Customer Support", 
+      label: t('features.stats.customerSupport'), 
       icon: (
         <motion.svg 
           className="w-8 h-8 text-orange-600" 
@@ -181,7 +213,7 @@ const Features = () => {
     },
     { 
       number: "256-bit", 
-      label: "SSL Encryption", 
+      label: t('features.stats.sslEncryption'), 
       icon: (
         <motion.svg 
           className="w-8 h-8 text-purple-600" 
@@ -196,7 +228,7 @@ const Features = () => {
     },
     { 
       number: "50+", 
-      label: "Payment Methods", 
+      label: t('features.stats.paymentMethods'), 
       icon: (
         <motion.svg 
           className="w-8 h-8 text-emerald-600" 
@@ -237,7 +269,7 @@ const Features = () => {
             >
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
             </motion.svg>
-            Why Ersha-Ecosystem?
+            {t('features.whyErshaEcosystem')}
           </motion.div>
           
           <motion.h2
@@ -247,8 +279,8 @@ const Features = () => {
             transition={{ delay: 0.2 }}
             className="heading-lg text-gray-900 mb-6"
           >
-            Empowering Ethiopian
-            <span className="text-gradient block">Agriculture Together</span>
+            {t('features.empoweringEthiopian')}
+            <span className="text-gradient block">{t('features.agricultureTogether')}</span>
           </motion.h2>
           
           <motion.p
@@ -258,8 +290,7 @@ const Features = () => {
             transition={{ delay: 0.4 }}
             className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
           >
-            Discover powerful features designed to revolutionize how farmers and merchants 
-            connect, trade, and grow their agricultural businesses in Ethiopia.
+            {t('features.discoverPowerfulFeatures')}
           </motion.p>
         </motion.div>
 
@@ -336,7 +367,7 @@ const Features = () => {
                   whileTap={{ scale: 0.98 }}
                   className={`w-full py-3 px-4 bg-gradient-to-r ${feature.color} text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100`}
                 >
-                  Learn More
+                  {t('common.learnMore')}
                 </motion.button>
 
                 {/* Hover Glow Effect */}
@@ -359,10 +390,10 @@ const Features = () => {
             viewport={{ once: true }}
             className="text-3xl font-bold text-gray-900 mb-4"
           >
-            Trusted by <span className="text-gradient">Thousands</span>
+            {t('features.trustedBy')} <span className="text-gradient">{t('features.thousands')}</span>
           </motion.h3>
           <p className="text-lg text-gray-600 mb-12">
-            Join our growing community of successful farmers and merchants
+            {t('features.joinGrowingCommunity')}
           </p>
           
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -411,12 +442,12 @@ const Features = () => {
               >
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
               </motion.svg>
-              <span>Start Your Journey Today</span>
+              <span>{t('features.startJourneyToday')}</span>
             </button>
           </motion.div>
           
           <p className="text-gray-500 mt-4">
-            Join over 15,000+ farmers and merchants already using AgroGebeya
+            {t('features.joinOverFarmers')}
           </p>
         </motion.div>
       </div>

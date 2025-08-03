@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocale } from '../../contexts/LocaleContext';
 import { 
   Mail, 
   Lock, 
@@ -15,6 +16,7 @@ import {
 
 const Login = () => {
   const navigate = useNavigate();
+  const { t } = useLocale();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -43,7 +45,7 @@ const Login = () => {
         setError(result.error);
       } else {
         console.log('Login successful, redirecting...');
-        setSuccess('Login successful! Redirecting to dashboard...');
+        setSuccess(t('auth.loginSuccessful'));
         // Redirect to appropriate dashboard based on user type
         setTimeout(() => {
           if (result.data && result.data.user && result.data.user.user_type === 'expert') {
@@ -57,7 +59,7 @@ const Login = () => {
       }
     } catch (err) {
       console.log('Login exception:', err);
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('auth.unexpectedError'));
     } finally {
       setLoading(false);
     }
@@ -99,10 +101,10 @@ const Login = () => {
           </motion.div>
           
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome Back
+            {t('auth.welcomeBack')}
           </h2>
           <p className="text-gray-600">
-            Sign in to your AgroGebeya account
+            {t('auth.signInToAccount')}
           </p>
         </motion.div>
 
@@ -117,7 +119,7 @@ const Login = () => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                {t('auth.emailAddress')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -132,7 +134,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.enterEmail')}
                 />
               </div>
             </div>
@@ -140,7 +142,7 @@ const Login = () => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -155,7 +157,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.enterPassword')}
                 />
                 <button
                   type="button"
@@ -204,65 +206,42 @@ const Login = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                />
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>{t('common.loading')}</span>
+                </>
               ) : (
                 <>
-                  Sign In
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <span>{t('navigation.signIn')}</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </motion.button>
           </form>
 
-          {/* Forgot Password Link */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleSwitchToForgotPassword}
-              className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors duration-200"
-            >
-              Forgot your password?
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Register Link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center"
-        >
-          <p className="text-gray-600">
-            Don&apos;t have an account?{' '}
-            <button
-              onClick={handleSwitchToRegister}
-              className="font-medium text-green-600 hover:text-green-700 transition-colors duration-200"
-            >
-              Sign up here
-            </button>
-          </p>
-        </motion.div>
-
-        {/* Quick Access Demo */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-gray-200"
-        >
-          <p className="text-xs text-gray-600 text-center mb-2">
-            Demo Account (for testing):
-          </p>
-          <div className="text-xs text-gray-700 space-y-1">
-            <div>Email: demo@ershaecosystem.com</div>
-            <div>Password: demo123</div>
+          {/* Additional Links */}
+          <div className="mt-6 space-y-4">
+            <div className="text-center">
+              <button
+                onClick={handleSwitchToForgotPassword}
+                className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
+                {t('auth.forgotPassword')}
+              </button>
+            </div>
+            
+            <div className="text-center">
+              <span className="text-sm text-gray-600">{t('auth.dontHaveAccount')} </span>
+              <button
+                onClick={handleSwitchToRegister}
+                className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
+                {t('auth.signUp')}
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>

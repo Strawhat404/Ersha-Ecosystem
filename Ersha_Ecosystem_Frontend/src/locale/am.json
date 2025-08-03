@@ -1,0 +1,603 @@
+{
+  "common": {
+    "loading": "በመጫን ላይ...",
+    "error": "ስህተት",
+    "success": "ተሳክቷል",
+    "cancel": "ሰርዝ",
+    "save": "አስቀምጥ",
+    "delete": "ሰርዝ",
+    "edit": "አርትዕ",
+    "view": "ይመልከቱ",
+    "close": "ዝጋ",
+    "back": "ወደ ኋላ",
+    "next": "ቀጣይ",
+    "previous": "የቀድሞ",
+    "submit": "ላክ",
+    "confirm": "ያረጋግጡ",
+    "yes": "አዎ",
+    "no": "አይ",
+    "ok": "እሺ",
+    "retry": "እንደገና ይሞክሩ",
+    "refresh": "አድስ",
+    "search": "ፈልግ",
+    "filter": "አጣራ",
+    "sort": "ያዘዝ",
+    "download": "ያውርዱ",
+    "upload": "ያስገቡ",
+    "select": "ምረጥ",
+    "choose": "ምረጥ",
+    "all": "ሁሉም",
+    "none": "ምንም",
+    "unknown": "የማይታወቅ",
+    "notSpecified": "ያልተገለጸ",
+    "unavailable": "የማይገኝ",
+    "available": "የሚገኝ",
+    "busy": "የተያዘ",
+    "verified": "የተረጋገጠ",
+    "pending": "በመጠበቅ ላይ",
+    "completed": "ተሟልቷል",
+    "failed": "ውድቅ ሆኗል",
+    "active": "ንቁ",
+    "inactive": "ያልንቁ",
+    "online": "መስመር ላይ",
+    "offline": "መስመር ውጭ",
+    "learnMore": "ተጨማሪ ይማሩ"
+  },
+  "navigation": {
+    "home": "የቤት ገጽ",
+    "marketplace": "ገበያ",
+    "weather": "አየር ሁኔታ",
+    "advisory": "ምክር",
+    "news": "ዜና",
+    "dashboard": "ዳሽቦርድ",
+    "faydaId": "ፋይዳ መታወቂያ",
+    "cart": "ጋሪ",
+    "profile": "መገለጫ",
+    "signIn": "ግባ",
+    "signOut": "ውጣ",
+    "getStarted": "ጀምር",
+    "language": "ቋንቋ",
+    "english": "English",
+    "amharic": "አማርኛ"
+  },
+  "brand": {
+    "name": "እርሻ-ኤኮሲስተም",
+    "tagline": "የእርሻ መድረኳ",
+    "agroLife": "የእርሻ ሕይወት",
+    "agriculturalMarketplace": "የእርሻ ገበያ"
+  },
+  "hero": {
+    "title": "የእርሻ መስክን የወደፊት እድገት ውስጥ ያስገቡ። ከአርሶ አደሮች ጋር በቀጥታ ያገኙ፣ በቀጥታ የሚሰጥ የገበያ መረጃ ያግኙ፣ እና የእርሻ ንግድዎን በተሟላ ኤኮሲስተማችን ውስጥ ያሳድጉ።",
+    "exploreMarketplace": "ገበያውን ያስሱ",
+    "watchDemo": "ዲሞ ይመልከቱ",
+    "stats": {
+      "activeFarmers": "ንቁ አርሶ አደሮች",
+      "monthlyTrade": "ወርሃዊ ንግድ",
+      "successRate": "የስኬት መጠን"
+    }
+  },
+  "home": {
+    "marketplacePreview": {
+      "title": "ወደ እኛ ያስገቡ",
+      "digitalMarketplace": "ዲጂታል ገበያ",
+      "description": "የተጠናቀቀ ገበያችን በኩል የተጠናቀቀ እርሻን ያግኙ። ከአርሶ አደሮች ጋር በቀጥታ ያገኙ እና እውነተኛ፣ ትኩስ ምርት ያግኙ።",
+      "exploreJourneys": "ጉዞዎቻችንን ያስሱ",
+      "stats": {
+        "products": "12,300+ ምርቶች",
+        "productsDescription": "ከተረጋገጡ አርሶ አደሮች የሚገኝ ትኩስ ምርት በኢትዮጵያ ውብ መሬቶች ላይ",
+        "verified": "98% የተረጋገጠ",
+        "verifiedDescription": "የተረጋገጡ ሻጮች ከጥራት ዋስትና ጋር፣ የተጠናቀቀ እና እውነተኛ ምርቶችን ያረጋግጡ",
+        "fastDelivery": "ፈጣን መላኪያ",
+        "fastDeliveryDescription": "ቀጥተኛ እርሻ-ወደ-ገበያ ሎጂስቲክስ አውታረመረብ፣ የተፈጥሯ በረከትን ወደ ቤትዎ ያመጣል"
+      }
+    },
+    "weatherPreview": {
+      "title": "ዘመናዊ",
+      "weatherInsights": "የአየር ሁኔታ ግንዛቤዎች",
+      "description": "ለአካባቢዎ በቀጥታ የሚሰጥ የአየር ሁኔታ መረጃ እና የእርሻ ምክሮች ያግኙ።",
+      "viewDashboard": "ሙሉ የአየር ሁኔታ ዳሽቦርድ ይመልከቱ",
+      "cards": {
+        "currentWeather": {
+          "title": "የአሁን አየር ሁኔታ",
+          "description": "ለአዲስ አበባ በቀጥታ የሚሰጥ ሁኔታ",
+          "condition": "ከፊል ደመናማ"
+        },
+        "farmingTips": {
+          "title": "የእርሻ ምክሮች",
+          "description": "የአየር ሁኔታ ላይ የተመሰረቱ ምክሮች",
+          "recommendation": "ለመትከል ተስማሚ ሁኔታዎች። ለቀጣዩ ሳምንት የውሃ መስጠት ያስቡ።"
+        },
+        "forecast": {
+          "title": "5-ቀን የወደፊት እይታ",
+          "description": "የተራዘመ የአየር ሁኔታ እይታ",
+          "outlook": "ፀሐያማ → ደመናማ → ዝናብ → ግማሽ → ፀሐያማ"
+        }
+      }
+    },
+    "advisoryPreview": {
+      "title": "ባለሙያ",
+      "agriculturalAdvisory": "የእርሻ ምክር",
+      "description": "ከእርሻ ባለሙያዎች ይማሩ፣ የስልጠና ኮርሶችን ያግኙ፣ እና የግል የእርሻ ምክር ያግኙ።"
+    }
+  },
+  "auth": {
+    "welcomeBack": "እንደገና እንኳን በደህና መጡ",
+    "signInToAccount": "ወደ አግሮጌቤያ መለያዎ ይግቡ",
+    "emailAddress": "የኢሜይል አድራሻ",
+    "password": "የይለፍ ቃል",
+    "enterEmail": "የኢሜይል አድራሻዎን ያስገቡ",
+    "enterPassword": "የይለፍ ቃልዎን ያስገቡ",
+    "forgotPassword": "የይለፍ ቃልዎን ረሱ?",
+    "dontHaveAccount": "መለያ የለዎትም?",
+    "signUp": "ይመዝገቡ",
+    "alreadyHaveAccount": "የሚያውቁ መለያ አለዎት?",
+    "loginSuccessful": "ግባቱ ተሳክቷል! ወደ ዳሽቦርድ እያለፈ ነው...",
+    "unexpectedError": "ያልተጠበቀ ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።",
+    "joinErshaEcosystem": "እርሻ-ኤኮሲስተም ይቀላቀሉ",
+    "createAccount": "መለያዎን ይፍጠሩ እና የእርሻ ጉዞዎን ያስጀምሩ",
+    "firstName": "የመጀመሪያ ስም",
+    "lastName": "የመጨረሻ ስም",
+    "phoneNumber": "የስልክ ቁጥር",
+    "confirmPassword": "የይለፍ ቃል ያረጋግጡ",
+    "enterFirstName": "የመጀመሪያ ስምዎን ያስገቡ",
+    "enterLastName": "የመጨረሻ ስምዎን ያስገቡ",
+    "enterPhoneNumber": "የስልክ ቁጥርዎን ያስገቡ",
+    "enterConfirmPassword": "የይለፍ ቃልዎን ያረጋግጡ",
+    "passwordsDoNotMatch": "የይለፍ ቃሎች አይጣጣሙም",
+    "accountCreated": "መለያው በተሳካተ ሁኔታ ተፈጥሯል! ለማረጋገጫ ኢሜይልዎን ያረጋግጡ።",
+    "verificationRequired": "የኢሜይል ማረጋገጫ ያስፈልጋል",
+    "checkEmail": "ለማረጋገጫ ኢሜይልዎን ያረጋግጡ።",
+    "resendVerification": "የማረጋገጫ ኢሜይል እንደገና ይላኩ",
+    "verificationSent": "የማረጋገጫ ኢሜይል ተልኳል!",
+    "resetPassword": "የይለፍ ቃል ዳግም ያዘዝ",
+    "resetPasswordDescription": "የኢሜይል አድራሻዎን ያስገቡ እና የይለፍ ቃልዎን እንደገና ለማዘዝ አገናኝ እንልካለን።",
+    "sendResetLink": "ዳግም የማዘዝ አገናኝ ይላኩ",
+    "resetLinkSent": "ዳግም የማዘዝ አገናኝ ተልኳል! ኢሜይልዎን ያረጋግጡ።",
+    "newPassword": "አዲስ የይለፍ ቃል",
+    "confirmNewPassword": "አዲሱን የይለፍ ቃል ያረጋግጡ",
+    "passwordResetSuccess": "የይለፍ ቃል እንደገና መዘዝ ተሳክቷል! አሁን አዲሱ የይለፍ ቃልዎ ለመግቢያ መጠቀም ይችላሉ።"
+  },
+  "dashboard": {
+    "title": "ዳሽቦርድ",
+    "overview": "አጠቃላይ እይታ",
+    "marketplace": "ገበያ",
+    "analytics": "ትንተና",
+    "payments": "ክፍያዎች",
+    "logistics": "ሎጂስቲክስ",
+    "weather": "አየር ሁኔታ",
+    "advisory": "ምክር",
+    "news": "ዜና",
+    "welcome": "የእርሻ ዳሽቦርድዎን እንኳን በደስታ መጡ",
+    "totalEarnings": "ጠቅላላ ገቢ",
+    "weather": "አየር ሁኔታ",
+    "activeOrders": "ንቁ ትዕዛዞች",
+    "nextStep": "የሚቀጥለው ደረጃዎ",
+    "sellProducts": "ምርቶች ይሸጡ",
+    "getVerified": "ያረጋግጡ",
+    "listProducts": "ምርቶችዎን ይዘርዝሩ እና መሸጥ ይጀምሩ",
+    "completeVerification": "ሁሉንም ባህሪያት ለመድረስ ማረጋገጫ ያጠናቅቁ",
+    "noPendingOrders": "የሚጠበቁ ትዕዛዞች የሉም",
+    "pendingOrders": "የሚጠበቁ",
+    "quickActions": "ፈጣን ድርጊቶች",
+    "recentActivity": "የቅርብ ጊዜ እንቅስቃሴ",
+    "viewAll": "ሁሉንም ይመልከቱ",
+    "newOrderReceived": "አዲስ ትዕዛዝ ተቀብሏል",
+    "hoursAgo": "ሰዓታት በፊት",
+    "analyticsOnlyForFarmers": "የትንተና ዳሽቦርድ ለአርሶ አደሮች ብቻ የሚገኝ ነው።",
+    "userTypes": {
+      "farmer": "አርሶ አደር",
+      "buyer": "ገዛተኛ/ንግድ ሰው",
+      "expert": "ባለሙያ",
+      "logistics": "የሎጂስቲክስ ኩባንያ",
+      "user": "ተጠቃሚ"
+    },
+    "verification": {
+      "verified": "የተረጋገጠ",
+      "pendingVerification": "ማረጋገጫ በመጠበቅ ላይ",
+      "verificationFailed": "ማረጋገጫ ውድቅ ሆኗል",
+      "notVerified": "ያልተረጋገጠ",
+      "verifyNow": "አሁን ያረጋግጡ",
+      "getVerified": "ያረጋግጡ"
+    },
+    "profile": {
+      "profileSettings": "የመገለጫ ማስተካከያዎች",
+      "verification": "ማረጋገጫ",
+      "signOut": "ውጣ"
+    }
+  },
+  "marketplace": {
+    "title": "የእርሻ ገበያ",
+    "description": "ከአርሶ አደሮች እና ንግድ ሰዎች ጋር በቀጥታ ያገኙ። ጥራት ያለው ምርት በውድድር ዋጋ ይሽጡ።",
+    "searchProducts": "ምርቶችን ፈልግ...",
+    "filterByCategory": "በምድብ አጣራ",
+    "sortBy": "በያዘ",
+    "priceLowToHigh": "ዋጋ: ከዝቅተኛ ወደ ከፍተኛ",
+    "priceHighToLow": "ዋጋ: ከከፍተኛ ወደ ዝቅተኛ",
+    "newestFirst": "አዲሱ መጀመሪያ",
+    "oldestFirst": "የቆዩ መጀመሪያ",
+    "addToCart": "ወደ ጋሪ ጨምር",
+    "buyNow": "አሁን ግዛ",
+    "viewDetails": "ዝርዝሮችን ይመልከቱ",
+    "productDetails": "የምርት ዝርዝሮች",
+    "seller": "ሻጭ",
+    "category": "ምድብ",
+    "harvestDate": "የማጨድ ቀን",
+    "expiryDate": "የመቃተት ቀን",
+    "location": "አካባቢ",
+    "delivery": "መላኪያ",
+    "pickup": "መውሰድ",
+    "shipping": "መላኪያ",
+    "freeShipping": "ነፃ መላኪያ",
+    "inStock": "በስቶክ ላይ",
+    "outOfStock": "ከስቶክ ውጭ",
+    "limitedStock": "ውስንነት ያለው ስቶክ",
+    "reviews": "ግምገማዎች",
+    "rating": "ደረጃ",
+    "writeReview": "ግምገማ ይጻፉ",
+    "relatedProducts": "የተዛመዱ ምርቶች",
+    "recommendations": "የሚመከሩ",
+    "cart": {
+      "title": "የግዛት ጋሪ",
+      "empty": "ጋሪዎ ባዶ ነው",
+      "continueShopping": "ግዛት ይቀጥሉ",
+      "checkout": "ወደ ክፍያ ይሂዱ",
+      "remove": "ያስወግዱ",
+      "updateQuantity": "ብዛት ያዘምኑ",
+      "cartTotal": "የጋሪ ጠቅላላ",
+      "items": "ንጥሎች"
+    },
+    "checkout": {
+      "title": "ክፍያ",
+      "shippingAddress": "የመላኪያ አድራሻ",
+      "billingAddress": "የክፍያ አድራሻ",
+      "paymentMethod": "የክፍያ ዘዴ",
+      "orderSummary": "የትዕዛዝ ማጠቃለያ",
+      "placeOrder": "ትዕዛዝ ያድርጉ",
+      "orderConfirmation": "የትዕዛዝ ማረጋገጫ",
+      "orderNumber": "የትዕዛዝ ቁጥር",
+      "estimatedDelivery": "የተገመተ መላኪያ",
+      "trackOrder": "ትዕዛዝ ይከታተሉ"
+    }
+  },
+  "weather": {
+    "title": "የአየር ሁኔታ መረጃ",
+    "currentWeather": "የአሁን አየር ሁኔታ",
+    "forecast": "የወደፊት እይታ",
+    "temperature": "ሙቀት",
+    "humidity": "እርጥበት",
+    "windSpeed": "የንፋስ ፍጥነት",
+    "pressure": "ግፊት",
+    "visibility": "የማየት አቅም",
+    "uvIndex": "የ UV መረጃ",
+    "sunrise": "ፀሐይ መውጣት",
+    "sunset": "ፀሐይ መጥለቅ",
+    "feelsLike": "ይሰማል እንደ",
+    "high": "ከፍተኛ",
+    "low": "ዝቅተኛ",
+    "precipitation": "ዝናብ",
+    "chanceOfRain": "የዝናብ እድል",
+    "weatherAlerts": "የአየር ሁኔታ ማስጠንቀቂያዎች",
+    "agriculturalAdvice": "የእርሻ ምክር",
+    "plantingSeason": "የመትከል ወቅት",
+    "harvestSeason": "የማጨድ ወቅት",
+    "cropRecommendations": "የምርት ምክሮች",
+    "tabs": {
+      "current": "አሁን",
+      "forecast": "የወደፊት እይታ",
+      "alerts": "ማስጠንቀቂያዎች",
+      "cropCalendar": "የምርት መዝገበ ቀን",
+      "activities": "እንቅስቃሴዎች"
+    },
+    "searchBar": {
+      "placeholder": "የከተማ ስም ያስገቡ",
+      "button": "ፈልግ"
+    },
+    "crops": {
+      "teff": "ጤፍ",
+      "maize": "ዛሬ",
+      "barley": "ስንዴ",
+      "wheat": "ስንዴ",
+      "sorghum": "ማሽላ",
+      "coffee": "ቡና"
+    },
+    "alerts": {
+      "heatWave": {
+        "title": "የሙቀት ማስጠንቀቂያ",
+        "message": "የጽንፈኛ ሙቀት ሁኔታዎች። የውሃ መስጠት ያሳድጉ እና ለሚስተካከሉ ምርቶች ጥላ ያድርጉ።"
+      },
+      "coldWave": {
+        "title": "የቅዝቃዜ ማስጠንቀቂያ",
+        "message": "የቅዝቃዜ ሁኔታዎች ተገኝተዋል። ሚስተካከሉ ምርቶችን ከቅዝቃዜ ጉዳት ያስጠብቁ።"
+      },
+      "highHumidity": {
+        "title": "የከፍተኛ እርጥበት ማስጠንቀቂያ",
+        "message": "የፈንገስ በሽታዎች እድገት አድራሻ። ምርቶችን በጥንቃቄ ያስተውሉ።"
+      },
+      "strongWinds": {
+        "title": "የጠንካራ ንፋስ ማስጠንቀቂያ",
+        "message": "ከፍተኛ ምርቶችን እና ቅጠሎችን ከንፋስ ጉዳት ያስጠብቁ።"
+      },
+      "recommendedActions": "የሚመከሩ እንቅስቃሴዎች",
+      "noActiveAlerts": {
+        "title": "ንቁ ማስጠንቀቂያዎች የሉም",
+        "message": "የአየር ሁኔታዎች ለእርሻ እንቅስቃሴዎች ተስማሚ ናቸው"
+      }
+    },
+    "activities": {
+      "irrigation": {
+        "title": "የውሃ መስጠት",
+        "description": "የከፍተኛ ሙቀት ምክንያት የውሃ መስጠት ድግግሞሽ ያሳድጉ"
+      },
+      "frostProtection": {
+        "title": "የቅዝቃዜ ጥበቃ",
+        "description": "ምርቶችን ከቅዝቃዜ ጉዳት ያስጠብቁ"
+      },
+      "drainage": {
+        "title": "የውሃ መፍሰስ",
+        "description": "የውሃ መጠን እንዳይጨምር ትክክለኛ የውሃ መፍሰስ ያረጋግጡ"
+      },
+      "fertilization": {
+        "title": "የዘር አዝራር",
+        "description": "ለተሻለ የምርት እድገት ዘር አዝራር ይጠቀሙ"
+      },
+      "mulching": {
+        "title": "የአፈር ሽፋን",
+        "description": "የአፈር እርጥበት ለመጠበቅ ሽፋን ይጠቀሙ"
+      },
+      "priority": "የቅድመ ምርጫ"
+    },
+    "tips": {
+      "extremeHeat": {
+        "title": "የጽንፈኛ ሙቀት ማስጠንቀቂያ",
+        "message": "ተጨማሪ የውሃ መስጠት ያስቡ እና ለሚስተካከሉ ምርቶች ጥላ ያድርጉ"
+      },
+      "highTemperature": {
+        "title": "ከፍተኛ ሙቀት",
+        "message": "የውሃ መስጠት ድግግሞሽ ያሳድጉ እና የሙቀት ጫና ያስተውሉ"
+      },
+      "frostRisk": {
+        "title": "የቅዝቃዜ አደጋ",
+        "message": "ምርቶችን ከቅዝቃዜ ጉዳት ያስጠብቁ እና የውጪ መትከል ያዘግጡ"
+      },
+      "coolWeather": {
+        "title": "የቅዝቃዜ አየር ሁኔታ",
+        "message": "ለቅዝቃዜ ወቅት ምርቶች እንደ ሰላጣ እና ስፒናች ያሉ ጥሩ ሁኔታዎች"
+      },
+      "perfectTemperature": {
+        "title": "ተሻለ ሙቀት",
+        "message": "ለአብዛኛው የምርት እድገት እና የውጪ እንቅስቃሴዎች ተስማሚ ሁኔታዎች"
+      },
+      "highHumidityAlert": {
+        "title": "የከፍተኛ እርጥበት ማስጠንቀቂያ",
+        "message": "የፈንገስ በሽታዎችን ያስተውሉ እና ትክክለኛ የአየር ማስተላለፊያ ያረጋግጡ"
+      },
+      "lowHumidity": {
+        "title": "ዝቅተኛ እርጥበት",
+        "message": "የውሃ መስጠት ያሳድጉ እና እርጥበት ለመጠበቅ ሽፋን ያስቡ"
+      },
+      "goodHumidity": {
+        "title": "ጥሩ እርጥበት",
+        "message": "ለጤናማ የዕፅዋት እድገት ተስማሚ የእርጥበት ደረጃዎች"
+      },
+      "rainfallDetected": {
+        "title": "ዝናብ ተገኝቷል",
+        "message": "የተሻለ ተፈጥሯዊ የውሃ መስጠት! የእጅ የውሃ መስጠት በዚሁ መሰረት ያሳድጉ"
+      },
+      "clearSkies": {
+        "title": "ግማሽ ሰማይ",
+        "message": "ለውጪ እርሻ እንቅስቃሴዎች እና ማጨድ ተስማሚ ሁኔታዎች"
+      },
+      "highWindAlert": {
+        "title": "የከፍተኛ ንፋስ ማስጠንቀቂያ",
+        "message": "ከፍተኛ ዕፅዋትን ያስጠብቁ እና የጥጥ መጥፋፋት ያስወግዱ"
+      },
+      "lowPressureSystem": {
+        "title": "የዝቅተኛ ግፊት ስርዓት",
+        "message": "የአየር ሁኔታ ለውጦች ሊከሰቱ ይችላሉ - የወደፊት እይታዎችን በጥንቃቄ ያስተውሉ"
+      }
+    },
+    "cropCalendar": {
+      "plantingSeason": "የመትከል ወቅት",
+      "harvestSeason": "የማጨድ ወቅት",
+      "maintenance": "ጥበቃ",
+      "planting": "መትከል",
+      "harvest": "ማጨድ",
+      "optimal": "ለአሁኑ ክልል ተስማሚ"
+    }
+  },
+  "advisory": {
+    "title": "የባለሙያ እርሻ ምክር",
+    "subtitle": "ከጥሩ ባለሙያዎች ይማሩ",
+    "description": "የእርሻ መስክን የወደፊት እድገት ውስጥ ያስገቡ። ከአርሶ አደሮች ጋር በቀጥታ ያገኙ፣ በቀጥታ የሚሰጥ የገበያ መረጃ ያግኙ፣ እና የእርሻ ንግድዎን በተሟላ ኤኮሲስተማችን ውስጥ ያሳድጉ።",
+    "expertAdvice": "የባለሙያ ምክር",
+    "aiCourses": "የ AI ኮርሶች",
+    "resources": "መረጃዎች",
+    "experts": {
+      "title": "የባለሙያ ምክር",
+      "specialization": "ስፔሻላይዜሽን",
+      "experience": "የስራ ስራ ዓመት",
+      "rating": "ደረጃ",
+      "consultationPrice": "ብር/ሰዓት",
+      "bookConsultation": "ምክር ያዘዙ",
+      "notConnected": "ያልተገናኘ",
+      "languages": "ቋንቋዎች",
+      "bio": "የሕይወት ታሪክ",
+      "availability": "የመገኘት አቅም"
+    },
+    "courses": {
+      "title": "የ AI የሚሰጥ ኮርሶች",
+      "subtitle": "የግል የሆነ የእርሻ ትምህርት ኮርሶች ይፍጠሩ",
+      "generateCourse": "ኮርስ ይፍጠሩ",
+      "personalizedLearning": "የግል ትምህርት",
+      "structuredModules": "የተዋቀሩ ሞዱሎች",
+      "practicalExercises": "የተግባብ መለማመጃዎች",
+      "downloadCourse": "ኮርስ ያውርዱ",
+      "courseInDevelopment": "ኮርስ በማዳበር ላይ",
+      "difficulty": {
+        "beginner": "ጀማሪ",
+        "intermediate": "መካከለኛ",
+        "advanced": "የላቀ"
+      },
+      "aiGenerated": "የ AI የተፈጠረ",
+      "views": "ዕይታዎች",
+      "duration": "ጊዜ"
+    },
+    "resources": {
+      "title": "መረጃዎች",
+      "resourceType": "የመረጃ አይነት",
+      "downloads": "የሚወርዱ",
+      "fileSize": "የፋይል መጠን",
+      "download": "ያውርዱ"
+    },
+    "booking": {
+      "title": "ምክር ያዙ",
+      "description": "ከባለሙያ ጋር ምክር ያዙ",
+      "calendlyBooking": "የቀጠሮ ማዘዣ",
+      "calendlyDescription": "የባለሙያውን የቀጠሮ ገጽ ለመምረጥ ይዛወራሉ።",
+      "bookNow": "አሁን ያዙ",
+      "redirecting": "ይዛወራል..."
+    }
+  },
+  "news": {
+    "title": "የእርሻ ዜና",
+    "latestNews": "የቅርብ ጊዜ ዜና",
+    "trending": "የሚያውቁ",
+    "categories": "ምድቦች",
+    "readMore": "ተጨማሪ ያንብቡ",
+    "publishedOn": "በተለቀቀበት ቀን",
+    "author": "ደራሲ",
+    "source": "ምንጭ",
+    "relatedArticles": "የተዛመዱ ጽሑፎች",
+    "searchNews": "ዜና ፈልግ...",
+    "filterByCategory": "በምድብ አጣራ",
+    "noNewsFound": "ዜና ጽሑፎች አልተገኙም።",
+    "allNews": "ሁሉም ዜና",
+    "marketTrends": "የገበያ አዝማሚያዎች",
+    "farmTech": "የእርሻ ቴክኖሎጂ",
+    "weatherClimate": "አየር ሁኔታ እና የአየር ሁኔታ",
+    "policyRegulations": "ፖሊሲ እና ደንቦች"
+  },
+  "footer": {
+    "about": "ስለ እኛ",
+    "services": "አገልግሎቶች",
+    "contact": "አድራሻ",
+    "support": "ድጋፍ",
+    "privacy": "የግል መረጃ ፖሊሲ",
+    "terms": "የአገልግሎት ውል",
+    "copyright": "© 2024 እርሻ-ኤኮሲስተም። ሁሉም መብቶች የተጠበቁ ናቸው።",
+    "followUs": "ይከተሉን",
+    "newsletter": "የዜና መጽሔት",
+    "subscribe": "ይመዝገቡ",
+    "emailPlaceholder": "የኢሜይል አድራሻዎን ያስገቡ"
+  },
+  "errors": {
+    "pageNotFound": "ገጽ አልተገኘም",
+    "pageNotFoundDescription": "የሚፈልጉት ገጽ የለም።",
+    "goHome": "ወደ ቤት ይሂዱ",
+    "serverError": "የሰርቨር ስህተት",
+    "serverErrorDescription": "በእኛ በኩል አንድ ነገር ተሳስቷል። እባክዎ በኋላ ይሞክሩ።",
+    "networkError": "የድረ-ገጽ ስህተት",
+    "networkErrorDescription": "የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
+    "unauthorized": "ያልተፈቀደ",
+    "unauthorizedDescription": "ይህን ገጽ ለመድረስ መግቢያ ማድረግ አለብዎት።",
+    "forbidden": "የተከለከለ",
+    "forbiddenDescription": "ይህን መረጃ ለመድረስ ፈቃድ የለዎትም።"
+  },
+  "validation": {
+    "required": "ይህ መስክ ያስፈልጋል",
+    "email": "እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ",
+    "password": "የይለፍ ቃል ቢያንስ 8 ቁም ነገሮች መሆን አለበት",
+    "passwordMatch": "የይለፍ ቃሎች መጣጣም አለባቸው",
+    "phone": "እባክዎ ትክክለኛ የስልክ ቁጥር ያስገቡ",
+    "minLength": "ቢያንስ {min} ቁም ነገሮች መሆን አለበት",
+    "maxLength": "ከ {max} ቁም ነገሮች አይበልጥም",
+    "numeric": "ቁጥር መሆን አለበት",
+    "positive": "አዎንታዊ ቁጥር መሆን አለበት",
+    "url": "እባክዎ ትክክለኛ URL ያስገቡ"
+  },
+  "notifications": {
+    "success": "ተሳክቷል",
+    "error": "ስህተት",
+    "warning": "ማስጠንቀቂያ",
+    "info": "መረጃ",
+    "dismiss": "ያስወግዱ",
+    "close": "ያዝጉ"
+  },
+  "features": {
+    "whyErshaEcosystem": "ለምን እርሻ-ኤኮሲስተም?",
+    "empoweringEthiopian": "የኢትዮጵያ እርሻን እያጠናከሩ",
+    "agricultureTogether": "አብረን እንሰራለን",
+    "discoverPowerfulFeatures": "አርሶ አደሮች እና ንግድ ሰዎች እንዴት እንደሚገኙ፣ እንደሚሽጡ እና የእርሻ ንግድዎቻቸውን እንደሚያሳድጉ ለማሳደግ የተዘጋጁ ኃይለኛ ባህሪያትን ያግኙ።",
+    "trustedBy": "የሚያምኑት",
+    "thousands": "ሺህዎች",
+    "joinGrowingCommunity": "የተሳኩ አርሶ አደሮች እና ንግድ ሰዎች የሚገኙ እያደገ ያለ ማህበረሰብ ይቀላቀሉ",
+    "startJourneyToday": "ዛሬ ጉዞዎን ያስጀምሩ",
+    "joinOverFarmers": "አሁን አግሮጌቤያ እያጠቀሙ ያሉ ከ 15,000+ አርሶ አደሮች እና ንግድ ሰዎች ይቀላቀሉ",
+    "directMarketplace": {
+      "title": "ቀጥተኛ ገበያ",
+      "description": "ከአርሶ አደሮች እና ገዛዎች ጋር በቀጥታ ያገኙ፣ መካከለኛ ሰዎችን እያስወገዱ እና ለሁሉም ሰው ትርፍ እያሳደጉ።",
+      "benefits": {
+        "zeroCommission": "ዜሮ ኮሚሽን ክፍያዎች",
+        "directCommunication": "ቀጥተኛ ግንኙነት",
+        "qualityAssurance": "የጥራት ዋስትና",
+        "fairPricing": "ፍትሃዊ ዋጋ አውጪ"
+      }
+    },
+    "integratedPayments": {
+      "title": "የተዋሃዱ ክፍያዎች",
+      "description": "ከብዙ የኢትዮጵያ የክፍያ ዘዴዎች እና ክሪፕቶካረንሲዎች ጋር ደህንነቱ የተጠበቀ እና ፈጣን የክፍያ ሂደት።",
+      "benefits": {
+        "multipleOptions": "ብዙ የክፍያ አማራጮች",
+        "instantTransactions": "ወቅታዊ ግብይቶች",
+        "lowFees": "ዝቅተኛ ክፍያዎች",
+        "fraudProtection": "የማጭበርበር ጥበቃ"
+      }
+    },
+    "financialGrowth": {
+      "title": "የገንዘብ እድገት",
+      "description": "የመሸጫ ታሪክዎን እና የክሬዲት ነጥብዎን ያሳድጉ የተሻለ የብድር እድሎች እና የገንዘብ አገልግሎቶች ለመድረስ።",
+      "benefits": {
+        "creditScore": "የክሬዲት ነጥብ ግንባታ",
+        "loanEligibility": "የብድር ብቃት",
+        "salesAnalytics": "የሽያጭ ትንተና",
+        "revenueTracking": "የገቢ መከታተል"
+      }
+    },
+    "smartAnalytics": {
+      "title": "ዘመናዊ ትንተና",
+      "description": "የተሻለ ውሳኔዎች ለመያዝ እና የእርሻ ንግድዎን ለማመቻቸት የሚያግዙ የላይኛው ደረጃ ትንተናዎች እና ግንዛቤዎች።",
+      "benefits": {
+        "marketTrends": "የገበያ አዝማሚያዎች",
+        "pricePredictions": "የዋጋ ትንበያዎች",
+        "performanceMetrics": "የአድማስ መለኪያዎች",
+        "growthInsights": "የእድገት ግንዛቤዎች"
+      }
+    },
+    "securityTrust": {
+      "title": "ደህንነት እና እምነት",
+      "description": "ከባንክ ደረጃ የሚሆን ደህንነት ከተረጋገጡ አርሶ አደሮች እና ንግድ ሰዎች ጋር፣ ደህንነቱ የተጠበቀ እና አስተማማኝ ግብይቶችን ያረጋግጡ።",
+      "benefits": {
+        "identityVerification": "የመታወቂያ ማረጋገጫ",
+        "secureTransactions": "ደህንነቱ የተጠበቀ ግብይቶች",
+        "disputeResolution": "የክርክር መፍትሄ",
+        "insuranceCoverage": "የመድን ሽፋን"
+      }
+    },
+    "mobileFirst": {
+      "title": "የስልክ ቀዳሚ ንድፍ",
+      "description": "የእርሻ ንግድዎን በየትኛውም ቦታ ከስልካችን ጋር ያስተዳድሩ።",
+      "benefits": {
+        "offlineCapability": "የመስመር ውጭ ችሎታ",
+        "pushNotifications": "የግፋ ማስታወቂያዎች",
+        "gpsIntegration": "የ GPS ውህደት",
+        "voiceCommands": "የድምፅ ትዕዛዞች"
+      }
+    },
+    "stats": {
+      "uptimeGuarantee": "የስራ ጊዜ ዋስትና",
+      "customerSupport": "የደንበኛ ድጋፍ",
+      "sslEncryption": "የ SSL ማመስጠሪያ",
+      "paymentMethods": "የክፍያ ዘዴዎች"
+    }
+  }
+} 

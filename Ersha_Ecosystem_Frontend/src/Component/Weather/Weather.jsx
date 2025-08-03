@@ -23,6 +23,7 @@ import {
   XCircle,
   Info
 } from 'lucide-react';
+import { useLocale } from '../../contexts/LocaleContext';
 
 // Add weather icon component function
 const getWeatherIconComponent = (iconCode) => {
@@ -50,6 +51,7 @@ const getWeatherIconComponent = (iconCode) => {
 };
 
 const Weather = () => {
+    const { t } = useLocale();
     const [city,setCity] = useState("Addis Ababa");
     const [currentWeather,setCurrentWeather] = useState(null);
     const [forecast,setForecast] = useState([]);
@@ -69,12 +71,12 @@ const Weather = () => {
     const generateCropCalendar = () => {
         const currentMonth = new Date().getMonth();
         const crops = [
-            { name: "Teff", plantingSeason: [5, 6, 7], harvestSeason: [10, 11], optimal: true },
-            { name: "Maize", plantingSeason: [2, 3, 4], harvestSeason: [8, 9], optimal: false },
-            { name: "Barley", plantingSeason: [5, 6], harvestSeason: [10, 11], optimal: true },
-            { name: "Wheat", plantingSeason: [5, 6, 7], harvestSeason: [11, 0], optimal: false },
-            { name: "Sorghum", plantingSeason: [3, 4, 5], harvestSeason: [9, 10], optimal: true },
-            { name: "Coffee", plantingSeason: [3, 4], harvestSeason: [10, 11, 0], optimal: true }
+            { name: t('weather.crops.teff'), plantingSeason: [5, 6, 7], harvestSeason: [10, 11], optimal: true },
+            { name: t('weather.crops.maize'), plantingSeason: [2, 3, 4], harvestSeason: [8, 9], optimal: false },
+            { name: t('weather.crops.barley'), plantingSeason: [5, 6], harvestSeason: [10, 11], optimal: true },
+            { name: t('weather.crops.wheat'), plantingSeason: [5, 6, 7], harvestSeason: [11, 0], optimal: false },
+            { name: t('weather.crops.sorghum'), plantingSeason: [3, 4, 5], harvestSeason: [9, 10], optimal: true },
+            { name: t('weather.crops.coffee'), plantingSeason: [3, 4], harvestSeason: [10, 11, 0], optimal: true }
         ];
         
         return crops.map(crop => ({
@@ -97,69 +99,104 @@ const Weather = () => {
             alerts.push({
                 type: "warning",
                 icon: <AlertCircle className="w-6 h-6" />,
-                title: "Heat Wave Alert",
-                message: "Extreme heat conditions. Increase irrigation and provide crop shade.",
-                severity: "high",
-                actions: ["Increase watering frequency", "Provide shade covers", "Monitor crop stress"]
+                title: t('weather.alerts.heatWave.title'),
+                message: t('weather.alerts.heatWave.message'),
+                severity: "high"
+            });
+        }
+        
+        if (temp < 10) {
+            alerts.push({
+                type: "warning",
+                icon: <AlertCircle className="w-6 h-6" />,
+                title: t('weather.alerts.coldWave.title'),
+                message: t('weather.alerts.coldWave.message'),
+                severity: "medium"
             });
         }
         
         if (humidity > 80) {
             alerts.push({
                 type: "info",
-                icon: <Droplets className="w-6 h-6" />,
-                title: "High Humidity",
-                message: "Increased risk of fungal diseases. Monitor crops closely.",
-                severity: "medium",
-                actions: ["Apply fungicide if needed", "Improve air circulation", "Reduce watering"]
+                icon: <Info className="w-6 h-6" />,
+                title: t('weather.alerts.highHumidity.title'),
+                message: t('weather.alerts.highHumidity.message'),
+                severity: "low"
             });
         }
         
         if (windSpeed > 10) {
             alerts.push({
-                type: "caution",
+                type: "warning",
                 icon: <Wind className="w-6 h-6" />,
-                title: "Strong Winds",
-                message: "Protect tall crops and seedlings from wind damage.",
-                severity: "medium",
-                actions: ["Install windbreaks", "Stake tall plants", "Harvest ripe crops"]
+                title: t('weather.alerts.strongWinds.title'),
+                message: t('weather.alerts.strongWinds.message'),
+                severity: "medium"
             });
         }
         
         return alerts;
     };
 
-    // Farming activities based on weather
+    // Enhanced farming activities based on weather
     const generateFarmingActivities = (weatherData) => {
         const activities = [];
         const temp = weatherData?.main?.temp || 22;
-        const weatherCondition = weatherData?.weather?.[0]?.main?.toLowerCase() || 'clear';
+        const humidity = weatherData?.main?.humidity || 65;
+        const weatherMain = weatherData?.weather?.[0]?.main?.toLowerCase() || 'clear';
         
-        if (weatherCondition.includes('rain')) {
+        // Temperature-based activities
+        if (temp > 25) {
             activities.push({
+                activity: t('weather.activities.irrigation.title'),
+                description: t('weather.activities.irrigation.description'),
                 priority: "high",
-                activity: "Harvesting",
-                description: "Complete harvesting before heavy rains",
-                timeFrame: "Next 24 hours",
-                icon: <Target className="w-5 h-5" />
-            });
-        } else if (temp > 25 && temp < 30) {
-            activities.push({
-                priority: "medium",
-                activity: "Planting",
-                description: "Optimal conditions for planting new crops",
-                timeFrame: "This week",
-                icon: <Sprout className="w-5 h-5" />
+                icon: <Droplets className="w-5 h-5" />,
+                estimatedTime: "2-3 hours"
             });
         }
         
-        activities.push({
-            priority: "low",
-            activity: "Soil Preparation",
-            description: "Prepare soil for upcoming planting season",
-            timeFrame: "Next 2 weeks",
-            icon: <CheckCircle className="w-5 h-5" />
-        });
+        if (temp < 15) {
+            activities.push({
+                activity: t('weather.activities.frostProtection.title'),
+                description: t('weather.activities.frostProtection.description'),
+                priority: "high",
+                icon: <Thermometer className="w-5 h-5" />,
+                estimatedTime: "1-2 hours"
+            });
+        }
+        
+        // Weather condition-based activities
+        if (weatherMain.includes('rain')) {
+            activities.push({
+                activity: t('weather.activities.drainage.title'),
+                description: t('weather.activities.drainage.description'),
+                priority: "medium",
+                icon: <CloudRain className="w-5 h-5" />,
+                estimatedTime: "1 hour"
+            });
+        }
+        
+        if (weatherMain.includes('clear') && temp > 20) {
+            activities.push({
+                activity: t('weather.activities.fertilization.title'),
+                description: t('weather.activities.fertilization.description'),
+                priority: "medium",
+                icon: <Sprout className="w-5 h-5" />,
+                estimatedTime: "3-4 hours"
+            });
+        }
+        
+        // Humidity-based activities
+        if (humidity < 50) {
+            activities.push({
+                activity: t('weather.activities.mulching.title'),
+                description: t('weather.activities.mulching.description'),
+                priority: "medium",
+                icon: <Sprout className="w-5 h-5" />,
+                estimatedTime: "2 hours"
+            });
+        }
         
         return activities;
     };
@@ -258,8 +295,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Extreme Heat Alert",
-                message: "Consider additional irrigation and provide shade for sensitive crops"
+                title: t('weather.tips.extremeHeat.title'),
+                message: t('weather.tips.extremeHeat.message')
             });
         } else if (temp > 30) {
             newTips.push({
@@ -275,8 +312,8 @@ const Weather = () => {
                         <path d="M10 2L13.09 8.26L20 9L15 14L16.18 21L10 17.77L3.82 21L5 14L0 9L6.91 8.26L10 2Z"></path>
                     </motion.svg>
                 ),
-                title: "High Temperature",
-                message: "Increase watering frequency and monitor for heat stress"
+                title: t('weather.tips.highTemperature.title'),
+                message: t('weather.tips.highTemperature.message')
             });
         } else if (temp < 5) {
             newTips.push({
@@ -292,8 +329,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M4.606 12.97a.75.75 0 01-.134 1.051 2.494 2.494 0 00-.93 2.437 2.494 2.494 0 002.437-.93.75.75 0 111.186.918 3.994 3.994 0 01-4.79 1.006 3.994 3.994 0 01-1.006-4.79.75.75 0 011.051-.134zm9.788 0a.75.75 0 011.051.134 3.994 3.994 0 01-1.006 4.79 3.994 3.994 0 01-4.79-1.006.75.75 0 111.186-.918 2.494 2.494 0 002.437.93 2.494 2.494 0 00-.93-2.437.75.75 0 01.134-1.051z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Frost Risk",
-                message: "Protect crops from frost damage and delay outdoor planting"
+                title: t('weather.tips.frostRisk.title'),
+                message: t('weather.tips.frostRisk.message')
             });
         } else if (temp < 15) {
             newTips.push({
@@ -309,8 +346,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M5.5 17a4.5 4.5 0 01-1.44-8.765 4.5 4.5 0 018.302-3.046 3.5 3.5 0 014.504 4.272A4 4 0 0115 17H5.5z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Cool Weather",
-                message: "Good conditions for cool-season crops like lettuce and spinach"
+                title: t('weather.tips.coolWeather.title'),
+                message: t('weather.tips.coolWeather.message')
             });
         } else {
             newTips.push({
@@ -326,8 +363,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Perfect Temperature",
-                message: "Ideal conditions for most crop growth and outdoor activities"
+                title: t('weather.tips.perfectTemperature.title'),
+                message: t('weather.tips.perfectTemperature.message')
             });
         }
 
@@ -346,8 +383,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "High Humidity Alert",
-                message: "Monitor for fungal diseases and ensure proper ventilation"
+                title: t('weather.tips.highHumidityAlert.title'),
+                message: t('weather.tips.highHumidityAlert.message')
             });
         } else if (humidity < 30) {
             newTips.push({
@@ -363,8 +400,8 @@ const Weather = () => {
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </motion.svg>
                 ),
-                title: "Low Humidity",
-                message: "Increase irrigation and consider mulching to retain moisture"
+                title: t('weather.tips.lowHumidity.title'),
+                message: t('weather.tips.lowHumidity.message')
             });
         } else {
             newTips.push({
@@ -380,8 +417,8 @@ const Weather = () => {
                         <path d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zM6 4h8v12H6V4z"></path>
                     </motion.svg>
                 ),
-                title: "Good Humidity",
-                message: "Optimal moisture levels for healthy plant growth"
+                title: t('weather.tips.goodHumidity.title'),
+                message: t('weather.tips.goodHumidity.message')
             });
         }
 
@@ -400,8 +437,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Rainfall Detected",
-                message: "Great natural irrigation! Reduce manual watering accordingly"
+                title: t('weather.tips.rainfallDetected.title'),
+                message: t('weather.tips.rainfallDetected.message')
             });
         } else if (weatherCondition.includes("clear")) {
             newTips.push({
@@ -417,8 +454,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Clear Skies",
-                message: "Perfect conditions for outdoor farm activities and harvesting"
+                title: t('weather.tips.clearSkies.title'),
+                message: t('weather.tips.clearSkies.message')
             });
         }
 
@@ -437,8 +474,8 @@ const Weather = () => {
                         <path d="M.2 10a11 11 0 0119.6 0A11 11 0 01.2 10zm9.8 4a4 4 0 100-8 4 4 0 000 8z"></path>
                     </motion.svg>
                 ),
-                title: "High Wind Alert",
-                message: "Secure tall plants and avoid pesticide spraying"
+                title: t('weather.tips.highWindAlert.title'),
+                message: t('weather.tips.highWindAlert.message')
             });
         }
 
@@ -457,8 +494,8 @@ const Weather = () => {
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>
                     </motion.svg>
                 ),
-                title: "Low Pressure System",
-                message: "Weather changes possible - monitor forecasts closely"
+                title: t('weather.tips.lowPressureSystem.title'),
+                message: t('weather.tips.lowPressureSystem.message')
             });
         }
 
@@ -468,27 +505,27 @@ const Weather = () => {
     const tabs = [
         { 
             id: "current", 
-            label: "Current", 
+            label: t('weather.tabs.current'), 
             icon: <Thermometer className="w-5 h-5" />
         },
         { 
             id: "forecast", 
-            label: "Forecast", 
+            label: t('weather.tabs.forecast'), 
             icon: <Calendar className="w-5 h-5" />
         },
         { 
             id: "alerts", 
-            label: "Alerts", 
+            label: t('weather.tabs.alerts'), 
             icon: <AlertCircle className="w-5 h-5" />
         },
         { 
             id: "calendar", 
-            label: "Crop Calendar", 
+            label: t('weather.tabs.cropCalendar'), 
             icon: <Sprout className="w-5 h-5" />
         },
         { 
             id: "activities", 
-            label: "Activities", 
+            label: t('weather.tabs.activities'), 
             icon: <Target className="w-5 h-5" />
         }
     ];
@@ -611,7 +648,7 @@ const Weather = () => {
                             type="text"
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
-                            placeholder="Enter city name"
+                            placeholder={t('weather.searchBar.placeholder')}
                             className="w-full px-4 py-3 pl-12 bg-white/80 backdrop-blur-xl border border-green-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent shadow-lg"
                             onKeyPress={(e) => e.key === 'Enter' && getWeather()}
                         />
@@ -623,7 +660,7 @@ const Weather = () => {
                             disabled={loading}
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all duration-300 disabled:opacity-50 shadow-lg"
                         >
-                            {loading ? "..." : "Search"}
+                            {loading ? "..." : t('weather.searchBar.button')}
                         </motion.button>
                     </div>
                 </motion.div>
@@ -702,7 +739,7 @@ const Weather = () => {
                                                 <h3 className="text-xl font-bold text-white mb-2">{alert.title}</h3>
                                                 <p className="text-white/80 mb-4">{alert.message}</p>
                                                 <div className="space-y-2">
-                                                    <h4 className="text-white font-medium">Recommended Actions:</h4>
+                                                    <h4 className="text-white font-medium">{t('weather.alerts.recommendedActions')}:</h4>
                                                     <ul className="space-y-1">
                                                         {alert.actions.map((action, actionIndex) => (
                                                             <li key={actionIndex} className="flex items-center space-x-2 text-white/70">
@@ -719,8 +756,8 @@ const Weather = () => {
                                 {weatherAlerts.length === 0 && (
                                     <div className="text-center py-12">
                                         <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-white mb-2">No Active Alerts</h3>
-                                        <p className="text-white/70">Weather conditions are favorable for farming activities</p>
+                                        <h3 className="text-xl font-bold text-white mb-2">{t('weather.alerts.noActiveAlerts.title')}</h3>
+                                        <p className="text-white/70">{t('weather.alerts.noActiveAlerts.message')}</p>
                                     </div>
                                 )}
                             </div>
@@ -750,27 +787,27 @@ const Weather = () => {
                                                 crop.status === 'planting' ? 'bg-green-500/20 text-green-300' :
                                                 crop.status === 'harvest' ? 'bg-orange-500/20 text-orange-300' : 'bg-blue-500/20 text-blue-300'
                                             }`}>
-                                                {crop.status === 'planting' ? 'Planting Season' :
-                                                 crop.status === 'harvest' ? 'Harvest Season' : 'Maintenance'}
+                                                {crop.status === 'planting' ? t('weather.cropCalendar.plantingSeason') :
+                                                 crop.status === 'harvest' ? t('weather.cropCalendar.harvestSeason') : t('weather.cropCalendar.maintenance')}
                                             </div>
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-center space-x-2">
                                                 <Sprout className="w-5 h-5 text-green-400" />
                                                 <span className="text-white/80">
-                                                    Planting: {crop.plantingSeason.map(m => new Date(2024, m).toLocaleString('default', { month: 'short' })).join(', ')}
+                                                    {t('weather.cropCalendar.planting')}: {crop.plantingSeason.map(m => new Date(2024, m).toLocaleString('default', { month: 'short' })).join(', ')}
                                                 </span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <Target className="w-5 h-5 text-orange-400" />
                                                 <span className="text-white/80">
-                                                    Harvest: {crop.harvestSeason.map(m => new Date(2024, m).toLocaleString('default', { month: 'short' })).join(', ')}
+                                                    {t('weather.cropCalendar.harvest')}: {crop.harvestSeason.map(m => new Date(2024, m).toLocaleString('default', { month: 'short' })).join(', ')}
                                                 </span>
                                             </div>
                                             {crop.optimal && (
                                                 <div className="flex items-center space-x-2">
                                                     <CheckCircle className="w-5 h-5 text-green-400" />
-                                                    <span className="text-green-300 text-sm">Optimal for current region</span>
+                                                    <span className="text-green-300 text-sm">{t('weather.cropCalendar.optimal')}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -811,13 +848,13 @@ const Weather = () => {
                                                         activity.priority === 'high' ? 'bg-red-500/20 text-red-300' :
                                                         activity.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300'
                                                     }`}>
-                                                        {activity.priority.charAt(0).toUpperCase() + activity.priority.slice(1)} Priority
+                                                        {activity.priority.charAt(0).toUpperCase() + activity.priority.slice(1)} {t('weather.activities.priority')}
                                                     </span>
                                                 </div>
                                                 <p className="text-white/80 mb-2">{activity.description}</p>
                                                 <div className="flex items-center space-x-2 text-white/60">
                                                     <Clock className="w-4 h-4" />
-                                                    <span>{activity.timeFrame}</span>
+                                                    <span>{activity.estimatedTime}</span>
                                                 </div>
                                             </div>
                                         </div>

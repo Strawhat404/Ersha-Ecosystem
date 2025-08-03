@@ -4,15 +4,18 @@ import {
   Users, 
   TrendingUp, 
   BarChart3, 
-  Zap,
   ArrowRight,
   Play,
   Sprout,
-  Sun,
-  Cloud
+  Cloud,
+  ShoppingBag,
+  Phone
 } from 'lucide-react';
+import { useLocale } from '../../contexts/LocaleContext';
 
 const Herosection = () => {
+  const { t } = useLocale();
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Cinematic Background - Agricultural Landscape */}
@@ -35,7 +38,7 @@ const Herosection = () => {
         <div className="absolute bottom-0 w-full">
           {/* Back Mountains */}
           <div 
-            className="absolute bottom-0 w-full h-64 opacity-30"
+            className="absolute bottom-0 w-full h-32 sm:h-48 lg:h-64 opacity-30"
             style={{
               background: 'linear-gradient(to right, #064e3b 0%, #065f46 50%, #047857 100%)',
               clipPath: 'polygon(0 100%, 0 60%, 25% 45%, 50% 55%, 75% 40%, 100% 50%, 100% 100%)'
@@ -44,7 +47,7 @@ const Herosection = () => {
           
           {/* Middle Mountains */}
           <div 
-            className="absolute bottom-0 w-full h-48 opacity-50"
+            className="absolute bottom-0 w-full h-24 sm:h-36 lg:h-48 opacity-50"
             style={{
               background: 'linear-gradient(to right, #047857 0%, #059669 50%, #0d9488 100%)',
               clipPath: 'polygon(0 100%, 0 70%, 20% 55%, 40% 65%, 60% 50%, 80% 60%, 100% 55%, 100% 100%)'
@@ -53,7 +56,7 @@ const Herosection = () => {
           
           {/* Front Hills */}
           <div 
-            className="absolute bottom-0 w-full h-32 opacity-70"
+            className="absolute bottom-0 w-full h-16 sm:h-24 lg:h-32 opacity-70"
             style={{
               background: 'linear-gradient(to right, #059669 0%, #0d9488 50%, #14b8a6 100%)',
               clipPath: 'polygon(0 100%, 0 80%, 30% 65%, 50% 75%, 70% 60%, 100% 70%, 100% 100%)'
@@ -69,15 +72,15 @@ const Herosection = () => {
               key={`leaf-${i}`}
               className="absolute"
               initial={{ 
-                x: Math.random() * window.innerWidth,
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
                 y: -50,
                 rotate: 0,
                 opacity: 0.7
               }}
               animate={{
-                y: window.innerHeight + 50,
+                y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 50,
                 rotate: 360,
-                x: Math.random() * window.innerWidth
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200)
               }}
               transition={{
                 duration: Math.random() * 8 + 10,
@@ -98,103 +101,61 @@ const Herosection = () => {
             <motion.div
               key={`particle-${i}`}
               className="absolute w-1 h-1 bg-green-200/30 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+              initial={{ 
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+                y: -10,
+                opacity: 0.8
               }}
               animate={{
-                y: [0, -30, 0],
-                opacity: [0.3, 0.8, 0.3],
-                scale: [1, 1.2, 1]
+                y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 10,
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+                opacity: 0
               }}
               transition={{
-                duration: Math.random() * 3 + 2,
+                duration: Math.random() * 6 + 8,
                 repeat: Infinity,
-                delay: Math.random() * 2
+                delay: Math.random() * 4,
+                ease: "linear"
               }}
             />
           ))}
         </div>
-
-        {/* Weather Elements */}
-        <div className="absolute top-20 right-20">
-          <motion.div
-            animate={{ 
-              y: [0, -10, 0],
-              rotate: [0, 5, 0]
-            }}
-            transition={{ 
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Sun className="w-16 h-16 text-yellow-300/60" />
-          </motion.div>
-        </div>
-
-        <div className="absolute top-32 left-20">
-          <motion.div
-            animate={{ 
-              x: [0, 30, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ 
-              duration: 6,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Cloud className="w-20 h-20 text-white/40" />
-          </motion.div>
-        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center">
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex items-center pt-20 sm:pt-24 lg:pt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             
             {/* Left Side - Hero Content */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="text-left"
+              className="text-white text-center lg:text-left"
             >
-              {/* Subtitle Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white/90 text-sm font-medium mb-8"
-              >
-                <Sprout className="w-4 h-4 mr-2" />
-                <span>AGRICULTURAL ECOSYSTEM</span>
-              </motion.div>
-
-              {/* Main Heading - Nature Life Style */}
+              {/* Main Title */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.4 }}
-                className="mb-8"
+                className="mb-6 sm:mb-8"
               >
-                <h1 className="text-6xl lg:text-8xl font-black leading-none mb-4">
-                  <span className="block text-white drop-shadow-2xl">THE</span>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-tight mb-4">
+                  <span className="block text-white drop-shadow-2xl">{t('brand.agroLife').split(' ')[0]}</span>
                   <span className="block bg-gradient-to-r from-green-200 via-emerald-100 to-teal-200 bg-clip-text text-transparent drop-shadow-xl">
-                    AGRO
+                    {t('brand.agroLife').split(' ')[1]}
                   </span>
-                  <span className="block text-white drop-shadow-2xl">LIFE</span>
+                  <span className="block text-white drop-shadow-2xl">{t('brand.agroLife').split(' ')[2]}</span>
                 </h1>
                 
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 1, delay: 0.8 }}
-                  className="text-xl lg:text-2xl font-light text-green-100 italic"
+                  className="text-lg sm:text-xl lg:text-2xl font-light text-green-100 italic"
                 >
-                  AGRICULTURAL MARKETPLACE
+                  {t('brand.agriculturalMarketplace')}
                 </motion.div>
               </motion.div>
 
@@ -203,11 +164,9 @@ const Herosection = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.6 }}
-                className="text-lg lg:text-xl text-white/90 mb-8 leading-relaxed max-w-xl"
+                className="text-base sm:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0"
               >
-                Step into the future of agriculture. Connect directly with farmers, 
-                access real-time market data, and grow your agricultural business 
-                through our comprehensive ecosystem.
+                {t('hero.title')}
               </motion.p>
 
               {/* CTA Buttons */}
@@ -215,24 +174,24 @@ const Herosection = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="flex flex-col sm:flex-row gap-4 mb-12"
+                className="flex flex-col sm:flex-row gap-4 mb-8 sm:mb-12 justify-center lg:justify-start"
               >
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group bg-white text-green-800 px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:shadow-green-500/25 transition-all duration-300 flex items-center justify-center"
+                  className="group bg-white text-green-800 px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-2xl hover:shadow-green-500/25 transition-all duration-300 flex items-center justify-center"
                 >
-                  <span>Explore Marketplace</span>
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <span>{t('hero.exploreMarketplace')}</span>
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
                 
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center"
+                  className="group bg-white/10 backdrop-blur-md border border-white/30 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  <span>Watch Demo</span>
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <span>{t('hero.watchDemo')}</span>
                 </motion.button>
               </motion.div>
 
@@ -241,30 +200,30 @@ const Herosection = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 1 }}
-                className="grid grid-cols-3 gap-8"
+                className="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
               >
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <Users className="w-6 h-6 text-green-300 mr-2" />
-                    <span className="text-3xl font-bold text-white">12K+</span>
+                    <Users className="w-4 h-4 sm:w-6 sm:h-6 text-green-300 mr-1 sm:mr-2" />
+                    <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">12K+</span>
                   </div>
-                  <div className="text-white/70 text-sm">Active Farmers</div>
+                  <div className="text-white/70 text-xs sm:text-sm">{t('hero.stats.activeFarmers')}</div>
                 </div>
                 
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <TrendingUp className="w-6 h-6 text-green-300 mr-2" />
-                    <span className="text-3xl font-bold text-white">2.5M</span>
+                    <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-green-300 mr-1 sm:mr-2" />
+                    <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">2.5M</span>
                   </div>
-                  <div className="text-white/70 text-sm">Monthly Trade</div>
+                  <div className="text-white/70 text-xs sm:text-sm">{t('hero.stats.monthlyTrade')}</div>
                 </div>
                 
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <BarChart3 className="w-6 h-6 text-green-300 mr-2" />
-                    <span className="text-3xl font-bold text-white">98%</span>
+                    <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-green-300 mr-1 sm:mr-2" />
+                    <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">98%</span>
                   </div>
-                  <div className="text-white/70 text-sm">Success Rate</div>
+                  <div className="text-white/70 text-xs sm:text-sm">{t('hero.stats.successRate')}</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -274,89 +233,70 @@ const Herosection = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
-              className="relative"
+              className="relative mt-8 lg:mt-0"
             >
               {/* Feature Cards */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6 max-w-md mx-auto lg:max-w-none">
+                {/* Weather Card */}
                 <motion.div
-                  whileHover={{ scale: 1.02, x: 10 }}
-                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20"
                 >
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mr-4">
-                      <Sprout className="w-6 h-6 text-green-300" />
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Smart Farming</h3>
-                      <p className="text-white/70">AI-powered agriculture insights</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-white truncate">{t('weather.title')}</h3>
+                      <p className="text-green-100 text-xs sm:text-sm">Real-time weather updates</p>
                     </div>
                   </div>
                 </motion.div>
 
+                {/* Marketplace Card */}
                 <motion.div
-                  whileHover={{ scale: 1.02, x: 10 }}
-                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.8 }}
+                  className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20"
                 >
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mr-4">
-                      <BarChart3 className="w-6 h-6 text-blue-300" />
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Market Analytics</h3>
-                      <p className="text-white/70">Real-time price tracking</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-white truncate">{t('marketplace.title')}</h3>
+                      <p className="text-green-100 text-xs sm:text-sm">Direct farmer connections</p>
                     </div>
                   </div>
                 </motion.div>
 
+                {/* Advisory Card */}
                 <motion.div
-                  whileHover={{ scale: 1.02, x: 10 }}
-                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1 }}
+                  className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20"
                 >
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mr-4">
-                      <Zap className="w-6 h-6 text-purple-300" />
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Instant Connect</h3>
-                      <p className="text-white/70">Direct farmer-buyer network</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-white truncate">{t('advisory.title')}</h3>
+                      <p className="text-green-100 text-xs sm:text-sm">Expert guidance</p>
                     </div>
                   </div>
                 </motion.div>
               </div>
-
-              {/* Floating Action Badge */}
-              <motion.div
-                animate={{
-                  y: [0, -10, 0],
-                  rotate: [0, 5, 0]
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -top-8 -right-8 bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-2xl"
-              >
-                🌱 Growing Together
-              </motion.div>
             </motion.div>
           </div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60"
-      >
-        <div className="flex flex-col items-center">
-          <span className="text-sm mb-2">Scroll to explore</span>
-          <div className="w-1 h-8 bg-gradient-to-b from-white/60 to-transparent rounded-full"></div>
-        </div>
-      </motion.div>
     </div>
   );
 };
 
-export default Herosection;
+export default Herosection; 

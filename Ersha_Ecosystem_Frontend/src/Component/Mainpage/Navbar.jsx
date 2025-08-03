@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
+import { useLocale } from "../../contexts/LocaleContext";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 
 const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const { user } = useAuth();
   const { cartSummary } = useCart();
+  const { t } = useLocale();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,37 +47,37 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const navItems = [
     { 
       id: 'home', 
-      label: 'Home', 
+      label: t('navigation.home'), 
       icon: <Home className="w-5 h-5" />,
       gradient: 'from-blue-500 to-purple-600'
     },
     { 
       id: 'marketplace', 
-      label: 'Marketplace', 
+      label: t('navigation.marketplace'), 
       icon: <ShoppingBag className="w-5 h-5" />,
       gradient: 'from-emerald-500 to-teal-600'
     },
     { 
       id: 'weather', 
-      label: 'Weather', 
+      label: t('navigation.weather'), 
       icon: <Cloud className="w-5 h-5" />,
       gradient: 'from-sky-500 to-blue-600'
     },
     { 
       id: 'advisory', 
-      label: 'Advisory', 
+      label: t('navigation.advisory'), 
       icon: <Phone className="w-5 h-5" />,
       gradient: 'from-orange-500 to-red-600'
     },
     { 
       id: 'news', 
-      label: 'News', 
+      label: t('navigation.news'), 
       icon: <Newspaper className="w-5 h-5" />,
       gradient: 'from-purple-500 to-pink-600'
     },
     {
       id: 'fayda',
-      label: 'Fayda ID',
+      label: t('navigation.faydaId'),
       icon: <User className="w-5 h-5 mr-2" />,
       gradient: 'from-green-600 to-teal-600'
     }
@@ -84,7 +87,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
   const authenticatedNavItems = user ? [
     { 
       id: 'dashboard', 
-      label: 'Dashboard', 
+      label: t('navigation.dashboard'), 
       icon: <BarChart3 className="w-5 h-5" />,
       gradient: 'from-indigo-500 to-purple-600'
     },
@@ -158,9 +161,9 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  Ersha-Ecosystem
+                  {t('brand.name')}
                 </h1>
-                <p className="text-xs text-gray-500 -mt-1">Agricultural Platform</p>
+                <p className="text-xs text-gray-500 -mt-1">{t('brand.tagline')}</p>
               </div>
             </motion.div>
 
@@ -194,6 +197,9 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
 
             {/* Auth Buttons - Changed from md:flex to lg:flex */}
             <div className="hidden lg:flex items-center space-x-3">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+              
               {/* Cart Icon */}
               {user && (
                 <motion.button
@@ -204,7 +210,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                   data-cart-icon
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>Cart</span>
+                  <span>{t('navigation.cart')}</span>
                   {cartSummary.totalItems > 0 && (
                     <motion.div
                       initial={{ scale: 0 }}
@@ -225,7 +231,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                   className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
                 >
                   <User className="w-4 h-4" />
-                  <span>Profile</span>
+                  <span>{t('navigation.profile')}</span>
                 </motion.button>
               ) : (
                 <>
@@ -235,7 +241,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                     whileTap={{ scale: 0.95 }}
                     className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
                   >
-                    Sign In
+                    {t('navigation.signIn')}
                   </motion.button>
                   <motion.button
                     onClick={() => navigate('/register')}
@@ -243,7 +249,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                     whileTap={{ scale: 0.95 }}
                     className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    Get Started
+                    {t('navigation.getStarted')}
                   </motion.button>
                 </>
               )}
@@ -311,6 +317,11 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                 
                 {/* Mobile Auth Buttons */}
                 <div className="pt-4 border-t border-gray-200 space-y-2">
+                  {/* Mobile Language Switcher */}
+                  <div className="px-4 py-2">
+                    <LanguageSwitcher />
+                  </div>
+                  
                   {/* Mobile Cart Button */}
                   {user && (
                     <button 
@@ -318,7 +329,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                       className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors duration-200 relative"
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      <span>Cart</span>
+                      <span>{t('navigation.cart')}</span>
                       {cartSummary.totalItems > 0 && (
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                           {cartSummary.totalItems}
@@ -333,7 +344,7 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                       className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors duration-200"
                     >
                       <User className="w-4 h-4" />
-                      <span>Profile</span>
+                      <span>{t('navigation.profile')}</span>
                     </button>
                   ) : (
                     <>
@@ -341,13 +352,13 @@ const Navbar = ({ setActiveView, onAuthClick, onUserProfileClick }) => {
                         onClick={() => navigate('/login')}
                         className="w-full px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors duration-200"
                       >
-                        Sign In
+                        {t('navigation.signIn')}
                       </button>
                       <button 
                         onClick={() => navigate('/register')}
                         className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium shadow-lg"
                       >
-                        Get Started
+                        {t('navigation.getStarted')}
                       </button>
                     </>
                   )}

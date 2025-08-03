@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocale } from '../../contexts/LocaleContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -25,7 +26,8 @@ import {
   Clock,
   LogOut,
   ExternalLink,
-  GraduationCap
+  GraduationCap,
+  CheckCircle
 } from 'lucide-react';
 
 // Import dashboard components
@@ -41,6 +43,7 @@ import FarmerNotifications from './FarmerNotifications';
 
 const UserDashboard = () => {
   const { user, profile, signOut } = useAuth();
+  const { t } = useLocale();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeView, setActiveView] = useState('overview');
@@ -161,7 +164,7 @@ const UserDashboard = () => {
   const getVerificationIcon = (status) => {
     switch (status) {
       case 'verified':
-        return <ShieldCheck className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-5 h-5 text-blue-500" />;
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       case 'failed':
@@ -174,20 +177,20 @@ const UserDashboard = () => {
   const getVerificationLabel = (status) => {
     switch (status) {
       case 'verified':
-        return 'Verified';
+        return t('dashboard.verification.verified');
       case 'pending':
-        return 'Pending Verification';
+        return t('dashboard.verification.pendingVerification');
       case 'failed':
-        return 'Verification Failed';
+        return t('dashboard.verification.verificationFailed');
       default:
-        return 'Not Verified';
+        return t('dashboard.verification.notVerified');
     }
   };
 
   const getVerificationColor = (status) => {
     switch (status) {
       case 'verified':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'failed':
@@ -200,56 +203,56 @@ const UserDashboard = () => {
   const dashboardItems = [
     { 
       id: 'overview', 
-      label: 'Overview', 
+      label: t('dashboard.overview'), 
       icon: <Home className="w-5 h-5" />,
       gradient: 'from-blue-500 to-purple-600',
       description: 'Your dashboard summary'
     },
     { 
       id: 'marketplace', 
-      label: 'Marketplace', 
+      label: t('dashboard.marketplace'), 
       icon: <ShoppingBag className="w-5 h-5" />,
       gradient: 'from-emerald-500 to-teal-600',
       description: 'Buy and sell products'
     },
     ...(userType === 'farmer' ? [{
       id: 'analytics', 
-      label: 'Analytics', 
+      label: t('dashboard.analytics'), 
       icon: <BarChart3 className="w-5 h-5" />,
       gradient: 'from-purple-500 to-pink-600',
       description: 'Business insights & reports'
     }] : []),
     { 
       id: 'payments', 
-      label: 'Payments', 
+      label: t('dashboard.payments'), 
       icon: <CreditCard className="w-5 h-5" />,
       gradient: 'from-green-500 to-emerald-600',
       description: 'Manage transactions'
     },
     { 
       id: 'logistics', 
-      label: 'Logistics', 
+      label: t('dashboard.logistics'), 
       icon: <Truck className="w-5 h-5" />,
       gradient: 'from-orange-500 to-red-600',
       description: 'Track deliveries'
     },
     { 
       id: 'weather', 
-      label: 'Weather', 
+      label: t('dashboard.weather'), 
       icon: <Cloud className="w-5 h-5" />,
       gradient: 'from-sky-500 to-blue-600',
       description: 'Weather forecasts'
     },
     { 
       id: 'advisory', 
-      label: 'Advisory', 
+      label: t('dashboard.advisory'), 
       icon: <BookOpen className="w-5 h-5" />,
       gradient: 'from-yellow-500 to-orange-600',
       description: 'Farming guidance'
     },
     { 
       id: 'news', 
-      label: 'News', 
+      label: t('dashboard.news'), 
       icon: <Newspaper className="w-5 h-5" />,
       gradient: 'from-indigo-500 to-purple-600',
       description: 'Latest updates'
@@ -280,15 +283,15 @@ const UserDashboard = () => {
   const getUserTypeLabel = (type) => {
     switch (type) {
       case 'farmer':
-        return 'Farmer';
+        return t('dashboard.userTypes.farmer');
       case 'buyer':
-        return 'Buyer/Merchant';
+        return t('dashboard.userTypes.buyer');
       case 'expert':
-        return 'Expert';
+        return t('dashboard.userTypes.expert');
       case 'logistics':
-        return 'Logistics Company';
+        return t('dashboard.userTypes.logistics');
       default:
-        return 'User';
+        return t('dashboard.userTypes.user');
     }
   };
 
@@ -312,10 +315,10 @@ const UserDashboard = () => {
                   </div>
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold">
-                      {profile?.first_name || user?.first_name || 'Farmer'}
+                      {profile?.first_name || user?.first_name || t('dashboard.userTypes.farmer')}
                     </h1>
                     <p className="text-emerald-100">
-                      Welcome to your farming dashboard
+                      {t('dashboard.welcome')}
                     </p>
                   </div>
                 </div>
@@ -329,17 +332,17 @@ const UserDashboard = () => {
                   >
                     {getVerificationIcon(verificationStatus)}
                     <span className="font-medium text-sm">
-                      {verificationStatus === 'verified' ? 'Verified' : 'Verify Now'}
+                      {verificationStatus === 'verified' ? t('dashboard.verification.verified') : t('dashboard.verification.verifyNow')}
                     </span>
                   </div>
                 ) : (
                   <div 
                     className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition-colors"
                     onClick={() => navigate('/verification')}
-                    title="Get Verified"
+                    title={t('dashboard.verification.getVerified')}
                   >
                     <Shield className="w-5 h-5 text-white/80" />
-                    <span className="font-medium text-sm">Get Verified</span>
+                    <span className="font-medium text-sm">{t('dashboard.verification.getVerified')}</span>
                   </div>
                 )}
               </div>
@@ -356,7 +359,7 @@ const UserDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Total Earnings</p>
+                    <p className="text-sm font-medium text-gray-500">{t('dashboard.totalEarnings')}</p>
                     <p className="text-2xl font-bold text-gray-900">ETB 12,540</p>
                   </div>
                   <div className="p-3 bg-green-50 rounded-xl">
@@ -377,7 +380,7 @@ const UserDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-blue-100">Weather</p>
+                    <p className="text-sm font-medium text-blue-100">{t('dashboard.weather')}</p>
                     <p className="text-2xl font-bold">24°C</p>
                     <p className="text-sm text-blue-100">Addis Ababa</p>
                   </div>
@@ -410,7 +413,7 @@ const UserDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Active Orders</p>
+                    <p className="text-sm font-medium text-gray-500">{t('dashboard.activeOrders')}</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {activeOrders.total || '0'}
                     </p>
@@ -423,10 +426,10 @@ const UserDashboard = () => {
                   {activeOrders.pending > 0 ? (
                     <>
                       <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                      <span className="text-blue-600">{activeOrders.pending} pending</span>
+                      <span className="text-blue-600">{activeOrders.pending} {t('dashboard.pendingOrders')}</span>
                     </>
                   ) : (
-                    <span className="text-gray-400">No pending orders</span>
+                    <span className="text-gray-400">{t('dashboard.noPendingOrders')}</span>
                   )}
                 </div>
               </motion.div>
@@ -440,9 +443,9 @@ const UserDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Your Next Step</p>
+                    <p className="text-sm font-medium text-gray-500">{t('dashboard.nextStep')}</p>
                     <p className="text-lg font-bold text-gray-900">
-                      {verificationStatus === 'verified' ? 'Sell Products' : 'Get Verified'}
+                      {verificationStatus === 'verified' ? t('dashboard.sellProducts') : t('dashboard.getVerified')}
                     </p>
                   </div>
                   <button 
@@ -457,8 +460,8 @@ const UserDashboard = () => {
                 </div>
                 <p className="mt-2 text-sm text-gray-500">
                   {verificationStatus === 'verified' ? 
-                    'List your products to start selling' : 
-                    'Complete verification to access all features'
+                    t('dashboard.listProducts') : 
+                    t('dashboard.completeVerification')
                   }
                 </p>
               </motion.div>
@@ -471,7 +474,7 @@ const UserDashboard = () => {
               transition={{ delay: 0.4 }}
               className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.quickActions')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {dashboardItems
                   .filter(item => item.id !== 'overview')
@@ -503,9 +506,9 @@ const UserDashboard = () => {
               className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('dashboard.recentActivity')}</h2>
                 <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                  View All
+                  {t('dashboard.viewAll')}
                 </button>
               </div>
               <div className="space-y-4">
@@ -515,10 +518,10 @@ const UserDashboard = () => {
                       <Package className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">New order received</p>
-                      <p className="text-xs text-gray-500">Order #100{item} • 2 hours ago</p>
+                      <p className="text-sm font-medium text-gray-900">{t('dashboard.newOrderReceived')}</p>
+                      <p className="text-xs text-gray-500">Order #100{item} • {item} {t('dashboard.hoursAgo')}</p>
                     </div>
-                    <span className="text-xs font-medium text-emerald-600">View</span>
+                    <span className="text-xs font-medium text-emerald-600">{t('common.view')}</span>
                   </div>
                 ))}
               </div>
@@ -531,7 +534,7 @@ const UserDashboard = () => {
         return <Marketplace />;
         
       case 'analytics':
-        return userType === 'farmer' ? <AnalyticsDashboard userType={userType} /> : <div className="text-center py-12"><p className="text-gray-600">Analytics dashboard is only available for farmers.</p></div>;
+        return userType === 'farmer' ? <AnalyticsDashboard userType={userType} /> : <div className="text-center py-12"><p className="text-gray-600">{t('dashboard.analyticsOnlyForFarmers')}</p></div>;
         
       case 'payments':
         return <PaymentSystem userType={userType} />;
@@ -560,7 +563,7 @@ const UserDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
-              <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+              <h1 className="text-xl font-bold text-gray-900">{t('dashboard.title')}</h1>
               
               {/* Navigation Tabs */}
               <nav className="flex space-x-1">
@@ -633,7 +636,7 @@ const UserDashboard = () => {
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                       >
                         <User className="w-4 h-4" />
-                        <span>Profile Settings</span>
+                        <span>{t('dashboard.profile.profileSettings')}</span>
                       </button>
                       
                       <button
@@ -644,7 +647,7 @@ const UserDashboard = () => {
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                       >
                         <Shield className="w-4 h-4" />
-                        <span>Verification</span>
+                        <span>{t('dashboard.profile.verification')}</span>
                       </button>
                       
                       <div className="border-t border-gray-100 my-1"></div>
@@ -657,7 +660,7 @@ const UserDashboard = () => {
                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                       >
                         <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
+                        <span>{t('dashboard.profile.signOut')}</span>
                       </button>
                     </motion.div>
                   )}

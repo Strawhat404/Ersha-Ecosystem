@@ -21,6 +21,7 @@ from users.models import User, Profile
 from marketplace.models import Product
 from weather.models import WeatherData
 from news.models import NewsArticle
+from .translation_service import translation_service
 
 class UserDataService:
     """Service to gather user data from existing sources"""
@@ -264,26 +265,41 @@ class AIContentGenerator:
     """AI-powered content generation service using Gemini API"""
     
     def __init__(self):
-        self.api_key = getattr(settings, 'GEMINI_API_KEY', None)
-        if not self.api_key:
-            raise ValueError("GEMINI_API_KEY not configured in settings")
+        self.gemini_api_key = os.getenv('GEMINI_API_KEY')
+        self.translation_service = translation_service
         
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
-    
-    def generate_agricultural_course(self, user_data, course_title, course_description):
+    def generate_agricultural_course(self, user_data, course_title, course_description, target_language='en'):
         """
-        Generate a comprehensive agricultural course based on user data
+        Generate agricultural course with optional translation
         
         Args:
-            user_data (dict): User data from UserDataService
-            course_title (str): Title of the course to generate
-            course_description (str): Description of the course
-        
+            user_data: User profile and farming data
+            course_title: Course title
+            course_description: Course description
+            target_language: Target language for translation (default: 'en')
+            
         Returns:
-            dict: Generated course with title, description, and PDF file
+            Generated course data
         """
+        # Generate course in English first
+        course_data = self._generate_course_content(user_data, course_title, course_description)
         
+        # Translate if target language is not English
+        if target_language != 'en' and self.translation_service.validate_language_code(target_language):
+            try:
+                course_data = self.translation_service.translate_course_content(course_data, target_language)
+                course_data['original_language'] = 'en'
+                course_data['translated_language'] = target_language
+            except Exception as e:
+                print(f"Translation failed: {e}")
+                # Continue with English version if translation fails
+        
+        return course_data
+    
+    def _generate_course_content(self, user_data, course_title, course_description):
+        """
+        Generate course content using Gemini API
+        """
         # Construct the prompt for Gemini
         prompt = self._build_course_prompt(user_data, course_title, course_description)
         
