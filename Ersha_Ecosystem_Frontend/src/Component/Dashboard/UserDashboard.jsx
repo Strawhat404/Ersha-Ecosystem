@@ -11,6 +11,7 @@ import {
   BookOpen, 
   Newspaper, 
   Cloud,
+  CloudSun,
   Leaf,
   User,
   Building,
@@ -293,184 +294,231 @@ const UserDashboard = () => {
   const renderDashboardView = () => {
     switch(activeView) {
       case 'overview': {
+        const verificationStatus = profile?.verification_status || 'not_verified';
+        
         return (
           <div className="space-y-6">
-            {/* Welcome Section */}
+            {/* Welcome Section - Enhanced */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl shadow-lg p-6 text-white"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
-                    {getUserTypeIcon(userType)}
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <Leaf className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                      Welcome back, {profile?.first_name || user?.first_name || 'User'}!
+                    <h1 className="text-2xl md:text-3xl font-bold">
+                      {profile?.first_name || user?.first_name || 'Farmer'}
                     </h1>
-                    <p className="text-gray-600">
-                      {getUserTypeLabel(userType)} Dashboard • {profile?.region || 'Ethiopia'}
+                    <p className="text-emerald-100">
+                      Welcome to your farming dashboard
                     </p>
                   </div>
                 </div>
                 
-                {/* Verification Status */}
-                <div className="flex items-center space-x-3">
-                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg border ${getVerificationColor(profile?.verification_status || 'not_verified')}`}>
-                    {getVerificationIcon(profile?.verification_status || 'not_verified')}
-                    <span className="text-sm font-medium">
-                      {getVerificationLabel(profile?.verification_status || 'not_verified')}
+                {/* Verification Status - Always show when there's a status */}
+                {verificationStatus && verificationStatus !== 'not_verified' ? (
+                  <div 
+                    className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition-colors"
+                    onClick={() => verificationStatus !== 'verified' && navigate('/verification')}
+                    title={getVerificationLabel(verificationStatus)}
+                  >
+                    {getVerificationIcon(verificationStatus)}
+                    <span className="font-medium text-sm">
+                      {verificationStatus === 'verified' ? 'Verified' : 'Verify Now'}
                     </span>
                   </div>
-                  
-                  {profile?.verification_status !== 'verified' && (
-                    <button
-                      onClick={() => navigate('/verification')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                    >
-                      <Shield className="w-4 h-4" />
-                      <span className="text-sm font-medium">Verify Now</span>
-                      <ExternalLink className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <div 
+                    className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition-colors"
+                    onClick={() => navigate('/verification')}
+                    title="Get Verified"
+                  >
+                    <Shield className="w-5 h-5 text-white/80" />
+                    <span className="font-medium text-sm">Get Verified</span>
+                  </div>
+                )}
               </div>
             </motion.div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Key Metrics - Simplified and More Visual */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Total Earnings */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+                className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">₦125,450</p>
+                    <p className="text-sm font-medium text-gray-500">Total Earnings</p>
+                    <p className="text-2xl font-bold text-gray-900">ETB 12,540</p>
                   </div>
-                  <div className="p-3 bg-green-100 rounded-xl">
+                  <div className="p-3 bg-green-50 rounded-xl">
                     <DollarSign className="w-6 h-6 text-green-600" />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                  <span className="text-green-600">+23.4%</span>
-                  <span className="text-gray-500 ml-1">from last month</span>
+                <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: '65%' }}></div>
                 </div>
               </motion.div>
 
+              {/* Weather Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+                className="bg-gradient-to-r from-blue-500 to-sky-600 rounded-2xl shadow-lg p-5 text-white"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Orders</p>
+                    <p className="text-sm font-medium text-blue-100">Weather</p>
+                    <p className="text-2xl font-bold">24°C</p>
+                    <p className="text-sm text-blue-100">Addis Ababa</p>
+                  </div>
+                  <div className="p-2 bg-white/20 rounded-xl">
+                    <CloudSun className="w-8 h-8" />
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-between text-xs">
+                  <div className="text-center">
+                    <p>H: 28°</p>
+                    <p>L: 18°</p>
+                  </div>
+                  <div className="text-center">
+                    <p>Humidity</p>
+                    <p>65%</p>
+                  </div>
+                  <div className="text-center">
+                    <p>Wind</p>
+                    <p>12 km/h</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Active Orders */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Active Orders</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {userType === 'farmer' ? activeOrders.total : '0'}
+                      {activeOrders.total || '0'}
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-xl">
+                  <div className="p-3 bg-blue-50 rounded-xl">
                     <Package className="w-6 h-6 text-blue-600" />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
-                  {userType === 'farmer' ? (
-                    <span className="text-blue-600 font-medium">
-                      {activeOrders.pending} pending
-                    </span>
+                <div className="mt-3 flex items-center text-sm">
+                  {activeOrders.pending > 0 ? (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                      <span className="text-blue-600">{activeOrders.pending} pending</span>
+                    </>
                   ) : (
-                    <span className="text-gray-500 font-medium">No orders</span>
+                    <span className="text-gray-400">No pending orders</span>
                   )}
                 </div>
               </motion.div>
 
+              {/* Next Action */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+                className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Credit Score</p>
-                    <p className="text-2xl font-bold text-gray-900">742</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-xl">
-                    <BarChart3 className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-purple-600 font-medium">Excellent</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Verification Status</p>
+                    <p className="text-sm font-medium text-gray-500">Your Next Step</p>
                     <p className="text-lg font-bold text-gray-900">
-                      {getVerificationLabel(profile?.verification_status || 'not_verified')}
+                      {verificationStatus === 'verified' ? 'Sell Products' : 'Get Verified'}
                     </p>
                   </div>
-                  <div className="p-3 bg-gray-100 rounded-xl">
-                    {getVerificationIcon(profile?.verification_status || 'not_verified')}
-                  </div>
+                  <button 
+                    onClick={() => verificationStatus === 'verified' ? handleViewChange('marketplace') : navigate('/verification')}
+                    className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white"
+                  >
+                    {verificationStatus === 'verified' ? 
+                      <ShoppingBag className="w-6 h-6" /> : 
+                      <Shield className="w-6 h-6" />
+                    }
+                  </button>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
-                  {profile?.verification_status !== 'verified' ? (
-                    <button
-                      onClick={() => navigate('/verification')}
-                      className="text-blue-600 font-medium hover:text-blue-700 flex items-center space-x-1"
-                    >
-                      <span>Verify Now</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
-                  ) : (
-                    <span className="text-green-600 font-medium">✓ Verified</span>
-                  )}
-                </div>
+                <p className="mt-2 text-sm text-gray-500">
+                  {verificationStatus === 'verified' ? 
+                    'List your products to start selling' : 
+                    'Complete verification to access all features'
+                  }
+                </p>
               </motion.div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - More Visual */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {dashboardItems
+                  .filter(item => item.id !== 'overview')
+                  .map((item) => (
+                    <motion.button
+                      key={item.id}
+                      onClick={() => handleViewChange(item.id)}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-200 group"
+                    >
+                      <div className={`p-3 rounded-lg mb-2 bg-gradient-to-r ${item.gradient} text-white`}>
+                        {React.cloneElement(item.icon, { className: 'w-6 h-6' })}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-emerald-700">
+                        {item.label}
+                      </span>
+                    </motion.button>
+                  ))
+                }
+              </div>
+            </motion.div>
+
+            {/* Recent Activity */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {dashboardItems.slice(1, 5).map((item) => (
-                  <motion.button
-                    key={item.id}
-                    onClick={() => handleViewChange(item.id)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 text-left group"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-r ${item.gradient} text-white`}>
-                        {item.icon}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{item.label}</div>
-                        <div className="text-xs text-gray-500">{item.description}</div>
-                      </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+                <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="p-2 bg-emerald-50 rounded-lg mr-3">
+                      <Package className="w-5 h-5 text-emerald-600" />
                     </div>
-                  </motion.button>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">New order received</p>
+                      <p className="text-xs text-gray-500">Order #100{item} • 2 hours ago</p>
+                    </div>
+                    <span className="text-xs font-medium text-emerald-600">View</span>
+                  </div>
                 ))}
               </div>
             </motion.div>
