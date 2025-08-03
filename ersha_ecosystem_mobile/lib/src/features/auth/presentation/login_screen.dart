@@ -2,6 +2,8 @@
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/marketplace_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../provider/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onSwitchToRegister;
@@ -371,6 +373,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -378,31 +384,32 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      final success = await authProvider.login(_email, _password);
+      
+      if (success) {
+        setState(() {
+          _successMessage = 'Login successful! Redirecting...';
+        });
 
-      // --- MODIFICATION START ---
-      // On success, show a message and then navigate to the marketplace
-      setState(() {
-        _successMessage = 'Login successful! Redirecting...';
-      });
+        // Wait a moment so the user can see the success message
+        await Future.delayed(const Duration(milliseconds: 1000));
 
-      // Wait a moment so the user can see the success message
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      if (mounted) {
-        // Use pushReplacementNamed to go to the marketplace and remove the login
-        // screen from the back stack, so the user can't press "back" to it.
-        Navigator.of(context).pushReplacementNamed('/marketplace');
+        if (mounted) {
+          // Navigate to marketplace based on user type
+          Navigator.of(context).pushReplacementNamed('/marketplace');
+        }
+      } else {
+        setState(() {
+          _errorMessage = authProvider.errorMessage ?? 'Login failed. Please try again.';
+        });
       }
-      // --- MODIFICATION END ---
     } catch (e) {
       setState(() {
         _errorMessage = 'An unexpected error occurred. Please try again.';
       });
     } finally {
-      // Don't set isLoading to false if navigation was successful,
-      // as the widget will be disposed.
       if (_successMessage == null && mounted) {
         setState(() {
           _isLoading = false;

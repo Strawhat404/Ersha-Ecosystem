@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Sprout, BookOpen, Search, Filter, Star, MapPin, Clock, DollarSign, ExternalLink } from 'lucide-react';
+import { User, Sprout, BookOpen, Search, Filter, Star, MapPin, Clock, DollarSign, ExternalLink, Sparkles, Cloud, TrendingUp, GraduationCap, Target, Download } from 'lucide-react';
 import { useAuth } from "../../contexts/AuthContext";
+import CourseGenerationModal from "./CourseGenerationModal";
 
 const Advisory = () => {
   const { user, profile, loading: authLoading } = useAuth();
@@ -13,8 +14,8 @@ const Advisory = () => {
   
   // API data states
   const [experts, setExperts] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [resources, setResources] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [advisoryContent, setAdvisoryContent] = useState([]);
   
   // Booking modal state
@@ -22,8 +23,33 @@ const Advisory = () => {
   const [selectedExpert, setSelectedExpert] = useState(null);
   const [bookingLoading, setBookingLoading] = useState(false);
 
+  // Course Generation modal state
+  const [showCourseModal, setShowCourseModal] = useState(false);
+
   // API Base URL
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+  // Download function for PDF files
+  const handleDownload = (downloadUrl, filename) => {
+    if (!downloadUrl) {
+      alert('Download URL not available');
+      return;
+    }
+    
+    // Construct full backend URL
+    const backendUrl = downloadUrl.startsWith('http') 
+      ? downloadUrl 
+      : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${downloadUrl}`;
+    
+    // Create a temporary link element to trigger download
+    const link = document.createElement('a');
+    link.href = backendUrl;
+    link.download = filename ? `${filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf` : 'course.pdf';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Fetch experts from API
   const fetchExperts = async () => {
@@ -58,39 +84,6 @@ const Advisory = () => {
     }
   };
 
-  // Fetch courses from API
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const token = localStorage.getItem('access_token');
-      const headers = token ? {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      } : {
-        'Content-Type': 'application/json',
-      };
-
-      const response = await fetch(`${API_BASE_URL}/advisory/courses/`, {
-        method: 'GET',
-        headers,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setCourses(data.results || data);
-    } catch (err) {
-      setError('Failed to load courses. Please try again.');
-      console.error('Error fetching courses:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Fetch resources from API
   const fetchResources = async () => {
     try {
@@ -119,6 +112,39 @@ const Advisory = () => {
     } catch (err) {
       setError('Failed to load resources. Please try again.');
       console.error('Error fetching resources:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch courses from API
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('access_token');
+      const headers = token ? {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      } : {
+        'Content-Type': 'application/json',
+      };
+
+      const response = await fetch(`${API_BASE_URL}/advisory/courses/`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCourses(data.results || data);
+    } catch (err) {
+      setError('Failed to load courses. Please try again.');
+      console.error('Error fetching courses:', err);
     } finally {
       setLoading(false);
     }
@@ -210,14 +236,21 @@ const Advisory = () => {
     }
   };
 
+  // Handle course generation success
+  const handleCourseGenerationSuccess = (newCourse) => {
+    // Add the new course to the list
+    setCourses(prev => [newCourse, ...prev]);
+    setShowCourseModal(false);
+  };
+
   // Load data based on selected tab
   useEffect(() => {
     if (selectedTab === "advice") {
       fetchExperts();
-    } else if (selectedTab === "courses") {
-      fetchCourses();
     } else if (selectedTab === "resources") {
       fetchResources();
+    } else if (selectedTab === "courses") {
+      fetchCourses();
     }
   }, [selectedTab]);
 
@@ -230,19 +263,19 @@ const Advisory = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Filter courses based on search and category
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
   // Filter resources based on search and category
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          resource.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || resource.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Filter courses based on search and category
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -264,16 +297,16 @@ const Advisory = () => {
     },
     { 
       id: "courses", 
-      label: "Training Courses", 
+      label: "AI Courses", 
       icon: (
         <motion.svg 
           className="w-5 h-5" 
           fill="currentColor" 
           viewBox="0 0 20 20"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ y: [0, -3, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         >
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.75 2.524z"></path>
+          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.17 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
         </motion.svg>
       )
     },
@@ -568,33 +601,73 @@ const Advisory = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="space-y-8"
               >
-                {loading ? (
-                  <div className="col-span-full text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading courses...</p>
+                {/* AI Course Generation Section */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                        <GraduationCap className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">AI-Powered Courses</h3>
+                        <p className="text-gray-600">Generate personalized agricultural learning courses</p>
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowCourseModal(true)}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Generate Course</span>
+                    </motion.button>
                   </div>
-                ) : error ? (
-                  <div className="col-span-full text-center py-12 text-red-600">
-                    {error}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <GraduationCap className="w-4 h-4 text-blue-500" />
+                      <span>Personalized Learning</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <BookOpen className="w-4 h-4 text-green-500" />
+                      <span>Structured Modules</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Target className="w-4 h-4 text-emerald-500" />
+                      <span>Practical Exercises</span>
+                    </div>
                   </div>
-                ) : filteredCourses.length === 0 ? (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                    No courses found. Try adjusting your search or filters.
-                  </div>
-                ) : (
-                  filteredCourses.map((course, index) => (
-                  <motion.div
+                </div>
+
+                {/* Courses Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {loading ? (
+                    <div className="col-span-full text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading courses...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="col-span-full text-center py-12 text-red-600">
+                      {error}
+                    </div>
+                  ) : filteredCourses.length === 0 ? (
+                    <div className="col-span-full text-center py-12 text-gray-500">
+                      No courses found. Generate your first personalized course!
+                    </div>
+                  ) : (
+                    filteredCourses.map((course, index) => (
+                    <motion.div
                       key={course.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
-                  >
-                    <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ y: -5 }}
+                      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
                           {course.image ? (
                             <img 
                               src={course.image} 
@@ -602,56 +675,59 @@ const Advisory = () => {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <BookOpen className="w-16 h-16 text-gray-400" />
+                            <GraduationCap className="w-8 h-8 text-blue-600" />
                           )}
-                      </div>
-                      <div className="absolute top-4 left-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            course.difficulty === "beginner" ? "bg-green-100 text-green-700" :
-                            course.difficulty === "intermediate" ? "bg-orange-100 text-orange-700" :
-                          "bg-red-100 text-red-700"
-                        }`}>
-                            {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)}
-                        </span>
-                      </div>
-                      <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-bold text-emerald-600">
-                          {course.duration}
+                        </div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className={`text-xs px-3 py-1 rounded-full ${
+                            course.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
+                            course.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {course.difficulty}
+                          </span>
+                          {course.is_ai_generated && (
+                            <span className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1">
+                              <Sparkles className="w-3 h-3" />
+                              <span>AI Generated</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                       
-                      <div className="p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-                        <p className="text-gray-600 text-sm mb-4">{course.description}</p>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{course.title}</h3>
+                      <p className="text-gray-600 text-sm mb-4">{course.description}</p>
                       
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                        <div className="flex items-center">
-                            <User className="w-4 h-4 mr-1 text-gray-400" />
-                            {course.author_name || "Unknown Author"}
-                          </div>
-                          <div>{course.views} views</div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{course.duration}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <BookOpen className="w-4 h-4" />
+                          <span>{course.views} views</span>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center text-sm text-gray-600">
-                            <Star className="w-4 h-4 text-orange-400 mr-1" />
-                            {course.rating}
-                          </div>
-                          <div className="text-sm font-medium text-green-600">
-                            {course.is_free ? "Free" : `${course.price} ETB`}
-                          </div>
-                      </div>
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                          className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
-                      >
-                          {course.is_free ? "Enroll Free" : "Enroll Now"}
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                  ))
-                )}
+                      {course.download_url ? (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleDownload(course.download_url, course.title)}
+                          className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>Download Course</span>
+                        </motion.button>
+                      ) : (
+                        <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-xl font-medium text-center">
+                          Course in Development
+                        </div>
+                      )}
+                    </motion.div>
+                    ))
+                  )}
+                </div>
               </motion.div>
             )}
 
@@ -661,32 +737,34 @@ const Advisory = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="space-y-8"
               >
-                {loading ? (
-                  <div className="col-span-full text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading resources...</p>
-                  </div>
-                ) : error ? (
-                  <div className="col-span-full text-center py-12 text-red-600">
-                    {error}
-                  </div>
-                ) : filteredResources.length === 0 ? (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                    No resources found. Try adjusting your search or filters.
-                  </div>
-                ) : (
-                  filteredResources.map((resource, index) => (
-                  <motion.div
-                    key={resource.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
-                  >
-                    <div className="flex items-start justify-between mb-4">
+                {/* Resources Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {loading ? (
+                    <div className="col-span-full text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading resources...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="col-span-full text-center py-12 text-red-600">
+                      {error}
+                    </div>
+                  ) : filteredResources.length === 0 ? (
+                    <div className="col-span-full text-center py-12 text-gray-500">
+                      No resources found. Try adjusting your search or filters.
+                    </div>
+                  ) : (
+                    filteredResources.map((resource, index) => (
+                    <motion.div
+                      key={resource.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ y: -5 }}
+                      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
+                    >
+                      <div className="flex items-start justify-between mb-4">
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                           {resource.image ? (
                             <img 
@@ -698,30 +776,39 @@ const Advisory = () => {
                             <BookOpen className="w-8 h-8 text-gray-400" />
                           )}
                         </div>
-                      <span className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
-                          {resource.resource_type}
-                      </span>
-                    </div>
-                    
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{resource.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{resource.description}</p>
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                      <div>{resource.downloads} downloads</div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
+                            {resource.resource_type}
+                          </span>
+                          {resource.is_ai_generated && (
+                            <span className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1">
+                              <Sparkles className="w-3 h-3" />
+                              <span>AI Generated</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{resource.title}</h3>
+                      <p className="text-gray-600 text-sm mb-4">{resource.description}</p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                        <div>{resource.downloads} downloads</div>
                         <div>{resource.file_size}</div>
-                    </div>
-                    
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      </div>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => window.open(resource.file_url, '_blank')}
                         className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
                       >
-                      Download
-                    </motion.button>
-                  </motion.div>
-                  ))
-                )}
+                        Download
+                      </motion.button>
+                    </motion.div>
+                    ))
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -837,6 +924,13 @@ const Advisory = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* AI Generation Modal */}
+      <CourseGenerationModal
+        isOpen={showCourseModal}
+        onClose={() => setShowCourseModal(false)}
+        onSuccess={handleCourseGenerationSuccess}
+      />
     </div>
   );
 };
