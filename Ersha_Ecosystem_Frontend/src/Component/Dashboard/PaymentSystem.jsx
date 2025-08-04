@@ -23,7 +23,7 @@ const checkInGroup = (userType, allowedTypes = []) => {
     const allowedTypesArr = Array.isArray(allowedTypes) ? allowedTypes : [];
     
     // Debug log in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log('checkInGroup:', { userType: userTypeStr, allowedTypes: allowedTypesArr });
     }
     
@@ -42,7 +42,7 @@ const PaymentSystem = ({ userType: propUserType }) => {
     
   // Debug log in development
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log('PaymentSystem mounted with userType:', userType);
     }
   }, [userType]);

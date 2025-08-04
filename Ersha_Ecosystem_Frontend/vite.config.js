@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
-    port: parseInt(process.env.PORT) || 3000,
+    port: parseInt(import.meta.env.VITE_PORT || '3000'),
     strictPort: true,
     host: true,
     proxy: {
@@ -31,6 +31,9 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode !== 'production',
   },
   define: {
-    'process.env': {}
+    'process.env': {},
+    'import.meta.env.VITE_PORT': JSON.stringify(process.env.PORT || '3000'),
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
+    'import.meta.env.VITE_WS_URL': JSON.stringify(process.env.VITE_WS_URL || 'ws://localhost:8000'),
   },
 }));

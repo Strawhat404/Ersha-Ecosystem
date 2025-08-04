@@ -1,6 +1,31 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Notification sound utility function
+const playNotificationSound = () => {
+  try {
+    // Create audio context for notification sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (error) {
+    console.log('Could not play notification sound:', error);
+  }
+};
 import { 
   Bell, 
   ShoppingCart, 
@@ -383,7 +408,7 @@ const FarmerNotifications = ({ notifications: propNotifications = [], unreadCoun
       if (!token) return;
 
       // Connect to WebSocket server with auth token
-      socketRef.current = io(process.env.REACT_APP_WS_URL || 'ws://localhost:8000', {
+      socketRef.current = io(import.meta.env.VITE_WS_URL || 'ws://localhost:8000', {
         auth: { token },
         transports: ['websocket'],
         reconnection: true,
