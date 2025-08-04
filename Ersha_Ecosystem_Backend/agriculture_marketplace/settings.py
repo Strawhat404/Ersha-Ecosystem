@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
-    'drf_yasg',  # Add this line for Swagger
+    'drf_yasg',  # For Swagger
+    'channels',   # For WebSocket support
     
     # Local apps
     'core',
@@ -145,6 +146,25 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
+
+# Channels & WebSocket Configuration
+ASGI_APPLICATION = 'agriculture_marketplace.asgi.application'
+
+# Channel layer configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(
+                config('REDIS_HOST', default='localhost'),
+                config('REDIS_PORT', default=6379, cast=int)
+            )],
+        },
+    },
+}
+
+# WebSocket settings
+WEBSOCKET_URL = config('WEBSOCKET_URL', default='ws://localhost:8000/ws/')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

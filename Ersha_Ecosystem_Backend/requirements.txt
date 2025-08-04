@@ -16,3 +16,8 @@ PyJWT==2.8.0
 cryptography==41.0.7
 google-generativeai==0.3.2
 reportlab==4.0.7
+
+# WebSocket support
+channels==4.1.0
+channels-redis==4.2.0
+redis==5.0.1

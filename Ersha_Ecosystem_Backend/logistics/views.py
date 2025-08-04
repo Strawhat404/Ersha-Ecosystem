@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from rest_framework import viewsets, filters, status, permissions
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg, Count, Sum
 from django.utils import timezone
@@ -10,19 +12,34 @@ from decimal import Decimal
 
 from .models import (
     ServiceProvider, Delivery, DeliveryTracking, 
-    CostEstimate, LogisticsTransaction, LogisticsAnalytics
+    CostEstimate, LogisticsTransaction, LogisticsAnalytics,
+    LogisticsRequest
 )
 from .serializers import (
     ServiceProviderSerializer, DeliverySerializer, DeliveryTrackingSerializer,
     CostEstimateSerializer, LogisticsTransactionSerializer, LogisticsAnalyticsSerializer,
     DeliveryTrackingUpdateSerializer, CostEstimateRequestSerializer,
     DeliveryStatusUpdateSerializer, ServiceProviderSearchSerializer,
-    LogisticsDashboardSerializer
+    LogisticsDashboardSerializer, LogisticsRequestSerializer,
+    LogisticsRequestCreateSerializer, LogisticsRequestUpdateSerializer
 )
+
+class TestServiceProviderView(APIView):
+    """Simple test view to check if ServiceProvider works"""
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        try:
+            providers = ServiceProvider.objects.filter(verified=True, is_active=True)
+            serializer = ServiceProviderSerializer(providers, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 class ServiceProviderViewSet(viewsets.ModelViewSet):
     queryset = ServiceProvider.objects.all()
     serializer_class = ServiceProviderSerializer
+    permission_classes = [AllowAny]  # Allow anonymous access by default
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['verified', 'is_active', 'specialties', 'coverage_areas']
     search_fields = ['name', 'description', 'specialties', 'coverage_areas']
@@ -91,7 +108,7 @@ class ServiceProviderViewSet(viewsets.ModelViewSet):
             'top_providers': provider_stats
         })
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def verified_providers(self, request):
         """Get only verified service providers"""
         providers = self.get_queryset().filter(verified=True, is_active=True)
@@ -366,3 +383,157 @@ class LogisticsAnalyticsViewSet(viewsets.ModelViewSet):
         }
         
         return Response(metrics)
+
+class LogisticsRequestViewSet(viewsets.ModelViewSet):
+    """ViewSet for handling logistics requests from farmers"""
+    serializer_class = LogisticsRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'provider', 'farmer']
+    search_fields = ['pickup_location', 'delivery_location']
+    ordering_fields = ['requested_at', 'status']
+    ordering = ['-requested_at']
+    
+    def get_queryset(self):
+        """Return logistics requests based on user type"""
+        user = self.request.user
+        
+        if user.is_logistics_provider:
+            # Logistics providers see requests sent to them
+            return LogisticsRequest.objects.filter(provider__user=user)
+        elif user.is_farmer:
+            # Farmers see their own requests
+            return LogisticsRequest.objects.filter(farmer=user)
+        else:
+            # Admins see all requests
+            return LogisticsRequest.objects.all()
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return LogisticsRequestCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return LogisticsRequestUpdateSerializer
+        return LogisticsRequestSerializer
+    
+    def perform_create(self, serializer):
+        """Create logistics request and notify provider"""
+        request = serializer.save(farmer=self.request.user)
+        
+        # Create notification for logistics provider
+        from orders.models import Notification
+        Notification.objects.create(
+            user=request.provider.user,
+            notification_type='logistics_request',
+            title='New Logistics Request',
+            message=f'Farmer {request.farmer.get_full_name()} has requested logistics services for Order #{request.order.id}'
+        )
+        
+        return request
+    
+    @action(detail=True, methods=['post'])
+    def accept_request(self, request, pk=None):
+        """Accept a logistics request (for providers)"""
+        logistics_request = self.get_object()
+        
+        if not request.user.is_logistics_provider:
+            return Response(
+                {'error': 'Only logistics providers can accept requests'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        logistics_request.accept_request()
+        
+        # Notify farmer
+        from orders.models import Notification
+        Notification.objects.create(
+            user=logistics_request.farmer,
+            notification_type='logistics_accepted',
+            title='Logistics Request Accepted',
+            message=f'Your logistics request for Order #{logistics_request.order.id} has been accepted by {logistics_request.provider.name}'
+        )
+        
+        return Response({
+            'message': 'Logistics request accepted successfully',
+            'status': logistics_request.status
+        })
+    
+    @action(detail=True, methods=['post'])
+    def reject_request(self, request, pk=None):
+        """Reject a logistics request (for providers)"""
+        logistics_request = self.get_object()
+        reason = request.data.get('reason', '')
+        
+        if not request.user.is_logistics_provider:
+            return Response(
+                {'error': 'Only logistics providers can reject requests'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        logistics_request.reject_request(reason)
+        
+        # Notify farmer
+        from orders.models import Notification
+        Notification.objects.create(
+            user=logistics_request.farmer,
+            notification_type='logistics_rejected',
+            title='Logistics Request Rejected',
+            message=f'Your logistics request for Order #{logistics_request.order.id} has been rejected by {logistics_request.provider.name}'
+        )
+        
+        return Response({
+            'message': 'Logistics request rejected',
+            'status': logistics_request.status
+        })
+    
+    @action(detail=True, methods=['post'])
+    def complete_request(self, request, pk=None):
+        """Complete a logistics request (for providers)"""
+        logistics_request = self.get_object()
+        
+        if not request.user.is_logistics_provider:
+            return Response(
+                {'error': 'Only logistics providers can complete requests'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        logistics_request.complete_request()
+        
+        # Notify farmer
+        from orders.models import Notification
+        Notification.objects.create(
+            user=logistics_request.farmer,
+            notification_type='logistics_completed',
+            title='Logistics Request Completed',
+            message=f'Your logistics request for Order #{logistics_request.order.id} has been completed by {logistics_request.provider.name}'
+        )
+        
+        return Response({
+            'message': 'Logistics request completed successfully',
+            'status': logistics_request.status
+        })
+    
+    @action(detail=False, methods=['get'])
+    def farmer_requests(self, request):
+        """Get logistics requests for the authenticated farmer"""
+        if not request.user.is_farmer:
+            return Response(
+                {'error': 'Only farmers can access this endpoint'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        requests = self.get_queryset().filter(farmer=request.user)
+        serializer = self.get_serializer(requests, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def provider_requests(self, request):
+        """Get logistics requests for the authenticated provider"""
+        if not request.user.is_logistics_provider:
+            return Response(
+                {'error': 'Only logistics providers can access this endpoint'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        requests = self.get_queryset().filter(provider__user=request.user)
+        serializer = self.get_serializer(requests, many=True)
+        return Response(serializer.data)

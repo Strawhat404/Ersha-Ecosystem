@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { ordersAPI } from '../../lib/api';
+import { ordersAPI, logisticsAPI } from '../../lib/api';
 import { getChapaPublicKey, getCallbackUrls, validateChapaConfig } from '../../config/payment';
 import { 
   ArrowLeft,
@@ -40,6 +40,8 @@ const Checkout = () => {
     deliveryInstructions: ''
   });
   
+  const [logisticsProviders, setLogisticsProviders] = useState([]);
+  const [selectedLogisticsProvider, setSelectedLogisticsProvider] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showChapaForm, setShowChapaForm] = useState(false);
@@ -50,6 +52,20 @@ const Checkout = () => {
       navigate('/cart');
     }
   }, [cartItems, navigate]);
+
+  // Fetch logistics providers
+  useEffect(() => {
+    const fetchLogisticsProviders = async () => {
+      try {
+        const response = await logisticsAPI.getVerifiedProviders();
+        setLogisticsProviders(response.results || response);
+      } catch (error) {
+        console.error('Error fetching logistics providers:', error);
+      }
+    };
+    
+    fetchLogisticsProviders();
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -65,6 +81,12 @@ const Checkout = () => {
         setError(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
         return false;
       }
+    }
+    
+    // Check if logistics provider is selected
+    if (!selectedLogisticsProvider) {
+      setError('Please select a logistics provider');
+      return false;
     }
     
     // Basic email validation
@@ -119,7 +141,8 @@ const Checkout = () => {
           phone: formData.phone
         },
         total_amount: cartSummary.totalPrice,
-        payment_provider: 'chapa'
+        payment_provider: 'chapa',
+        logistics_provider: selectedLogisticsProvider.id
       };
 
       // Call backend to create order (without payment initiation)
@@ -432,6 +455,46 @@ const Checkout = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Any special delivery instructions..."
                   />
+                </div>
+
+                {/* Logistics Provider Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Logistics Provider *
+                  </label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {logisticsProviders.map((provider) => (
+                      <div
+                        key={provider.id}
+                        className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                          selectedLogisticsProvider?.id === provider.id
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedLogisticsProvider(provider)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Truck className="w-5 h-5 text-green-600" />
+                            <div>
+                              <h4 className="font-medium text-gray-900">{provider.name}</h4>
+                              <p className="text-sm text-gray-600">{provider.description}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-yellow-500">★</span>
+                              <span className="text-sm font-medium">{provider.rating}</span>
+                            </div>
+                            <p className="text-xs text-gray-500">ETB {provider.price_per_km}/km</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {logisticsProviders.length === 0 && (
+                    <p className="text-sm text-gray-500">Loading logistics providers...</p>
+                  )}
                 </div>
               </div>
             </div>

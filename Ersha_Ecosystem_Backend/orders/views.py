@@ -376,6 +376,88 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def recent_activities(self, request):
+        """Get recent activities for the authenticated farmer"""
+        if not request.user.is_farmer:
+            return Response(
+                {'error': 'Only farmers can access this endpoint'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get recent orders for this farmer's products
+        recent_orders = Order.objects.filter(
+            items__product__farmer=request.user
+        ).distinct().order_by('-created_at')[:10]
+        
+        # Get all recent notifications for the user
+        recent_notifications = Notification.objects.filter(
+            user=request.user
+        ).order_by('-created_at')[:20]  # Get more notifications to ensure we have enough after filtering
+        
+        # Combine and sort activities
+        activities = []
+        
+        # Add order activities
+        for order in recent_orders:
+            # Get product names for the order
+            product_names = [item.product.name for item in order.items.filter(product__farmer=request.user)]
+            product_list = ", ".join(product_names[:3])  # Show up to 3 product names
+            if len(product_names) > 3:
+                product_list += f" and {len(product_names) - 3} more"
+                
+            activities.append({
+                'id': f'order_{order.id}',
+                'type': 'order',
+                'title': f'New Order #{order.id}',
+                'description': f'Order received for {product_list or "your products"}',
+                'timestamp': order.created_at,
+                'status': order.status,
+                'amount': float(order.total_amount),
+                'order_id': order.id,
+                'notification_type': 'order_status'
+            })
+        
+        # Add notification activities (include all notification types)
+        for notification in recent_notifications:
+            activities.append({
+                'id': f'notification_{notification.id}',
+                'type': 'notification',
+                'title': notification.title,
+                'description': notification.message,
+                'timestamp': notification.created_at,
+                'status': 'unread' if not notification.is_read else 'read',
+                'notification_id': notification.id,
+                'notification_type': notification.notification_type
+            })
+        
+        # Sort by timestamp (most recent first)
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        # Filter out any potential duplicates and limit to 20 items
+        seen = set()
+        unique_activities = []
+        
+        for activity in activities:
+            # Create a unique key for each activity
+            if activity['type'] == 'order':
+                key = f"order_{activity['order_id']}"
+            else:
+                key = f"notification_{activity['notification_id']}"
+                
+            if key not in seen:
+                seen.add(key)
+                unique_activities.append(activity)
+                
+                # Stop once we have 20 unique activities
+                if len(unique_activities) >= 20:
+                    break
+        
+        return Response({
+            'activities': unique_activities,
+            'total_count': len(unique_activities)
+        })
 
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -408,6 +490,63 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         """Get count of unread notifications"""
         count = self.get_queryset().filter(is_read=False).count()
         return Response({'unread_count': count})
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def recent_activities_view(request):
+    """Get recent activities for the authenticated farmer"""
+    if not request.user.is_farmer:
+        return Response(
+            {'error': 'Only farmers can access this endpoint'}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Get recent orders for this farmer's products
+    recent_orders = Order.objects.filter(
+        items__product__farmer=request.user
+    ).distinct().order_by('-created_at')[:10]
+    
+    # Get recent notifications
+    recent_notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:10]
+    
+    # Combine and sort activities
+    activities = []
+    
+    # Add order activities
+    for order in recent_orders:
+        activities.append({
+            'id': f'order_{order.id}',
+            'type': 'order',
+            'title': f'New Order #{order.id}',
+            'description': f'Order received for {order.items.count()} items',
+            'timestamp': order.created_at,
+            'status': order.status,
+            'amount': float(order.total_amount),
+            'order_id': order.id
+        })
+    
+    # Add notification activities
+    for notification in recent_notifications:
+        activities.append({
+            'id': f'notification_{notification.id}',
+            'type': 'notification',
+            'title': notification.title,
+            'description': notification.message,
+            'timestamp': notification.created_at,
+            'status': 'unread' if not notification.is_read else 'read',
+            'notification_id': notification.id
+        })
+    
+    # Sort by timestamp (most recent first)
+    activities.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    return Response({
+        'activities': activities[:20],  # Return top 20 activities
+        'total_count': len(activities)
+    })
 
 
 @api_view(['POST'])

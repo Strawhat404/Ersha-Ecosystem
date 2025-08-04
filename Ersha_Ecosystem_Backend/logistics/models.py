@@ -2,6 +2,8 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
+from users.models import User
+from orders.models import Order
 
 class ServiceProvider(models.Model):
     """Logistics service providers/companies"""
@@ -30,6 +32,81 @@ class ServiceProvider(models.Model):
 
     def __str__(self):
         return self.name
+
+class LogisticsRequest(models.Model):
+    """Farmer requests for logistics services"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Request Information
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logistics_requests')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='logistics_requests')
+    provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='logistics_requests')
+    
+    # Location Information
+    pickup_location = models.CharField(max_length=500)
+    pickup_latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    pickup_longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    delivery_location = models.CharField(max_length=500)
+    delivery_latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    delivery_longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    
+    # Product Information
+    product_details = models.JSONField(default=dict)  # Store product information
+    total_weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    special_instructions = models.TextField(blank=True)
+    
+    # Status and Timing
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    requested_at = models.DateTimeField(default=timezone.now)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Cost Information
+    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    actual_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Provider Response
+    provider_notes = models.TextField(blank=True)
+    rejection_reason = models.TextField(blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Logistics Request"
+        verbose_name_plural = "Logistics Requests"
+
+    def __str__(self):
+        return f"Logistics Request {self.id} - {self.farmer.username} to {self.provider.name}"
+
+    def accept_request(self):
+        """Accept the logistics request"""
+        self.status = 'accepted'
+        self.accepted_at = timezone.now()
+        self.save()
+
+    def complete_request(self):
+        """Mark the request as completed"""
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        self.save()
+
+    def reject_request(self, reason=""):
+        """Reject the logistics request"""
+        self.status = 'rejected'
+        self.rejection_reason = reason
+        self.save()
 
 class Delivery(models.Model):
     """Delivery/shipment tracking"""

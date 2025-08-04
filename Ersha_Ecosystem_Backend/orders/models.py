@@ -27,6 +27,15 @@ class Order(models.Model):
     delivery_phone = models.CharField(max_length=15)
     delivery_notes = models.TextField(blank=True, null=True)
     
+    # Logistics provider (selected by buyer during checkout)
+    logistics_provider = models.ForeignKey(
+        'logistics.ServiceProvider', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='orders'
+    )
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

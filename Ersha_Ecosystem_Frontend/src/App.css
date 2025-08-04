@@ -357,12 +357,18 @@
 
 /* Enhanced card styles */
 .card {
-  @apply bg-white rounded-2xl shadow-lg border border-gray-100 p-6 transition-all duration-300;
+  @apply rounded-2xl shadow-lg border border-gray-100 p-6 transition-all duration-300;
+}
+
+.card:not([class*="bg-gradient"]) {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1));
 }
 
 .card:hover {
   @apply shadow-xl transform scale-[1.02];
+}
+
+.card:not([class*="bg-gradient"]):hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(249, 250, 251, 1));
 }
 

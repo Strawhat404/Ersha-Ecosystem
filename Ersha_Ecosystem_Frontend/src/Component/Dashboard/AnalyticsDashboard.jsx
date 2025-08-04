@@ -418,9 +418,9 @@ const AnalyticsDashboard = ({ userType = "farmer" }) => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 mb-1">Total Revenue</p>
-              <p className="text-2xl font-bold">ETB {salesData.totalRevenue?.toLocaleString()}</p>
-              <p className="text-green-200 text-sm">↗️ +{salesData.revenueGrowth}%</p>
+              <p className="text-white font-medium mb-1">Total Revenue</p>
+              <p className="text-2xl font-bold text-white">ETB {salesData.totalRevenue?.toLocaleString()}</p>
+              <p className="text-white/90 text-sm">↗️ +{salesData.revenueGrowth}%</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 360] }}
@@ -441,9 +441,9 @@ const AnalyticsDashboard = ({ userType = "farmer" }) => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 mb-1">Total Sales</p>
-              <p className="text-2xl font-bold">{salesData.totalSales}</p>
-              <p className="text-blue-200 text-sm">↗️ +{salesData.salesGrowth}%</p>
+              <p className="text-white font-medium mb-1">Total Sales</p>
+              <p className="text-2xl font-bold text-white">{salesData.totalSales}</p>
+              <p className="text-white/90 text-sm">↗️ +{salesData.salesGrowth}%</p>
             </div>
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
@@ -464,9 +464,9 @@ const AnalyticsDashboard = ({ userType = "farmer" }) => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 mb-1">New Orders</p>
-              <p className="text-2xl font-bold">{salesData.newOrders}</p>
-              <p className="text-purple-200 text-sm">🔥 +{salesData.orderGrowth}%</p>
+              <p className="text-white font-medium mb-1">New Orders</p>
+              <p className="text-2xl font-bold text-white">{salesData.newOrders}</p>
+              <p className="text-white/90 text-sm">🔥 +{salesData.orderGrowth}%</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
@@ -487,9 +487,9 @@ const AnalyticsDashboard = ({ userType = "farmer" }) => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 mb-1">Credit Score</p>
-              <p className="text-2xl font-bold">{creditScore}</p>
-              <p className="text-green-200 text-sm">{getCreditScoreLabel(creditScore)}</p>
+              <p className="text-white font-medium mb-1">Credit Score</p>
+              <p className="text-2xl font-bold text-white">{creditScore}</p>
+              <p className="text-white/90 text-sm">{getCreditScoreLabel(creditScore)}</p>
             </div>
             <motion.div
               animate={{ y: [0, -5, 0] }}

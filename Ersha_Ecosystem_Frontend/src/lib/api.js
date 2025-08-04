@@ -143,52 +143,17 @@ export const cartAPI = {
 
 // Orders API
 export const ordersAPI = {
-  getAll: () => apiCall('/orders/'),
-  
-  getById: (id) => apiCall(`/orders/${id}/`),
-  
-  create: (orderData) => 
-    apiCall('/orders/', {
-      method: 'POST',
-      body: JSON.stringify(orderData),
-    }),
-  
-  createWithPayment: async (orderData) => {
-    try {
-      const response = await apiCall('/orders/create_with_payment/', {
-        method: 'POST',
-        body: JSON.stringify(orderData)
-      });
-      return response;
-    } catch (error) {
-      console.error('Error creating order with payment:', error);
-      throw error;
-    }
-  },
-
-  // Create order without payment
-  createOrder: async (orderData) => {
-    try {
-      const response = await apiCall('/orders/', {
-        method: 'POST',
-        body: JSON.stringify(orderData)
-      });
-      return response;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error;
-    }
-  },
-  
-  updateStatus: (id, status) => 
-    apiCall(`/orders/${id}/`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    }),
-  
-  getMyOrders: () => apiCall('/orders/my-orders/'),
-  
-  getMySales: () => apiCall('/orders/my-sales/'),
+  getAll: () => apiCall('/orders/orders/'),
+  getById: (id) => apiCall(`/orders/orders/${id}/`),
+  create: (data) => apiCall('/orders/orders/', 'POST', data),
+  update: (id, data) => apiCall(`/orders/orders/${id}/`, 'PUT', data),
+  delete: (id) => apiCall(`/orders/orders/${id}/`, 'DELETE'),
+  getFarmerOrders: () => apiCall('/orders/orders/farmer-orders/'),
+  getRecentActivities: () => apiCall('/orders/debug/recent-activities/'),
+  createFromCart: (data) => apiCall('/orders/orders/create-from-cart/', 'POST', data),
+  updateStatus: (id, data) => apiCall(`/orders/orders/${id}/update-status/`, 'POST', data),
+  createWithPayment: (data) => apiCall('/orders/orders/create-with-payment/', 'POST', data),
+  myOrders: () => apiCall('/orders/orders/my-orders/'),
 };
 
 // Advisory API
@@ -219,17 +184,11 @@ export const advisoryAPI = {
 
 // Notifications API
 export const notificationsAPI = {
-  getAll: () => apiCall('/notifications/'),
-  
-  markAsRead: (id) => 
-    apiCall(`/notifications/${id}/mark-read/`, {
-      method: 'POST',
-    }),
-  
-  markAllAsRead: () => 
-    apiCall('/notifications/mark-all-read/', {
-      method: 'POST',
-    }),
+  getAll: () => apiCall('/orders/notifications/'),
+  getById: (id) => apiCall(`/orders/notifications/${id}/`),
+  markAsRead: (id) => apiCall(`/orders/notifications/${id}/mark_read/`, 'PATCH'),
+  markAllAsRead: () => apiCall('/orders/notifications/mark_all_read/', 'POST'),
+  getUnreadCount: () => apiCall('/orders/notifications/unread_count/'),
 };
 
 // Weather API
@@ -381,53 +340,35 @@ export const uploadFile = async (file, endpoint = '/upload/') => {
 // Logistics API
 export const logisticsAPI = {
   // Service Providers
-  getProviders: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/logistics/providers/?${queryString}`);
-  },
-  getVerifiedProviders: () => apiCall('/logistics/providers/verified_providers/'),
-  getProvidersByRegion: (region) => apiCall(`/logistics/providers/by_region/?region=${region}`),
-  getTopPerformers: () => apiCall('/logistics/providers/top_performers/'),
+  getProviders: () => apiCall('/logistics/providers/'),
+  getProviderById: (id) => apiCall(`/logistics/providers/${id}/`),
+  getVerifiedProviders: () => apiCall('/logistics/verified-providers/'),
   
-  // Deliveries
-  getDeliveries: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/logistics/deliveries/?${queryString}`);
-  },
-  getActiveDeliveries: () => apiCall('/logistics/deliveries/active_deliveries/'),
-  getOverdueDeliveries: () => apiCall('/logistics/deliveries/overdue_deliveries/'),
-  getDeliveryByTracking: (trackingNumber) => apiCall(`/logistics/deliveries/by_tracking_number/?tracking_number=${trackingNumber}`),
-  updateDeliveryStatus: (deliveryId, data) => apiCall(`/logistics/deliveries/${deliveryId}/update_status/`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  addTrackingEvent: (deliveryId, data) => apiCall(`/logistics/deliveries/${deliveryId}/add_tracking_event/`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
+  // Logistics Requests
+  getRequests: () => apiCall('/logistics/requests/'),
+  getRequestById: (id) => apiCall(`/logistics/requests/${id}/`),
+  createRequest: (data) => apiCall('/logistics/requests/', 'POST', data),
+  updateRequest: (id, data) => apiCall(`/logistics/requests/${id}/`, 'PUT', data),
+  deleteRequest: (id) => apiCall(`/logistics/requests/${id}/`, 'DELETE'),
+  
+  // Request Actions
+  acceptRequest: (id) => apiCall(`/logistics/requests/${id}/accept_request/`, 'POST'),
+  rejectRequest: (id, reason) => apiCall(`/logistics/requests/${id}/reject_request/`, 'POST', { reason }),
+  completeRequest: (id) => apiCall(`/logistics/requests/${id}/complete_request/`, 'POST'),
+  
+  // User-specific requests
+  getFarmerRequests: () => apiCall('/logistics/requests/farmer-requests/'),
+  getProviderRequests: () => apiCall('/logistics/requests/provider-requests/'),
   
   // Cost Estimates
-  getEstimates: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/logistics/estimates/?${queryString}`);
-  },
-  calculateEstimate: (data) => apiCall('/logistics/estimates/calculate/', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
+  getCostEstimate: (data) => apiCall('/logistics/estimates/calculate/', 'POST', data),
+  
+  // Deliveries
+  getDeliveries: () => apiCall('/logistics/deliveries/'),
+  getDeliveryById: (id) => apiCall(`/logistics/deliveries/${id}/`),
+  updateDeliveryStatus: (id, data) => apiCall(`/logistics/deliveries/${id}/update_status/`, 'POST', data),
   
   // Analytics
-  getAnalytics: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/logistics/analytics/?${queryString}`);
-  },
   getDashboard: () => apiCall('/logistics/analytics/dashboard/'),
-  getPerformanceMetrics: () => apiCall('/logistics/analytics/performance_metrics/'),
-  
-  // Transactions
-  getTransactions: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/logistics/transactions/?${queryString}`);
-  },
-  getTransactionsByDelivery: (deliveryId) => apiCall(`/logistics/transactions/by_delivery/?delivery_id=${deliveryId}`),
+  getPerformanceMetrics: () => apiCall('/logistics/analytics/performance-metrics/'),
 }; 
