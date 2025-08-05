@@ -14,12 +14,14 @@ enum AuthState {
 class AuthProvider extends ChangeNotifier {
   AuthState _state = AuthState.initial;
   UserModel? _user;
+  String? _accessToken;
   String? _errorMessage;
   AuthService? _authService;
   bool _isInitialized = false;
 
   AuthState get state => _state;
   UserModel? get user => _user;
+  String? get token => _accessToken;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _state == AuthState.authenticated && _user != null;
   bool get isLoading => _state == AuthState.loading;
@@ -59,6 +61,7 @@ class AuthProvider extends ChangeNotifier {
       final isLoggedIn = await _authService!.isLoggedIn();
       if (isLoggedIn) {
         _user = await _authService!.getCurrentUser();
+        _accessToken = await _authService!.getAccessToken();
         _setState(AuthState.authenticated);
       } else {
         _setState(AuthState.unauthenticated);
@@ -87,6 +90,7 @@ class AuthProvider extends ChangeNotifier {
 
       final authResponse = await _authService!.login(loginRequest);
       _user = authResponse.user;
+      _accessToken = authResponse.access;
       _setState(AuthState.authenticated);
       
       return true;
@@ -143,6 +147,7 @@ class AuthProvider extends ChangeNotifier {
       print('DEBUG AuthProvider: AuthService.register completed successfully');
       
       _user = authResponse.user;
+      _accessToken = authResponse.access;  // Store the access token
       _setState(AuthState.authenticated);
       
       print('DEBUG AuthProvider: Registration successful, user: ${_user?.toJson()}');
@@ -165,6 +170,7 @@ class AuthProvider extends ChangeNotifier {
       }
       
       _user = null;
+      _accessToken = null;
       _setState(AuthState.unauthenticated);
     } catch (e) {
       // Even if logout fails on server, clear local data

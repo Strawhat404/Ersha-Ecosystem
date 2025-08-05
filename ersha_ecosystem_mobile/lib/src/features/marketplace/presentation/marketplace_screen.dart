@@ -1,6 +1,7 @@
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/add_product_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/widgets/product_list.dart';
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/models/marketplace_enums.dart';
+import 'package:ersha_ecosystem_mobile/src/features/marketplace/provider/marketplace_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:ersha_ecosystem_mobile/src/common/common_banner_appbar.dart';
@@ -18,6 +19,7 @@ class MarketplaceScreen extends StatefulWidget {
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   UserRole _currentUserRole = UserRole.merchant;
+  bool _hasInitializedProducts = false;
 
   @override
   void initState() {
@@ -154,12 +156,30 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         // Get the current user role from AuthProvider
         final userRole = _getUserRoleFromProvider(authProvider);
         
-        // Update current user role if it has changed
-        if (_currentUserRole != userRole) {
+        // Update current user role if it has changed and fetch products with new context
+        if (_currentUserRole != userRole || !_hasInitializedProducts) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             setState(() {
               _currentUserRole = userRole;
+              _hasInitializedProducts = true;
             });
+            
+            // Fetch products with the current user context
+            final marketplaceProvider = Provider.of<MarketplaceProvider>(context, listen: false);
+            final userId = authProvider.user?.id?.toString();
+            final userTypeString = authProvider.user?.userType;
+            
+            print('=== MARKETPLACE SCREEN DEBUG ===');
+            print('DEBUG: User from AuthProvider: ${authProvider.user?.toJson()}');
+            print('DEBUG: User ID: $userId');
+            print('DEBUG: User Type: $userTypeString');
+            print('DEBUG: User Role (UI): $userRole');
+            print('DEBUG: Fetching products for role: $userTypeString, userId: $userId');
+            
+            marketplaceProvider.fetchProducts(
+              userRole: userTypeString,
+              userId: userId,
+            );
           });
         }
         
@@ -197,7 +217,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               ),
               ProductList(
                 userRole: userRole,
-                currentUserId: authProvider.user?.id.toString(), // Convert ID to String
               ),
             ],
           ),
