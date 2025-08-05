@@ -58,7 +58,10 @@ class DebugRecentActivitiesView(APIView):
                     'status': order.status,
                     'amount': float(order.total_amount),
                     'order_id': order.id,
-                    'notification_type': 'order_status'
+                    'notification_type': 'order_status',
+                    'logistics_provider': str(order.logistics_provider.id) if order.logistics_provider else None,
+                    'delivery_address': order.delivery_address,
+                    'total_weight': sum(float(item.quantity) for item in order.items.filter(product__farmer=user))
                 }
                 activities.append(activity)
                 logger.info(f"Added order activity: {activity['title']}")
@@ -73,7 +76,10 @@ class DebugRecentActivitiesView(APIView):
                     'timestamp': notification.created_at.isoformat(),
                     'status': 'unread' if not notification.is_read else 'read',
                     'notification_id': notification.id,
-                    'notification_type': notification.notification_type
+                    'notification_type': notification.notification_type,
+                    'logistics_provider': notification.metadata.get('logistics_provider') if notification.metadata else None,
+                    'delivery_address': notification.metadata.get('delivery_address') if notification.metadata else None,
+                    'total_weight': notification.metadata.get('quantity') if notification.metadata else None
                 }
                 activities.append(activity)
                 logger.info(f"Added notification activity: {notification.title}")

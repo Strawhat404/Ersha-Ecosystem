@@ -130,13 +130,14 @@ const Register = () => {
       if (error) {
         setError(error.message);
       } else {
-        setSuccess('Registration successful! Redirecting to dashboard...');
+        const redirectMessage = 'Registration successful! Redirecting to dashboard...';
+        setSuccess(redirectMessage);
         // Redirect to appropriate dashboard based on user type
         setTimeout(() => {
-          if (formData.userType === 'expert') {
-            navigate('/expert-dashboard');
-          } else if (formData.userType === 'logistics') {
+          if (formData.userType === 'logistics') {
             navigate('/logistics-dashboard');
+          } else if (formData.userType === 'expert') {
+            navigate('/expert-dashboard');
           } else {
             navigate('/dashboard');
           }

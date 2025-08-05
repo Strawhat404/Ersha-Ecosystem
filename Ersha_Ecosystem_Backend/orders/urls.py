@@ -5,7 +5,7 @@ from .views_debug import DebugRecentActivitiesView
 
 # Create a single router for all viewsets
 router = DefaultRouter()
-router.register(r'', views.OrderViewSet, basename='order')
+router.register(r'orders', views.OrderViewSet, basename='order')
 router.register(r'notifications', views.NotificationViewSet, basename='notification')
 
 urlpatterns = [

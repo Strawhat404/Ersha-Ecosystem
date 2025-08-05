@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
+import LogisticsRequestModal from './LogisticsRequestModal';
 
 // Notification sound utility function
 const playNotificationSound = () => {
@@ -79,6 +80,8 @@ const FarmerNotifications = ({ notifications: propNotifications = [], unreadCoun
   });
   
   const [locationData, setLocationData] = useState(locationDataRef.current);
+  const [logisticsModalOpen, setLogisticsModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
 
   // Use props if provided, otherwise use local state
   const displayNotifications = propNotifications || notifications;
@@ -518,6 +521,26 @@ const FarmerNotifications = ({ notifications: propNotifications = [], unreadCoun
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
+  const handleLogisticsRequest = (notification) => {
+    // Extract order information from notification
+    const orderData = {
+      order_id: notification.metadata?.order_id,
+      amount: notification.metadata?.amount,
+      delivery_address: notification.metadata?.delivery_address,
+      logistics_provider: notification.metadata?.logistics_provider,
+      product_name: notification.metadata?.product_name,
+      quantity: notification.metadata?.quantity
+    };
+    
+    setSelectedActivity(orderData);
+    setLogisticsModalOpen(true);
+  };
+
+  const handleLogisticsSuccess = () => {
+    // Refresh notifications after successful logistics request
+    fetchNotifications();
+  };
+
   return (
     <>
       {/* Notification Bell */}
@@ -652,6 +675,21 @@ const FarmerNotifications = ({ notifications: propNotifications = [], unreadCoun
                                 <div className="mt-1.5 flex items-center text-xs text-blue-600">
                                   <MapPin className="h-3.5 w-3.5 mr-1" />
                                   <span>Tap to share location</span>
+                                </div>
+                              )}
+                              
+                              {notification.notification_type === 'order_placed' && (
+                                <div className="mt-2 flex items-center space-x-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleLogisticsRequest(notification);
+                                    }}
+                                    className="flex items-center space-x-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors"
+                                  >
+                                    <Truck className="h-3.5 w-3.5" />
+                                    <span>Call Logistics</span>
+                                  </button>
                                 </div>
                               )}
                             </div>
@@ -852,6 +890,14 @@ const FarmerNotifications = ({ notifications: propNotifications = [], unreadCoun
           </div>
         )}
       </AnimatePresence>
+
+      {/* Logistics Request Modal */}
+      <LogisticsRequestModal
+        isOpen={logisticsModalOpen}
+        onClose={() => setLogisticsModalOpen(false)}
+        activity={selectedActivity}
+        onSuccess={handleLogisticsSuccess}
+      />
     </>
   );
 };

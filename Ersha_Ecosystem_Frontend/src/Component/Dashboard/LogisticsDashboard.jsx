@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { logisticsAPI } from '../../lib/api';
 import { 
   Home, 
   Package, 
@@ -23,6 +24,7 @@ import {
 // Import logistics dashboard components
 import LogisticsDashboardOverview from './LogisticsDashboardOverview';
 import LogisticsOrders from './LogisticsOrders';
+import LogisticsNotifications from './LogisticsNotifications';
 
 const LogisticsDashboard = () => {
   const { user, profile, signOut } = useAuth();
@@ -31,6 +33,7 @@ const LogisticsDashboard = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   // Set initial view based on URL parameters
   useEffect(() => {
@@ -55,6 +58,23 @@ const LogisticsDashboard = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showProfileMenu]);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await logisticsAPI.getUnreadCount();
+        setUnreadNotifications(response.unread_count || 0);
+      } catch (err) {
+        console.error('Error fetching unread notifications count:', err);
+      }
+    };
+
+    fetchUnreadCount();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -82,6 +102,14 @@ const LogisticsDashboard = () => {
       icon: <Package className="w-5 h-5" />,
       gradient: 'from-orange-500 to-red-600',
       description: 'Manage delivery orders'
+    },
+    { 
+      id: 'notifications', 
+      label: 'Notifications', 
+      icon: <MessageSquare className="w-5 h-5" />,
+      gradient: 'from-green-500 to-teal-600',
+      description: 'View logistics requests',
+      badge: unreadNotifications > 0 ? unreadNotifications : null
     }
   ];
 
@@ -96,6 +124,8 @@ const LogisticsDashboard = () => {
         return <LogisticsDashboardOverview />;
       case 'orders':
         return <LogisticsOrders />;
+      case 'notifications':
+        return <LogisticsNotifications />;
       default:
         return <LogisticsDashboardOverview />;
     }
@@ -126,7 +156,7 @@ const LogisticsDashboard = () => {
                 <button
                   key={item.id}
                   onClick={() => handleViewChange(item.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 relative ${
                     activeView === item.id
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
@@ -134,6 +164,11 @@ const LogisticsDashboard = () => {
                 >
                   {item.icon}
                   <span className="font-medium">{item.label}</span>
+                  {item.badge && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] flex items-center justify-center">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -199,7 +234,7 @@ const LogisticsDashboard = () => {
             <button
               key={item.id}
               onClick={() => handleViewChange(item.id)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-200 ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-200 relative ${
                 activeView === item.id
                   ? 'bg-orange-100 text-orange-700'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -207,6 +242,11 @@ const LogisticsDashboard = () => {
             >
               {item.icon}
               <span className="font-medium">{item.label}</span>
+              {item.badge && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] flex items-center justify-center">
+                  {item.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>

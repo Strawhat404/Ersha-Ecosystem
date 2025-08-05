@@ -85,6 +85,7 @@ class OrderItem(models.Model):
 class Notification(models.Model):
     class NotificationType(models.TextChoices):
         ORDER_STATUS = 'order_status', 'Order Status Update'
+        ORDER_PLACED = 'order_placed', 'Order Placed'
         PRODUCT_UPDATE = 'product_update', 'Product Update'
         CART_ADDED = 'cart_added', 'Product Added to Cart'
         SYSTEM = 'system', 'System Notification'
@@ -94,6 +95,7 @@ class Notification(models.Model):
     title = models.CharField(max_length=200)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
+    metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

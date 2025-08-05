@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useLocale } from '../../contexts/LocaleContext';
 import { logisticsAPI } from '../../lib/api';
 import { 
   Truck, 
@@ -18,7 +17,6 @@ import {
 } from 'lucide-react';
 
 const LogisticsProviderDashboard = () => {
-  const { t } = useLocale();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({

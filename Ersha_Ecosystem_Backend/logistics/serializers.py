@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     ServiceProvider, Delivery, DeliveryTracking, 
     CostEstimate, LogisticsTransaction, LogisticsAnalytics,
-    LogisticsRequest
+    LogisticsRequest, LogisticsNotification, LogisticsOrder
 )
 from django.utils import timezone
 
@@ -164,3 +164,65 @@ class LogisticsRequestUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = LogisticsRequest
         fields = ['status', 'provider_notes', 'rejection_reason', 'actual_cost'] 
+
+
+class LogisticsNotificationSerializer(serializers.ModelSerializer):
+    """Serializer for logistics notifications"""
+    request_details = LogisticsRequestSerializer(source='logistics_request', read_only=True)
+    
+    class Meta:
+        model = LogisticsNotification
+        fields = [
+            'id', 'notification_type', 'title', 'message', 'is_read', 
+            'metadata', 'created_at', 'read_at', 'request_details'
+        ]
+        read_only_fields = ['id', 'created_at', 'read_at']
+
+
+class LogisticsOrderSerializer(serializers.ModelSerializer):
+    """Serializer for logistics orders"""
+    farmer_name = serializers.ReadOnlyField()
+    buyer_name = serializers.ReadOnlyField()
+    status_display = serializers.ReadOnlyField()
+    order_number = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = LogisticsOrder
+        fields = [
+            'id', 'order', 'logistics_request', 'provider', 'farmer', 'buyer',
+            'product_name', 'product_description', 'quantity', 'weight_kg',
+            'pickup_location', 'delivery_location', 'distance_km',
+            'tracking_status', 'current_location', 'estimated_delivery', 'actual_delivery',
+            'accepted_at', 'on_the_way_at', 'picked_product_at', 'on_delivery_at', 'delivered_at',
+            'cost', 'currency', 'special_instructions', 'provider_notes',
+            'is_urgent', 'requires_signature', 'created_at', 'updated_at',
+            'farmer_name', 'buyer_name', 'status_display', 'order_number'
+        ]
+        read_only_fields = [
+            'id', 'created_at', 'updated_at', 'farmer_name', 'buyer_name', 
+            'status_display', 'order_number'
+        ]
+
+
+class LogisticsOrderCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating logistics orders"""
+    
+    class Meta:
+        model = LogisticsOrder
+        fields = [
+            'order', 'logistics_request', 'provider', 'farmer', 'buyer',
+            'product_name', 'product_description', 'quantity', 'weight_kg',
+            'pickup_location', 'delivery_location', 'distance_km',
+            'cost', 'currency', 'special_instructions', 'is_urgent', 'requires_signature'
+        ]
+
+
+class LogisticsOrderUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating logistics orders"""
+    
+    class Meta:
+        model = LogisticsOrder
+        fields = [
+            'tracking_status', 'current_location', 'estimated_delivery', 'actual_delivery',
+            'cost', 'provider_notes', 'is_urgent', 'requires_signature'
+        ] 
