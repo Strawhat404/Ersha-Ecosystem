@@ -13,7 +13,7 @@ from decimal import Decimal
 from .models import (
     ServiceProvider, Delivery, DeliveryTracking, 
     CostEstimate, LogisticsTransaction, LogisticsAnalytics,
-    LogisticsRequest
+    LogisticsRequest, LogisticsNotification, LogisticsOrder
 )
 from .serializers import (
     ServiceProviderSerializer, DeliverySerializer, DeliveryTrackingSerializer,
@@ -21,7 +21,9 @@ from .serializers import (
     DeliveryTrackingUpdateSerializer, CostEstimateRequestSerializer,
     DeliveryStatusUpdateSerializer, ServiceProviderSearchSerializer,
     LogisticsDashboardSerializer, LogisticsRequestSerializer,
-    LogisticsRequestCreateSerializer, LogisticsRequestUpdateSerializer
+    LogisticsRequestCreateSerializer, LogisticsRequestUpdateSerializer,
+    LogisticsNotificationSerializer, LogisticsOrderSerializer,
+    LogisticsOrderCreateSerializer, LogisticsOrderUpdateSerializer
 )
 
 class TestServiceProviderView(APIView):
@@ -416,17 +418,11 @@ class LogisticsRequestViewSet(viewsets.ModelViewSet):
         return LogisticsRequestSerializer
     
     def perform_create(self, serializer):
-        """Create logistics request and notify provider"""
+        """Create logistics request"""
         request = serializer.save(farmer=self.request.user)
         
-        # Create notification for logistics provider
-        from orders.models import Notification
-        Notification.objects.create(
-            user=request.provider.user,
-            notification_type='logistics_request',
-            title='New Logistics Request',
-            message=f'Farmer {request.farmer.get_full_name()} has requested logistics services for Order #{request.order.id}'
-        )
+        # Note: ServiceProvider doesn't have a user field, so we can't create notifications for providers
+        # In a real system, you might want to add a user field to ServiceProvider or use a different notification system
         
         return request
     
@@ -527,13 +523,142 @@ class LogisticsRequestViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def provider_requests(self, request):
-        """Get logistics requests for the authenticated provider"""
-        if not request.user.is_logistics_provider:
-            return Response(
-                {'error': 'Only logistics providers can access this endpoint'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
+        """Get requests for the current provider"""
+        if request.user.user_type != 'logistics':
+            return Response({'error': 'Access denied'}, status=403)
         
-        requests = self.get_queryset().filter(provider__user=request.user)
-        serializer = self.get_serializer(requests, many=True)
+        try:
+            provider = ServiceProvider.objects.get(contact_email=request.user.email)
+            requests = LogisticsRequest.objects.filter(provider=provider).order_by('-created_at')
+            serializer = LogisticsRequestSerializer(requests, many=True)
+            return Response(serializer.data)
+        except ServiceProvider.DoesNotExist:
+            return Response({'error': 'Provider not found'}, status=404)
+
+
+class LogisticsNotificationViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing logistics notifications"""
+    serializer_class = LogisticsNotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['notification_type', 'is_read', 'provider']
+    search_fields = ['title', 'message']
+    ordering_fields = ['created_at', 'read_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        """Filter notifications based on user type"""
+        if self.request.user.user_type == 'logistics':
+            # Logistics providers see their own notifications
+            try:
+                provider = ServiceProvider.objects.get(contact_email=self.request.user.email)
+                return LogisticsNotification.objects.filter(provider=provider)
+            except ServiceProvider.DoesNotExist:
+                return LogisticsNotification.objects.none()
+        else:
+            # Farmers see notifications related to their requests
+            return LogisticsNotification.objects.filter(
+                logistics_request__farmer=self.request.user
+            )
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        """Mark a notification as read"""
+        notification = self.get_object()
+        notification.mark_as_read()
+        return Response({'message': 'Notification marked as read'})
+
+    @action(detail=False, methods=['post'])
+    def mark_all_as_read(self, request):
+        """Mark all notifications as read"""
+        queryset = self.get_queryset()
+        queryset.update(is_read=True, read_at=timezone.now())
+        return Response({'message': 'All notifications marked as read'})
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        """Get count of unread notifications"""
+        queryset = self.get_queryset()
+        unread_count = queryset.filter(is_read=False).count()
+        return Response({'unread_count': unread_count})
+
+
+class LogisticsOrderViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing logistics orders"""
+    serializer_class = LogisticsOrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['tracking_status', 'provider', 'farmer', 'buyer']
+    search_fields = ['product_name', 'pickup_location', 'delivery_location']
+    ordering_fields = ['created_at', 'updated_at', 'cost']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        """Filter orders based on user type"""
+        if self.request.user.user_type == 'logistics':
+            # Logistics providers see orders assigned to them
+            try:
+                provider = ServiceProvider.objects.get(contact_email=self.request.user.email)
+                return LogisticsOrder.objects.filter(provider=provider)
+            except ServiceProvider.DoesNotExist:
+                return LogisticsOrder.objects.none()
+        else:
+            # Farmers and buyers see their own orders
+            return LogisticsOrder.objects.filter(
+                Q(farmer=self.request.user) | Q(buyer=self.request.user)
+            )
+
+    def get_serializer_class(self):
+        """Use different serializers for different actions"""
+        if self.action in ['create']:
+            return LogisticsOrderCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return LogisticsOrderUpdateSerializer
+        return LogisticsOrderSerializer
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """Update order tracking status"""
+        order = self.get_object()
+        new_status = request.data.get('tracking_status')
+        current_location = request.data.get('current_location')
+        provider_notes = request.data.get('provider_notes')
+        
+        if not new_status:
+            return Response({'error': 'tracking_status is required'}, status=400)
+        
+        order.update_status(new_status, current_location, provider_notes)
+        serializer = LogisticsOrderSerializer(order)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def status_counts(self, request):
+        """Get counts by status"""
+        queryset = self.get_queryset()
+        counts = {}
+        for status, _ in LogisticsOrder.TRACKING_STATUS_CHOICES:
+            counts[status] = queryset.filter(tracking_status=status).count()
+        return Response(counts)
+
+    @action(detail=False, methods=['get'])
+    def recent_orders(self, request):
+        """Get recent orders"""
+        queryset = self.get_queryset().order_by('-created_at')[:10]
+        serializer = LogisticsOrderSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def pending_orders(self, request):
+        """Get pending orders"""
+        queryset = self.get_queryset().filter(tracking_status='pending')
+        serializer = LogisticsOrderSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def active_orders(self, request):
+        """Get active orders (not delivered or cancelled)"""
+        queryset = self.get_queryset().exclude(
+            tracking_status__in=['delivered', 'cancelled']
+        )
+        serializer = LogisticsOrderSerializer(queryset, many=True)
         return Response(serializer.data)

@@ -230,6 +230,7 @@ const UserDashboard = () => {
   };
 
   const handleLogisticsRequest = (activity) => {
+    console.log('LogisticsRequestModal - Activity data:', activity);
     setSelectedActivity(activity);
     setLogisticsModalOpen(true);
   };
@@ -559,9 +560,9 @@ const UserDashboard = () => {
               
               {/* Recent Activities Section */}
               <div className="flex items-center justify-between mb-4 mt-6">
-                <h2 className="text-xl font-bold text-gray-900">{t('dashboard.recentActivity')}</h2>
+                <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
                 <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                  {t('dashboard.viewAll')}
+                  View All
                 </button>
               </div>
               <div className="space-y-4">
@@ -591,7 +592,7 @@ const UserDashboard = () => {
                             <span>Call Logistics</span>
                           </button>
                         )}
-                        <span className="text-xs font-medium text-emerald-600">{t('common.view')}</span>
+                        <span className="text-xs font-medium text-emerald-600">View</span>
                       </div>
                     </div>
                   ))

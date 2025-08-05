@@ -19,22 +19,78 @@ const LogisticsRequestModal = ({ isOpen, onClose, activity, onSuccess }) => {
 
   useEffect(() => {
     if (isOpen) {
+      console.log('LogisticsRequestModal - Activity data:', activity);
+      console.log('Logistics provider ID from activity:', activity?.logistics_provider);
+      console.log('Activity type:', activity?.type);
+      console.log('Activity notification_type:', activity?.notification_type);
+      
       fetchProviders();
-      if (activity && activity.order_id) {
+      if (activity && (activity.order_id || activity.notification_id)) {
         // Pre-fill delivery location from order
         setFormData(prev => ({
           ...prev,
           delivery_location: activity.delivery_address || '',
           total_weight: activity.total_weight || 0
         }));
+        
+        // Pre-select the logistics provider that the buyer chose
+        if (activity.logistics_provider) {
+          console.log('Logistics provider data:', activity.logistics_provider);
+          // If logistics_provider is an ID, we'll find the provider object after fetching
+          // If it's already an object, we can use it directly
+          if (typeof activity.logistics_provider === 'object') {
+            setSelectedProvider(activity.logistics_provider);
+          }
+        } else {
+          console.log('No logistics provider found in activity data');
+        }
       }
     }
   }, [isOpen, activity]);
 
   const fetchProviders = async () => {
     try {
-      const response = await logisticsAPI.getVerifiedProviders();
-      setProviders(response.results || response);
+      // If buyer has already selected a logistics provider, we don't need to fetch all providers
+      if (activity?.logistics_provider) {
+        console.log('Buyer has already selected logistics provider:', activity.logistics_provider);
+        
+        // If logistics_provider is already an object, use it directly
+        if (typeof activity.logistics_provider === 'object') {
+          setSelectedProvider(activity.logistics_provider);
+          setProviders([activity.logistics_provider]); // Only show this one provider
+          return;
+        }
+        
+        // If it's an ID, fetch just that specific provider
+        const providerId = activity.logistics_provider; // Keep as string for UUID comparison
+        console.log('Fetching specific provider with ID:', providerId);
+        
+        // For now, we'll fetch all providers and find the specific one
+        // In a real implementation, you'd have an API endpoint to fetch a single provider by ID
+        const response = await logisticsAPI.getVerifiedProviders();
+        const providersList = response.results || response;
+        console.log('All providers:', providersList);
+        console.log('Looking for provider with ID:', providerId);
+        console.log('Provider IDs available:', providersList.map(p => p.id));
+        
+        const selectedProviderObj = providersList.find(p => p.id === providerId);
+        console.log('Found provider:', selectedProviderObj);
+        
+        if (selectedProviderObj) {
+          setSelectedProvider(selectedProviderObj);
+          setProviders([selectedProviderObj]); // Only show this one provider
+        } else {
+          console.error('Selected provider not found');
+          // Fallback: show all providers but mark the issue
+          setProviders(providersList);
+        }
+      } else {
+        // Only fetch all providers if buyer hasn't selected one (which shouldn't happen)
+        console.log('No logistics provider selected by buyer - fetching all providers');
+        const response = await logisticsAPI.getVerifiedProviders();
+        const providersList = response.results || response;
+        setProviders(providersList);
+      }
     } catch (error) {
       console.error('Error fetching providers:', error);
     }
@@ -42,8 +98,16 @@ const LogisticsRequestModal = ({ isOpen, onClose, activity, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedProvider) {
+    
+    // If buyer hasn't selected a provider, farmer must select one
+    if (!activity?.logistics_provider && !selectedProvider) {
       alert('Please select a logistics provider');
+      return;
+    }
+    
+    // If buyer has selected a provider, we should have a selectedProvider
+    if (activity?.logistics_provider && !selectedProvider) {
+      alert('Logistics provider information is missing. Please try again.');
       return;
     }
 
@@ -109,48 +173,54 @@ const LogisticsRequestModal = ({ isOpen, onClose, activity, onSuccess }) => {
           {/* Logistics Provider Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Logistics Provider *
+              {activity?.logistics_provider ? 'Logistics Provider (Buyer\'s Choice)' : 'Select Logistics Provider *'}
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
-              {providers.map((provider) => (
-                <div
-                  key={provider.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    selectedProvider?.id === provider.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setSelectedProvider(provider)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Truck className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <h4 className="font-medium text-gray-900">{provider.name}</h4>
-                        <p className="text-sm text-gray-600">{provider.description}</p>
+            
+            {activity?.logistics_provider ? (
+              // Show only the buyer's selected provider
+              <div className="border-2 border-blue-500 bg-blue-50 rounded-lg p-4">
+                {selectedProvider && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Truck className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <h4 className="font-medium text-gray-900">{selectedProvider.name}</h4>
+                          <p className="text-sm text-gray-600">{selectedProvider.description}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center space-x-1">
+                          <span className="text-yellow-500">★</span>
+                          <span className="text-sm font-medium">{selectedProvider.rating}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">ETB {selectedProvider.price_per_km}/km</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-yellow-500">★</span>
-                        <span className="text-sm font-medium">{provider.rating}</span>
+                    <div className="mt-2 text-xs text-gray-500">
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-3 h-3" />
+                        <span>{selectedProvider.contact_phone}</span>
                       </div>
-                      <p className="text-xs text-gray-500">ETB {provider.price_per_km}/km</p>
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-3 h-3" />
+                        <span>{selectedProvider.contact_email}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    <div className="flex items-center space-x-2">
-                      <Phone className="w-3 h-3" />
-                      <span>{provider.contact_phone}</span>
+                    <div className="mt-3 p-2 bg-blue-100 border border-blue-300 rounded">
+                      <p className="text-xs text-blue-800 font-medium">
+                        🔒 Selected by buyer - cannot be changed
+                      </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Mail className="w-3 h-3" />
-                      <span>{provider.contact_email}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              // This should never happen since buyer always selects logistics provider
+              <div className="text-center py-8 text-gray-500">
+                <p>No logistics provider selected by buyer</p>
+              </div>
+            )}
           </div>
 
           {/* Location Information */}
@@ -234,10 +304,10 @@ const LogisticsRequestModal = ({ isOpen, onClose, activity, onSuccess }) => {
             </button>
             <button
               type="submit"
-              disabled={loading || !selectedProvider}
+              disabled={loading || (!selectedProvider && !activity?.logistics_provider)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Sending Request...' : 'Send Request'}
+              {loading ? 'Sending Request...' : 'Send Request to Logistics'}
             </button>
           </div>
         </form>

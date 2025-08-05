@@ -146,7 +146,7 @@ const Checkout = () => {
       };
 
       // Call backend to create order (without payment initiation)
-      const result = await ordersAPI.createOrder(orderData);
+      const result = await ordersAPI.create(orderData);
       
       if (result.success && result.order_id) {
         // Generate unique transaction reference

@@ -49,6 +49,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Create a new order"""
+        print(f"Order creation request data: {request.data}")
         try:
             with transaction.atomic():
                 # Extract data from request
@@ -86,6 +87,16 @@ class OrderViewSet(viewsets.ModelViewSet):
                     'status': 'pending_payment'
                 }
                 
+                # Add logistics provider if provided
+                logistics_provider_id = request.data.get('logistics_provider')
+                if logistics_provider_id:
+                    from logistics.models import ServiceProvider
+                    try:
+                        logistics_provider = ServiceProvider.objects.get(id=logistics_provider_id)
+                        order_data['logistics_provider'] = logistics_provider
+                    except ServiceProvider.DoesNotExist:
+                        pass  # Continue without logistics provider if not found
+                
                 order = Order.objects.create(**order_data)
                 
                 # Create order items
@@ -104,11 +115,22 @@ class OrderViewSet(viewsets.ModelViewSet):
                 
                 # Create notification for farmers
                 for item in order.items.all():
+                    # Prepare notification metadata
+                    metadata = {
+                        'order_id': order.id,
+                        'amount': float(order.total_amount),
+                        'delivery_address': order.delivery_address,
+                        'product_name': item.product.name,
+                        'quantity': float(item.quantity),
+                        'logistics_provider': str(order.logistics_provider.id) if order.logistics_provider else None
+                    }
+                    
                     Notification.objects.create(
                         user=item.product.farmer,
-                        notification_type='order_status',
+                        notification_type='order_placed',
                         title='New Order Received',
-                        message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}'
+                        message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}',
+                        metadata=metadata
                     )
                 
                 return Response({
@@ -118,6 +140,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
+            print(f"Order creation error: {str(e)}")
             return Response(
                 {'error': str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
@@ -156,6 +179,16 @@ class OrderViewSet(viewsets.ModelViewSet):
                     'total_amount': 0
                 }
                 
+                # Add logistics provider if provided
+                logistics_provider_id = request.data.get('logistics_provider')
+                if logistics_provider_id:
+                    from logistics.models import ServiceProvider
+                    try:
+                        logistics_provider = ServiceProvider.objects.get(id=logistics_provider_id)
+                        order_data['logistics_provider'] = logistics_provider
+                    except ServiceProvider.DoesNotExist:
+                        pass  # Continue without logistics provider if not found
+                
                 order = Order.objects.create(**order_data)
                 total_amount = 0
                 
@@ -184,11 +217,22 @@ class OrderViewSet(viewsets.ModelViewSet):
                 
                 # Create notification for farmers
                 for item in order.items.all():
+                    # Prepare notification metadata
+                    metadata = {
+                        'order_id': order.id,
+                        'amount': float(order.total_amount),
+                        'delivery_address': order.delivery_address,
+                        'product_name': item.product.name,
+                        'quantity': float(item.quantity),
+                        'logistics_provider': str(order.logistics_provider.id) if order.logistics_provider else None
+                    }
+                    
                     Notification.objects.create(
                         user=item.product.farmer,
-                        notification_type='order_status',
+                        notification_type='order_placed',
                         title='New Order Received',
-                        message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}'
+                        message=f'You have received a new order for {item.quantity} {item.product.unit} of {item.product.name}',
+                        metadata=metadata
                     )
                 
                 return Response(
@@ -416,7 +460,10 @@ class OrderViewSet(viewsets.ModelViewSet):
                 'status': order.status,
                 'amount': float(order.total_amount),
                 'order_id': order.id,
-                'notification_type': 'order_status'
+                'notification_type': 'order_status',
+                'logistics_provider': str(order.logistics_provider.id) if order.logistics_provider else None,
+                'delivery_address': order.delivery_address,
+                'total_weight': sum(float(item.quantity) for item in order.items.filter(product__farmer=request.user))
             })
         
         # Add notification activities (include all notification types)
@@ -429,7 +476,10 @@ class OrderViewSet(viewsets.ModelViewSet):
                 'timestamp': notification.created_at,
                 'status': 'unread' if not notification.is_read else 'read',
                 'notification_id': notification.id,
-                'notification_type': notification.notification_type
+                'notification_type': notification.notification_type,
+                'logistics_provider': notification.metadata.get('logistics_provider') if notification.metadata else None,
+                'delivery_address': notification.metadata.get('delivery_address') if notification.metadata else None,
+                'total_weight': notification.metadata.get('quantity') if notification.metadata else None
             })
         
         # Sort by timestamp (most recent first)

@@ -145,14 +145,31 @@ export const cartAPI = {
 export const ordersAPI = {
   getAll: () => apiCall('/orders/orders/'),
   getById: (id) => apiCall(`/orders/orders/${id}/`),
-  create: (data) => apiCall('/orders/orders/', 'POST', data),
-  update: (id, data) => apiCall(`/orders/orders/${id}/`, 'PUT', data),
-  delete: (id) => apiCall(`/orders/orders/${id}/`, 'DELETE'),
+  create: (data) => apiCall('/orders/orders/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => apiCall(`/orders/orders/${id}/`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => apiCall(`/orders/orders/${id}/`, {
+    method: 'DELETE',
+  }),
   getFarmerOrders: () => apiCall('/orders/orders/farmer-orders/'),
   getRecentActivities: () => apiCall('/orders/debug/recent-activities/'),
-  createFromCart: (data) => apiCall('/orders/orders/create-from-cart/', 'POST', data),
-  updateStatus: (id, data) => apiCall(`/orders/orders/${id}/update-status/`, 'POST', data),
-  createWithPayment: (data) => apiCall('/orders/orders/create-with-payment/', 'POST', data),
+  createFromCart: (data) => apiCall('/orders/orders/create-from-cart/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updateStatus: (id, data) => apiCall(`/orders/orders/${id}/update-status/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  createWithPayment: (data) => apiCall('/orders/orders/create-with-payment/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   myOrders: () => apiCall('/orders/orders/my-orders/'),
 };
 
@@ -186,8 +203,12 @@ export const advisoryAPI = {
 export const notificationsAPI = {
   getAll: () => apiCall('/orders/notifications/'),
   getById: (id) => apiCall(`/orders/notifications/${id}/`),
-  markAsRead: (id) => apiCall(`/orders/notifications/${id}/mark_read/`, 'PATCH'),
-  markAllAsRead: () => apiCall('/orders/notifications/mark_all_read/', 'POST'),
+  markAsRead: (id) => apiCall(`/orders/notifications/${id}/mark_read/`, {
+    method: 'PATCH',
+  }),
+  markAllAsRead: () => apiCall('/orders/notifications/mark_all_read/', {
+    method: 'POST',
+  }),
   getUnreadCount: () => apiCall('/orders/notifications/unread_count/'),
 };
 
@@ -347,28 +368,85 @@ export const logisticsAPI = {
   // Logistics Requests
   getRequests: () => apiCall('/logistics/requests/'),
   getRequestById: (id) => apiCall(`/logistics/requests/${id}/`),
-  createRequest: (data) => apiCall('/logistics/requests/', 'POST', data),
-  updateRequest: (id, data) => apiCall(`/logistics/requests/${id}/`, 'PUT', data),
-  deleteRequest: (id) => apiCall(`/logistics/requests/${id}/`, 'DELETE'),
+  createRequest: (data) => apiCall('/logistics/requests/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updateRequest: (id, data) => apiCall(`/logistics/requests/${id}/`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  deleteRequest: (id) => apiCall(`/logistics/requests/${id}/`, {
+    method: 'DELETE',
+  }),
   
   // Request Actions
-  acceptRequest: (id) => apiCall(`/logistics/requests/${id}/accept_request/`, 'POST'),
-  rejectRequest: (id, reason) => apiCall(`/logistics/requests/${id}/reject_request/`, 'POST', { reason }),
-  completeRequest: (id) => apiCall(`/logistics/requests/${id}/complete_request/`, 'POST'),
+  acceptRequest: (id) => apiCall(`/logistics/requests/${id}/accept_request/`, {
+    method: 'POST',
+  }),
+  rejectRequest: (id, reason) => apiCall(`/logistics/requests/${id}/reject_request/`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  }),
+  completeRequest: (id) => apiCall(`/logistics/requests/${id}/complete_request/`, {
+    method: 'POST',
+  }),
   
   // User-specific requests
   getFarmerRequests: () => apiCall('/logistics/requests/farmer-requests/'),
   getProviderRequests: () => apiCall('/logistics/requests/provider-requests/'),
   
+  // Logistics Orders
+  getOrders: () => apiCall('/logistics/orders/'),
+  getOrderById: (id) => apiCall(`/logistics/orders/${id}/`),
+  createOrder: (data) => apiCall('/logistics/orders/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updateOrder: (id, data) => apiCall(`/logistics/orders/${id}/`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  updateOrderStatus: (id, statusData) => apiCall(`/logistics/orders/${id}/update_status/`, {
+    method: 'POST',
+    body: JSON.stringify(statusData),
+  }),
+  deleteOrder: (id) => apiCall(`/logistics/orders/${id}/`, {
+    method: 'DELETE',
+  }),
+  
+  // Order-specific endpoints
+  getStatusCounts: () => apiCall('/logistics/orders/status_counts/'),
+  getRecentOrders: () => apiCall('/logistics/orders/recent_orders/'),
+  getPendingOrders: () => apiCall('/logistics/orders/pending_orders/'),
+  getActiveOrders: () => apiCall('/logistics/orders/active_orders/'),
+  
   // Cost Estimates
-  getCostEstimate: (data) => apiCall('/logistics/estimates/calculate/', 'POST', data),
+  getCostEstimate: (data) => apiCall('/logistics/estimates/calculate/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   
   // Deliveries
   getDeliveries: () => apiCall('/logistics/deliveries/'),
   getDeliveryById: (id) => apiCall(`/logistics/deliveries/${id}/`),
-  updateDeliveryStatus: (id, data) => apiCall(`/logistics/deliveries/${id}/update_status/`, 'POST', data),
+  updateDeliveryStatus: (id, data) => apiCall(`/logistics/deliveries/${id}/update_status/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   
   // Analytics
   getDashboard: () => apiCall('/logistics/analytics/dashboard/'),
-  getPerformanceMetrics: () => apiCall('/logistics/analytics/performance-metrics/'),
+  getPerformanceMetrics: () => apiCall('/logistics/analytics/performance_metrics/'),
+  
+  // Notifications
+  getNotifications: () => apiCall('/logistics/notifications/'),
+  getNotificationById: (id) => apiCall(`/logistics/notifications/${id}/`),
+  markNotificationAsRead: (id) => apiCall(`/logistics/notifications/${id}/mark_as_read/`, {
+    method: 'POST',
+  }),
+  markAllNotificationsAsRead: () => apiCall('/logistics/notifications/mark_all_as_read/', {
+    method: 'POST',
+  }),
+  getUnreadCount: () => apiCall('/logistics/notifications/unread_count/'),
 }; 

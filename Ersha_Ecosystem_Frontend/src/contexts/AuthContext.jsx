@@ -62,6 +62,9 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       console.log('AuthContext: Attempting login for:', email);
+      console.log('AuthContext: API base URL:', import.meta.env.VITE_API_BASE_URL);
+      console.log('AuthContext: Full API URL:', `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/auth/login/`);
+      
       const response = await authAPI.login(email, password);
       console.log('AuthContext: API response:', response);
       
@@ -76,6 +79,8 @@ export const AuthProvider = ({ children }) => {
       return { data: response, error: null };
     } catch (error) {
       console.log('AuthContext: Login error:', error);
+      console.log('AuthContext: Error message:', error.message);
+      console.log('AuthContext: Error stack:', error.stack);
       return { data: null, error: error.message };
     }
   };
