@@ -40,6 +40,7 @@ import Weather from '../Weather/EnhancedWeather';
 import Advisory from '../Advisory/Advisory';
 import News from '../News/News';
 import FarmerNotifications from './FarmerNotifications';
+import LogisticsRequestModal from './LogisticsRequestModal';
 
 const UserDashboard = () => {
   const { user, profile, signOut } = useAuth();
@@ -52,6 +53,10 @@ const UserDashboard = () => {
   const [activeOrders, setActiveOrders] = useState({ total: 0, pending: 0 });
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
+  const [logisticsModalOpen, setLogisticsModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
 
   // Determine user type from profile
   const userType = profile?.user_type || user?.user_type || 'farmer';
@@ -88,11 +93,13 @@ const UserDashboard = () => {
   useEffect(() => {
     fetchActiveOrders();
     fetchNotifications();
+    fetchRecentActivities(); // Fetch recent activities
     
     // Set up polling for real-time updates
     const interval = setInterval(() => {
       fetchActiveOrders();
       fetchNotifications();
+      fetchRecentActivities(); // Poll recent activities
     }, 30000); // Poll every 30 seconds
     
     return () => clearInterval(interval);
@@ -106,7 +113,8 @@ const UserDashboard = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      const response = await fetch('/api/orders/orders/farmer_orders/', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL}/orders/farmer-orders/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -134,7 +142,8 @@ const UserDashboard = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      const response = await fetch('/api/orders/notifications/', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL}/orders/notifications/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -152,6 +161,69 @@ const UserDashboard = () => {
     }
   };
 
+  // Fetch recent activities
+  const fetchRecentActivities = async () => {
+    if (userType !== 'farmer') {
+      console.log('Not a farmer, skipping recent activities fetch');
+      return;
+    }
+
+    try {
+      setActivitiesLoading(true);
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No access token found');
+        return;
+      }
+
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const url = `${API_BASE_URL}/orders/debug/recent-activities/`;
+      console.log('Fetching recent activities from:', url);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        cache: 'no-store'  // Alternative way to prevent caching
+      });
+
+      console.log('Recent activities response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        // Try to parse as JSON if possible
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error('Error details:', errorData);
+        } catch (e) {
+          console.error('Could not parse error response as JSON');
+        }
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Recent activities data:', data);
+      
+      // Ensure we have activities in the response
+      if (data && Array.isArray(data.activities)) {
+        console.log(`Setting ${data.activities.length} activities`);
+        setRecentActivities(data.activities);
+      } else {
+        console.log('No activities array in response, setting empty array');
+        setRecentActivities([]);
+      }
+    } catch (error) {
+      console.error('Error in fetchRecentActivities:', error);
+      // Set empty array on error to clear any stale data
+      setRecentActivities([]);
+    } finally {
+      setActivitiesLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -159,6 +231,16 @@ const UserDashboard = () => {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleLogisticsRequest = (activity) => {
+    setSelectedActivity(activity);
+    setLogisticsModalOpen(true);
+  };
+
+  const handleLogisticsSuccess = () => {
+    // Refresh recent activities after successful logistics request
+    fetchRecentActivities();
   };
 
   const getVerificationIcon = (status) => {
@@ -525,6 +607,47 @@ const UserDashboard = () => {
                   </div>
                 ))}
               </div>
+              
+              {/* Recent Activities Section */}
+              <div className="flex items-center justify-between mb-4 mt-6">
+                <h2 className="text-xl font-bold text-gray-900">{t('dashboard.recentActivity')}</h2>
+                <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                  {t('dashboard.viewAll')}
+                </button>
+              </div>
+              <div className="space-y-4">
+                {activitiesLoading ? (
+                  <p className="text-center py-8 text-gray-500">Loading activities...</p>
+                ) : recentActivities.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500">No recent activities yet.</p>
+                ) : (
+                  recentActivities.slice(0, 5).map((activity) => (
+                    <div key={activity.id} className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                      <div className="p-2 bg-emerald-50 rounded-lg mr-3">
+                        <Package className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {activity.description} • {new Date(activity.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {activity.type === 'order' && userType === 'farmer' && (
+                          <button
+                            onClick={() => handleLogisticsRequest(activity)}
+                            className="flex items-center space-x-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                          >
+                            <Truck className="w-3 h-3" />
+                            <span>Call Logistics</span>
+                          </button>
+                        )}
+                        <span className="text-xs font-medium text-emerald-600">{t('common.view')}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </motion.div>
           </div>
         );
@@ -685,6 +808,14 @@ const UserDashboard = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+      
+      {/* Logistics Request Modal */}
+      <LogisticsRequestModal
+        isOpen={logisticsModalOpen}
+        onClose={() => setLogisticsModalOpen(false)}
+        activity={selectedActivity}
+        onSuccess={handleLogisticsSuccess}
+      />
     </div>
   );
 };

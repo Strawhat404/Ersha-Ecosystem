@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import (
     ServiceProvider, Delivery, DeliveryTracking, 
-    CostEstimate, LogisticsTransaction, LogisticsAnalytics
+    CostEstimate, LogisticsTransaction, LogisticsAnalytics,
+    LogisticsRequest
 )
 from django.utils import timezone
 
@@ -138,3 +139,28 @@ class LogisticsDashboardSerializer(serializers.Serializer):
     avg_delivery_cost = serializers.DecimalField(max_digits=10, decimal_places=2)
     top_providers = ServiceProviderSerializer(many=True)
     recent_deliveries = DeliverySerializer(many=True) 
+
+class LogisticsRequestSerializer(serializers.ModelSerializer):
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    farmer_email = serializers.CharField(source='farmer.email', read_only=True)
+    provider_name = serializers.CharField(source='provider.name', read_only=True)
+    order_id = serializers.CharField(source='order.id', read_only=True)
+    
+    class Meta:
+        model = LogisticsRequest
+        fields = '__all__'
+        read_only_fields = ['farmer', 'status', 'requested_at', 'accepted_at', 'completed_at']
+
+class LogisticsRequestCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogisticsRequest
+        fields = [
+            'order', 'provider', 'pickup_location', 'pickup_latitude', 'pickup_longitude',
+            'delivery_location', 'delivery_latitude', 'delivery_longitude',
+            'product_details', 'total_weight', 'special_instructions'
+        ]
+
+class LogisticsRequestUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogisticsRequest
+        fields = ['status', 'provider_notes', 'rejection_reason', 'actual_cost'] 

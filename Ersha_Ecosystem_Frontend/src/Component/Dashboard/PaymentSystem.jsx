@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PropTypes from 'prop-types';
 import { 
   CreditCard, 
   Smartphone, 
@@ -14,7 +15,37 @@ import {
   Wallet
 } from 'lucide-react';
 
-const PaymentSystem = ({ userType = "farmer" }) => {
+// Check if user is in specific group/role with enhanced error handling
+const checkInGroup = (userType, allowedTypes = []) => {
+  try {
+    // Ensure userType is a string and allowedTypes is an array
+    const userTypeStr = String(userType || '').toLowerCase();
+    const allowedTypesArr = Array.isArray(allowedTypes) ? allowedTypes : [];
+    
+    // Debug log in development
+    if (import.meta.env.DEV) {
+      console.log('checkInGroup:', { userType: userTypeStr, allowedTypes: allowedTypesArr });
+    }
+    
+    return allowedTypesArr.includes(userTypeStr);
+  } catch (error) {
+    console.error('Error in checkInGroup:', error);
+    return false; // Default to most restrictive access on error
+  }
+};
+
+const PaymentSystem = ({ userType: propUserType }) => {
+  // Default to 'farmer' if prop is not provided or invalid
+  const userType = ['farmer', 'buyer', 'admin', 'logistics', 'expert'].includes(propUserType) 
+    ? propUserType 
+    : 'farmer';
+    
+  // Debug log in development
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('PaymentSystem mounted with userType:', userType);
+    }
+  }, [userType]);
   const [activeTab, setActiveTab] = useState("overview");
   const [transactions, setTransactions] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -594,6 +625,14 @@ const PaymentSystem = ({ userType = "farmer" }) => {
       </AnimatePresence>
     </div>
   );
+};
+
+PaymentSystem.propTypes = {
+  userType: PropTypes.oneOf(['farmer', 'buyer', 'admin', 'logistics', 'expert'])
+};
+
+PaymentSystem.defaultProps = {
+  userType: 'farmer'
 };
 
 export default PaymentSystem; 

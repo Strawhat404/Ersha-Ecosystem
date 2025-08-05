@@ -339,11 +339,15 @@ body {
 
 /* Card Styles */
 .card {
-  background: white;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
   transition: all 0.3s ease;
+}
+
+/* Override for gradient cards */
+.card.bg-gradient-to-br {
+  background: var(--gradient-bg, white) !important;
 }
 
 .card:hover {

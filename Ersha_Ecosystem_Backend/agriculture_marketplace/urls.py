@@ -70,9 +70,8 @@ urlpatterns = [
         # Marketplace (includes both products and cart)
         path('', include('marketplace.urls')),
         
-        # Orders
+        # Orders and Notifications
         path('orders/', include('orders.urls')),
-        path('notifications/', include('orders.urls')),
         
         # Advisory
         path('advisory/', include('advisory.urls')),
