@@ -31,7 +31,10 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode !== 'production',
   },
   define: {
-    'process.env': {},
+    'process.env': {
+      PORT: process.env.PORT || '3000',
+      VITE_WS_URL: process.env.VITE_WS_URL || 'ws://localhost:8000',
+    },
     'import.meta.env.VITE_PORT': JSON.stringify(process.env.PORT || '3000'),
     'import.meta.env.VITE_WS_URL': JSON.stringify(process.env.VITE_WS_URL || 'ws://localhost:8000'),
   },
