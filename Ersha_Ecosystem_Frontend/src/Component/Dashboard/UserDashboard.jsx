@@ -409,6 +409,7 @@ const UserDashboard = () => {
                 {/* Verification Status - Always show when there's a status */}
                 {verificationStatus && verificationStatus !== 'not_verified' ? (
                   <div 
+                    data-tour="verification"
                     className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition-colors"
                     onClick={() => verificationStatus !== 'verified' && navigate('/verification')}
                     title={getVerificationLabel(verificationStatus)}
@@ -420,6 +421,7 @@ const UserDashboard = () => {
                   </div>
                 ) : (
                   <div 
+                    data-tour="verification"
                     className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg cursor-pointer transition-colors"
                     onClick={() => navigate('/verification')}
                     title={t('dashboard.verification.getVerified')}
@@ -564,6 +566,7 @@ const UserDashboard = () => {
                   .map((item) => (
                     <motion.button
                       key={item.id}
+                      data-tour={item.id === 'marketplace' ? 'marketplace' : item.id === 'weather' ? 'weather' : item.id === 'advisory' ? 'advisory' : null}
                       onClick={() => handleViewChange(item.id)}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
@@ -636,6 +639,7 @@ const UserDashboard = () => {
                       <div className="flex items-center space-x-2">
                         {activity.type === 'order' && userType === 'farmer' && (
                           <button
+                            data-tour="orders"
                             onClick={() => handleLogisticsRequest(activity)}
                             className="flex items-center space-x-1 text-xs font-medium text-blue-600 hover:text-blue-700"
                           >
@@ -694,6 +698,7 @@ const UserDashboard = () => {
                 {dashboardItems.map((item) => (
                   <motion.button
                     key={item.id}
+                    data-tour={item.id === 'marketplace' ? 'marketplace' : item.id === 'weather' ? 'weather' : item.id === 'advisory' ? 'advisory' : null}
                     onClick={() => handleViewChange(item.id)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
