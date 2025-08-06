@@ -245,89 +245,93 @@ const LogisticsTracker = ({ userType = "farmer" }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Active Deliveries */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-blue-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 mb-1">Active Deliveries</p>
-              <p className="text-2xl font-bold">{deliveries.filter(d => d.status === 'in_transit').length}</p>
+              <p className="font-semibold mb-1 text-blue-700">Active Deliveries</p>
+              <p className="text-2xl font-extrabold text-blue-900">{deliveries.filter(d => d.status === 'in_transit').length}</p>
             </div>
             <motion.div
               animate={{ x: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shadow"
             >
-              <Truck className="w-5 h-5 text-white" />
+              <Truck className="w-5 h-5 text-blue-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* Delivered */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-green-500 to-green-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-green-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 mb-1">Delivered</p>
-              <p className="text-2xl font-bold">{deliveries.filter(d => d.status === 'delivered').length}</p>
+              <p className="font-semibold mb-1 text-green-700">Delivered</p>
+              <p className="text-2xl font-extrabold text-green-900">{deliveries.filter(d => d.status === 'delivered').length}</p>
             </div>
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow"
             >
-              <CheckCircle className="w-5 h-5 text-white" />
+              <CheckCircle className="w-5 h-5 text-green-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* Pending */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-orange-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-100 mb-1">Pending</p>
-              <p className="text-2xl font-bold">{deliveries.filter(d => d.status === 'pending').length}</p>
+              <p className="font-semibold mb-1 text-orange-700">Pending</p>
+              <p className="text-2xl font-extrabold text-orange-900">{deliveries.filter(d => d.status === 'pending').length}</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shadow"
             >
-              <AlertCircle className="w-5 h-5 text-white" />
+              <AlertCircle className="w-5 h-5 text-orange-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* Avg Cost */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-purple-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 mb-1">Avg Cost</p>
-              <p className="text-2xl font-bold">ETB {Math.round(deliveries.reduce((acc, d) => acc + d.cost, 0) / deliveries.length)}</p>
+              <p className="font-semibold mb-1 text-purple-700">Avg Cost</p>
+              <p className="text-2xl font-extrabold text-purple-900">ETB {Math.round(deliveries.reduce((acc, d) => acc + d.cost, 0) / deliveries.length)}</p>
             </div>
             <motion.div
               animate={{ y: [0, -3, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shadow"
             >
-              <TrendingUp className="w-5 h-5 text-white" />
+              <TrendingUp className="w-5 h-5 text-purple-600" />
             </motion.div>
           </div>
         </motion.div>
