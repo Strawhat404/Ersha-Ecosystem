@@ -248,24 +248,33 @@
       "cards": {
         "currentWeather": {
           "title": "Current Weather",
-          "description": "Real-time weather conditions for your area"
+          "description": "Real-time weather conditions for your area",
+          "condition": "Condition"
         },
         "forecast": {
           "title": "5-Day Forecast",
-          "description": "Extended weather predictions for planning"
+          "description": "Extended weather predictions for planning",
+          "outlook": "Outlook"
         },
         "agricultural": {
           "title": "Agricultural Index",
           "description": "Weather-based farming recommendations"
+        },
+        "farmingTips":{
+          "title": "Farming Tips",
+          "description": "Weather-based farming recommendations",
+          "recommendations": "Recommendations",
+          "recommendation": "Recommendation"
         }
       }
     },
     "advisoryPreview": {
+      "agriculturalAdvisory": "Agricultural Advisory",
       "title": "Expert",
       "agriculturalGuidance": "Agricultural Guidance",
       "description": "Access expert advice, courses, and resources to improve your farming practices.",
       "viewAdvisory": "View Advisory Section",
-      "features": {
+      "previewFeatures": {
         "expertAdvice": {
           "title": "Expert Advice",
           "description": "Connect with agricultural experts for personalized guidance"
@@ -473,9 +482,66 @@
     "error": "Error loading news"
   },
   "features": {
+    "whyErshaEcosystem": "Why Ersha Ecosystem?",
+    "empoweringEthiopian": "Empowering Ethiopian",
+    "agricultureTogether": "Agriculture Together",
+    "discoverPowerfulFeatures": "Discover powerful features designed to help farmers and merchants connect, trade, and grow their agricultural businesses.",
     "title": "Why Choose Ersha Ecosystem?",
     "subtitle": "Comprehensive Agricultural Solutions",
     "description": "Our platform provides everything you need to succeed in modern agriculture",
+    "directMarketplace": {
+      "title": "Direct Marketplace",
+      "description": "Connect directly with buyers and sellers without intermediaries. Our platform eliminates middlemen, ensuring fair prices and transparent transactions.",
+      "benefits": {
+        "zeroCommission": "Zero commission fees",
+        "directCommunication": "Direct buyer-seller communication",
+        "qualityAssurance": "Quality assurance system",
+        "fairPricing": "Fair and transparent pricing",
+        "directConnection": "Direct farm-to-consumer connection",
+        "secureTransactions": "Secure payment processing",
+        "realTimePricing": "Real-time market pricing"
+      }
+    },
+    "integratedPayments": {
+      "title": "Integrated Payments",
+      "description": "Secure and convenient payment solutions with multiple options. From mobile money to bank transfers, we support all major payment methods.",
+      "benefits": {
+        "multipleOptions": "Multiple payment options",
+        "instantTransactions": "Instant transaction processing",
+        "lowFees": "Low transaction fees",
+        "fraudProtection": "Fraud protection and security"
+      }
+    },
+    "financialGrowth": {
+      "title": "Financial Growth",
+      "description": "Build your credit score and access financial services. Track your sales, manage your business, and grow your agricultural enterprise.",
+      "benefits": {
+        "creditScore": "Build credit score",
+        "loanEligibility": "Loan eligibility tracking",
+        "salesAnalytics": "Sales analytics and insights",
+        "revenueTracking": "Revenue tracking and reporting"
+      }
+    },
+    "smartAnalytics": {
+      "title": "Smart Analytics",
+      "description": "AI-powered insights and market analysis. Get data-driven recommendations to optimize your farming and business decisions.",
+      "benefits": {
+        "marketTrends": "Market trend analysis",
+        "pricePredictions": "Price predictions",
+        "performanceMetrics": "Performance metrics",
+        "growthInsights": "Growth insights and recommendations"
+      }
+    },
+    "securityTrust": {
+      "title": "Security & Trust",
+      "description": "Your security is our priority. We use advanced encryption and verification systems to protect your data and transactions.",
+      "benefits": {
+        "identityVerification": "Identity verification system",
+        "secureTransactions": "Secure transaction processing",
+        "disputeResolution": "Dispute resolution support",
+        "insuranceCoverage": "Insurance coverage options"
+      }
+    },
     "marketplace": {
       "title": "Digital Marketplace",
       "description": "Connect directly with buyers and sellers in our secure agricultural marketplace.",
@@ -536,6 +602,11 @@
         "voiceCommands": "Voice commands"
       }
     },
+    "trustedBy": "Trusted by",
+    "thousands": "Thousands",
+    "joinGrowingCommunity": "Join our growing community of farmers and merchants",
+    "startJourneyToday": "Start Your Journey Today",
+    "joinOverFarmers": "Join over 10,000+ farmers and merchants",
     "stats": {
       "uptimeGuarantee": "Uptime Guarantee",
       "customerSupport": "Customer Support",

@@ -442,13 +442,6 @@
       "views": "ዕይታዎች",
       "duration": "ጊዜ"
     },
-    "resources": {
-      "title": "መረጃዎች",
-      "resourceType": "የመረጃ አይነት",
-      "downloads": "የሚወርዱ",
-      "fileSize": "የፋይል መጠን",
-      "download": "ያውርዱ"
-    },
     "booking": {
       "title": "ምክር ያዙ",
       "description": "ከባለሙያ ጋር ምክር ያዙ",
