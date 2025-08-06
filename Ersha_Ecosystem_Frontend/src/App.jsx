@@ -51,6 +51,7 @@ import LogisticsDashboard from './Component/Dashboard/LogisticsDashboard'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
 import { LocaleProvider } from './contexts/LocaleContext'
+import { OnboardingProvider } from './contexts/OnboardingContext'
 import Login from './Component/Auth/Login'
 import Register from './Component/Auth/Register'
 import ForgotPassword from './Component/Auth/ForgotPassword'
@@ -58,6 +59,12 @@ import UserProfile from './Component/Auth/UserProfile'
 import FaydaIntegration from './Component/Auth/FaydaIntegration'
 import Verification from './Component/Auth/Verification'
 import Callback from './Component/Auth/Callback'
+
+// Onboarding and Accessibility Components
+import OnboardingTour from './components/OnboardingTour'
+import AccessibilityPanel from './components/AccessibilityPanel'
+import VoiceCommandRecognition from './components/VoiceCommandRecognition'
+import SimplifiedNavigation from './components/SimplifiedNavigation'
 
 // Cart and Checkout Components
 import Cart from './Component/Marketplace/Cart'
@@ -1360,6 +1367,17 @@ function AppContent() {
           />
         )}
       </AnimatePresence>
+      {/* Onboarding Tour */}
+      <OnboardingTour />
+      
+      {/* Accessibility Panel */}
+      <AccessibilityPanel />
+      
+      {/* Voice Command Recognition */}
+      <VoiceCommandRecognition />
+      
+      {/* Simplified Navigation */}
+      <SimplifiedNavigation />
     </div>
   );
 }
@@ -1370,7 +1388,9 @@ function App() {
       <LocaleProvider>
         <AuthProvider>
           <CartProvider>
-            <AppContent />
+            <OnboardingProvider>
+              <AppContent />
+            </OnboardingProvider>
           </CartProvider>
         </AuthProvider>
       </LocaleProvider>
@@ -1378,4 +1398,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
