@@ -240,21 +240,21 @@ const PaymentSystem = ({ userType: propUserType }) => {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-teal-500 to-teal-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-teal-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/80 mb-1">Total Balance</p>
-              <p className="text-3xl font-bold">ETB {balance.toLocaleString()}</p>
-              <p className="text-white/90 text-sm">Available Funds</p>
+              <p className="font-semibold mb-1 text-teal-700">Total Balance</p>
+              <p className="text-3xl font-extrabold text-teal-900">ETB {balance.toLocaleString()}</p>
+              <p className="text-teal-600 text-sm font-medium">Available Funds</p>
             </div>
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center shadow"
             >
-              <Wallet className="w-8 h-8" />
+              <Wallet className="w-8 h-8 text-teal-600" />
             </motion.div>
           </div>
         </motion.div>
@@ -263,21 +263,21 @@ const PaymentSystem = ({ userType: propUserType }) => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-orange-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/80 mb-1">Monthly Income</p>
-              <p className="text-3xl font-bold">ETB {(balance + pendingPayouts).toLocaleString()}</p>
-              <p className="text-white/90 text-sm">This Month</p>
+              <p className="font-semibold mb-1 text-orange-700">Monthly Income</p>
+              <p className="text-3xl font-extrabold text-orange-900">ETB {(balance + pendingPayouts).toLocaleString()}</p>
+              <p className="text-orange-600 text-sm font-medium">This Month</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
-              className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center shadow"
             >
-              <TrendingUp className="w-8 h-8" />
+              <TrendingUp className="w-8 h-8 text-orange-600" />
             </motion.div>
           </div>
         </motion.div>
@@ -286,21 +286,21 @@ const PaymentSystem = ({ userType: propUserType }) => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-purple-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/80 mb-1">Pending Payments</p>
-              <p className="text-3xl font-bold">ETB {pendingPayouts.toLocaleString()}</p>
-              <p className="text-white/90 text-sm">Awaiting Processing</p>
+              <p className="font-semibold mb-1 text-purple-700">Pending Payments</p>
+              <p className="text-3xl font-extrabold text-purple-900">ETB {pendingPayouts.toLocaleString()}</p>
+              <p className="text-purple-600 text-sm font-medium">Awaiting Processing</p>
             </div>
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center shadow"
             >
-              <Clock className="w-8 h-8" />
+              <Clock className="w-8 h-8 text-purple-600" />
             </motion.div>
           </div>
         </motion.div>

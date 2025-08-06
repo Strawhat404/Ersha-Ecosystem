@@ -409,94 +409,99 @@ const AnalyticsDashboard = ({ userType = "farmer" }) => {
       </motion.div>
 
       {/* Key Metrics Cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Total Revenue Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-green-500 to-green-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-green-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium mb-1">Total Revenue</p>
-              <p className="text-2xl font-bold text-white">ETB {salesData.totalRevenue?.toLocaleString()}</p>
-              <p className="text-white/90 text-sm">↗️ +{salesData.revenueGrowth}%</p>
+              <p className="font-semibold mb-1 text-green-700">Total Revenue</p>
+              <p className="text-3xl font-extrabold text-green-900">ETB {salesData.totalRevenue?.toLocaleString()}</p>
+              <p className="text-green-600 text-sm font-medium">↗️ +{salesData.revenueGrowth}%</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center shadow"
             >
-              <TrendingUp className="w-6 h-6" />
+              <TrendingUp className="w-7 h-7 text-green-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* Total Sales Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-blue-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium mb-1">Total Sales</p>
-              <p className="text-2xl font-bold text-white">{salesData.totalSales}</p>
-              <p className="text-white/90 text-sm">↗️ +{salesData.salesGrowth}%</p>
+              <p className="font-semibold mb-1 text-blue-700">Total Sales</p>
+              <p className="text-3xl font-extrabold text-blue-900">{salesData.totalSales}</p>
+              <p className="text-blue-600 text-sm font-medium">↗️ +{salesData.salesGrowth}%</p>
             </div>
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow"
             >
-              <DollarSign className="w-6 h-6" />
+              <DollarSign className="w-7 h-7 text-blue-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* New Orders Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-purple-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium mb-1">New Orders</p>
-              <p className="text-2xl font-bold text-white">{salesData.newOrders}</p>
-              <p className="text-white/90 text-sm">🔥 +{salesData.orderGrowth}%</p>
+              <p className="font-semibold mb-1 text-purple-700">New Orders</p>
+              <p className="text-3xl font-extrabold text-purple-900">{salesData.newOrders}</p>
+              <p className="text-purple-600 text-sm font-medium">🔥 +{salesData.orderGrowth}%</p>
             </div>
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shadow"
             >
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="w-7 h-7 text-purple-600" />
             </motion.div>
           </div>
         </motion.div>
 
+        {/* Credit Score Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          whileHover={{ scale: 1.02 }}
-          className="card bg-gradient-to-br from-green-500 to-green-600 text-white"
+          whileHover={{ scale: 1.03 }}
+          className="card bg-white border border-emerald-600 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium mb-1">Credit Score</p>
-              <p className="text-2xl font-bold text-white">{creditScore}</p>
-              <p className="text-white/90 text-sm">{getCreditScoreLabel(creditScore)}</p>
+              <p className="font-semibold mb-1 text-emerald-700">Credit Score</p>
+              <p className="text-3xl font-extrabold text-emerald-900">{creditScore}</p>
+              <p className="text-emerald-600 text-sm font-medium">{getCreditScoreLabel(creditScore)}</p>
             </div>
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center"
+              className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center shadow"
             >
-              <Users className="w-6 h-6" />
+              <Users className="w-7 h-7 text-emerald-600" />
             </motion.div>
           </div>
         </motion.div>
