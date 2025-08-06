@@ -1,14 +1,14 @@
+import 'package:ersha_ecosystem_mobile/src/features/marketplace/provider/marketplace_provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// THEME AND AUTH IMPORTS
 import 'package:ersha_ecosystem_mobile/src/app/theme/app_theme.dart';
 import 'package:ersha_ecosystem_mobile/src/features/auth/presentation/login_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/auth/presentation/register_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/auth/provider/auth_provider.dart';
 
-// --- THIS IS THE CRUCIAL IMPORT THAT WAS MISSING ---
-// It tells this file where to find the 'MarketplaceScreen' class.
 import 'package:ersha_ecosystem_mobile/src/features/marketplace/presentation/marketplace_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/weather/presentation/weather_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/features/advisory/presentation/advisory_screen.dart';
@@ -19,7 +19,9 @@ import 'package:ersha_ecosystem_mobile/src/features/logistics_tracking/logistics
 import 'package:ersha_ecosystem_mobile/src/features/profile/presentation/profile_screen.dart';
 import 'package:ersha_ecosystem_mobile/src/common/main_scaffold.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   runApp(const AgroGebeyaApp());
 }
 
@@ -28,8 +30,11 @@ class AgroGebeyaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context) => MarketplaceProvider()),
+      ],
       child: MaterialApp(
         title: 'AgroGebeya',
         debugShowCheckedModeBanner: false,
