@@ -1,4 +1,4 @@
-# 🌾 Ersha-Ecosystem a System of Urban-Farmers 
+# Ersha-Ecosystem a System of Urban-Farmers 
 
 ### Contributors:
 - Yoseph Tesfaye *(Full-Stack Developer)*
@@ -7,12 +7,12 @@
 
 ---
 
-## 📌 Project Synopsis
+## Project Synopsis
 
-### 🧠 Problem Statement:
+###  Problem Statement:
 In Ethiopia and across Africa, millions of modern farmers lack direct access to markets, real-time weather data, agricultural guidance, and financial services. They often rely on middlemen, which leads to low profit margins and limited growth. There's also a significant gap in logistics, sales tracking, and credit access for farmers.
 
-### 💡 Planned Solution:
+### Planned Solution:
 Ersha-Ecosystem is a full-featured digital ecosystem designed to **empower farmers and streamline agriculture-to-market connections** through a centralized platform. It includes:
 
 - A marketplace where farmers can list crops and merchants can purchase directly.
@@ -22,7 +22,7 @@ Ersha-Ecosystem is a full-featured digital ecosystem designed to **empower farme
 - Integration with logistics companies for product transportation.
 - A digital payment gateway for secure transactions.
 
-### 🎯 Expected Outcome:
+###  Expected Outcome:
 Ersha-Ecosystem aims to:
 - Boost farmers' profits by cutting out unneccesary hustles and midlemen resources.
 - Digitize the agricultural value chain for traceability and scalability.
@@ -31,7 +31,7 @@ Ersha-Ecosystem aims to:
 - Government agencies and NGOs will have access to real-time agricultural data. which helps in planning resource allocation,monitor crop trends,implement region specific intervention
 - Reduce crop failures atleast by 20%
 
-### 🧩 Fayda's Role:
+###  Fayda's Role:
 Ersha-Ecosystem will integrate with Fayda's **National Digital ID system** to:
 - **Verify farmer identities eKyc** during registration, reducing fraud.
 - **Ensure secure transactions** between verified users.
@@ -40,7 +40,7 @@ Ersha-Ecosystem will integrate with Fayda's **National Digital ID system** to:
 
 ---
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 Ersha-Ecosystem/
@@ -64,9 +64,9 @@ Ersha-Ecosystem/
 └── README.md                   # This file
 ```
 
-## 🚀 Current Status
+##  Current Status
 
-### ✅ Completed Features
+###  Completed Features
 - **Backend Migration**: Successfully moved all backend code from `server/` to `Ersha_Ecosystem_Backend/`
 - **Advisory System Integration**: Successfully integrated agricultural advisory system from backup backend
 - **Payment System**: Ethiopian payment providers M-pesa,Telebirr Currently integrated (Chapa)
@@ -76,7 +76,7 @@ Ersha-Ecosystem/
 - **Frontend Foundation**: React.js application with Tailwind CSS
 - **CI/CD Pipeline**: Automated testing and deployment pipeline with GitHub Actions ✅
 
-### 🔧 Backend Features
+###  Backend Features
 - **Authentication**: JWT-based auth with Fayda OIDC integration
 - **User Management**: Custom user model with role-based permissions
 - **Advisory System**: Expert consultation, agricultural guides, training courses, downloadable resources
@@ -92,7 +92,7 @@ Ersha-Ecosystem/
 - **CI/CD Pipeline**: Automated testing with GitHub Actions
 - **Complete Backend System**: Full Django REST API with 8 major systems
 
-### 🎨 Frontend Features
+###  Frontend Features
 - **Modern UI**: React.js with Tailwind CSS
 - **Responsive Design**: Mobile-first approach
 - **Component Architecture**: Reusable UI components
@@ -100,7 +100,7 @@ Ersha-Ecosystem/
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Backend:** Django 5.2.4, Django REST Framework 3.16.0
 - **Database:** PostgreSQL with Redis for caching
@@ -116,7 +116,7 @@ Ersha-Ecosystem/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Backend Setup
 ```bash
